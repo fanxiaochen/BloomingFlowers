@@ -8,6 +8,7 @@
 #include <QApplication>
 
 #include "scene_widget.h"
+#include "file_viewer_widget.h"
 #include "main_window.h"
 
 MainWindow::MainWindow(void)
@@ -79,6 +80,13 @@ SceneWidget* MainWindow::getSceneWidget(void)
 
 void MainWindow::init(void)
 {
+	QDockWidget* dock_widget_file_viewer = new QDockWidget("File Viewer", this);
+	addDockWidget(Qt::LeftDockWidgetArea, dock_widget_file_viewer);
+	dock_widget_file_viewer->setAllowedAreas(Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea);
+
+	FileViewerWidget* file_viewer_widget = new FileViewerWidget(this);
+	file_viewer_widget->setParent(dock_widget_file_viewer);
+	dock_widget_file_viewer->setWidget(file_viewer_widget);
 
 	SceneWidget* scene_widget = new SceneWidget(this);
 	setCentralWidget(scene_widget);
@@ -89,40 +97,7 @@ void MainWindow::init(void)
 
 	loadSettings();
 
-	//// File
-	//connect(ui_.actionOpenPointCloud, SIGNAL(triggered()), scene_widget, SLOT(slotOpenPointCloud()));
-	//connect(ui_.actionSavePointCloud, SIGNAL(triggered()), scene_widget, SLOT(slotSavePointCloud()));
-	//connect(ui_.actionSetWorkspace, SIGNAL(triggered()), this, SLOT(slotSetWorkspace()));
-	//connect(ui_.actionPOVRaySnapshot, SIGNAL(triggered()), scene_widget, SLOT(slotPOVRaySnapshot()));
-	//connect(ui_.actionPOVRayVideo, SIGNAL(triggered()), scene_widget, SLOT(slotPOVRayVideo()));
-	//connect(ui_.actionImportMeshModels, SIGNAL(triggered()), scene_widget, SLOT(slotImportMeshModels()));
-	//connect(ui_.actionSampleMeshModels, SIGNAL(triggered()), scene_widget, SLOT(slotSampleMeshModels()));
-	//connect(ui_.actionVirtualScan, SIGNAL(triggered()), scene_widget, SLOT(slotVirtualScan()));
-	//connect(ui_.actionClearMeshModels, SIGNAL(triggered()), scene_widget, SLOT(slotClearMeshModels()));
-
-	//// Algorithms
-	//connect(ui_.actionNormalEstimation, SIGNAL(triggered()), scene_widget, SLOT(slotEstimateNormals()));
-	//connect(ui_.actionCurvatureEstimation, SIGNAL(triggered()), scene_widget, SLOT(slotEstimateCurvatures()));
-	//connect(ui_.actionNormalOrientation, SIGNAL(triggered()), scene_widget, SLOT(slotOrientNormals()));
-	//connect(ui_.actionFlipAllNormals, SIGNAL(triggered()), scene_widget, SLOT(slotFlipAllNormals()));
-	//connect(ui_.actionVoxelGridFilter, SIGNAL(triggered()), scene_widget, SLOT(slotVoxelGridFilter()));
-
-	//// Visualization
-	//connect(ui_.actionTogglePointCloud, SIGNAL(triggered()), scene_widget, SLOT(slotTogglePointCloud()));
-	//connect(ui_.actionToggleCloudNormals, SIGNAL(triggered()), scene_widget, SLOT(slotToggleShowNormals()));
-	//connect(ui_.actionToggleCloudDraggers, SIGNAL(triggered()), scene_widget, SLOT(slotToggleCloudDraggers()));
-	//connect(ui_.actionToggleCloudScalers, SIGNAL(triggered()), scene_widget, SLOT(slotToggleCloudScalers()));
-	//connect(ui_.actionToggleMeshModels, SIGNAL(triggered()), scene_widget, SLOT(slotToggleMeshModels()));
-	//connect(ui_.actionColorizeOriginal, SIGNAL(triggered()), scene_widget, SLOT(slotColorizeOriginal()));
-	//connect(ui_.actionColorizeUniform, SIGNAL(triggered()), scene_widget, SLOT(slotColorizeUniform()));
-	//connect(ui_.actionColorizeCategory, SIGNAL(triggered()), scene_widget, SLOT(slotColorizeCategory()));
-	//connect(ui_.actionColorizeInstance, SIGNAL(triggered()), scene_widget, SLOT(slotColorizeInstance()));
-	//connect(ui_.actionColorizeSegment, SIGNAL(triggered()), scene_widget, SLOT(slotColorizeSegment()));
-	//connect(ui_.actionColorizeCurvature, SIGNAL(triggered()), scene_widget, SLOT(slotColorizeCurvature()));
-	//connect(ui_.actionColorizeDepth, SIGNAL(triggered()), scene_widget, SLOT(slotColorizeDepth()));
-	//connect(ui_.actionColorizeIntensity, SIGNAL(triggered()), scene_widget, SLOT(slotColorizeIntensity()));
-	//connect(ui_.actionSensorFromCamera, SIGNAL(triggered()), scene_widget, SLOT(slotSensorFromCamera()));
-	//connect(ui_.actionCameraFromSensor, SIGNAL(triggered()), scene_widget, SLOT(slotCameraFromSensor()));
+	// connect
 
 	return;
 }

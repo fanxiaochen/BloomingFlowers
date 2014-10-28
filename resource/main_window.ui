@@ -33,61 +33,23 @@
      <x>0</x>
      <y>0</y>
      <width>1301</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionSetWorkspace"/>
-    <addaction name="separator"/>
-    <addaction name="actionOpenPointCloud"/>
-    <addaction name="actionSavePointCloud"/>
-    <addaction name="separator"/>
-    <addaction name="actionImportMeshModels"/>
-    <addaction name="actionBatchScaleModels"/>
-    <addaction name="actionClearMeshModels"/>
-    <addaction name="actionSampleMeshModels"/>
-    <addaction name="actionVirtualScan"/>
-    <addaction name="separator"/>
-    <addaction name="actionPOVRaySnapshot"/>
-    <addaction name="actionPOVRayVideo"/>
-    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuAlgorithms">
     <property name="title">
      <string>Algorithms</string>
     </property>
-    <addaction name="actionNormalEstimation"/>
-    <addaction name="actionCurvatureEstimation"/>
-    <addaction name="actionNormalOrientation"/>
-    <addaction name="actionFlipAllNormals"/>
-    <addaction name="actionVoxelGridFilter"/>
-    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuVisualization">
     <property name="title">
      <string>Visualization</string>
     </property>
-    <addaction name="actionTogglePointCloud"/>
-    <addaction name="actionToggleCloudNormals"/>
-    <addaction name="actionToggleCloudDraggers"/>
-    <addaction name="actionToggleCloudScalers"/>
-    <addaction name="separator"/>
-    <addaction name="actionToggleMeshModels"/>
-    <addaction name="separator"/>
-    <addaction name="actionColorizeOriginal"/>
-    <addaction name="actionColorizeUniform"/>
-    <addaction name="actionColorizeCategory"/>
-    <addaction name="actionColorizeInstance"/>
-    <addaction name="actionColorizeSegment"/>
-    <addaction name="actionColorizeCurvature"/>
-    <addaction name="actionColorizeDepth"/>
-    <addaction name="actionColorizeIntensity"/>
-    <addaction name="separator"/>
-    <addaction name="actionSensorFromCamera"/>
-    <addaction name="actionCameraFromSensor"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuAlgorithms"/>

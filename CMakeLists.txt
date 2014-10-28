@@ -45,6 +45,7 @@ set(lily_incs    ${lily_inc}/main_window.h
             ${lily_inc}/update_callback.h
             ${lily_inc}/adapter_widget.h
             ${lily_inc}/scene_widget.h
+			${lily_inc}/file_viewer_widget.h
             )
 
 set(lily_srcs    ${lily_src}/main.cpp
@@ -56,11 +57,16 @@ set(lily_srcs    ${lily_src}/main.cpp
             ${lily_src}/renderable.cpp
             ${lily_src}/update_callback.cpp
             ${lily_src}/scene_widget.cpp
+			${lily_src}/file_viewer_widget.cpp
             )
 			
-set(blooming_incs	${blooming_inc}/point_cloud.h)
+set(blooming_incs	${blooming_inc}/point_cloud.h
+					${blooming_inc}/file_system_model.h
+					)
 
-set(blooming_srcs	${blooming_src}/point_cloud.cpp)
+set(blooming_srcs	${blooming_src}/point_cloud.cpp
+					${blooming_src}/file_system_model.cpp
+					)
 
 set(incs	${lily_incs} ${blooming_incs})
 set(srcs	${lily_srcs} ${blooming_srcs})
