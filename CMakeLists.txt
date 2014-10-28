@@ -18,10 +18,7 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
-#find_package(Qt5Xml REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
-
-include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Set Qt files and resources here
 set(uis       resource/main_window.ui)
@@ -31,30 +28,62 @@ set(resources  resource/main_window.qrc)
 QT5_WRAP_UI(ui_srcs ${uis})
 QT5_ADD_RESOURCES(resource_srcs ${resources})
 
-set(incs    include/main_window.h
-            include/threaded_painter.h
-            include/osg_viewer_widget.h
-            include/toggle_handler.h
-            include/renderable.h
-            include/update_callback.h
-            include/adapter_widget.h
-            include/scene_widget.h
+set(lily_inc	include/lily)
+set(lily_src	src/lily)
+
+set(blooming_inc	include/blooming)
+set(blooming_src	src/blooming)
+
+include_directories(${PROJECT_SOURCE_DIR}/${lily_inc})
+include_directories(${PROJECT_SOURCE_DIR}/${blooming_inc})
+
+set(lily_incs    ${lily_inc}/main_window.h
+			${lily_inc}/threaded_painter.h
+            ${lily_inc}/osg_viewer_widget.h
+            ${lily_inc}/toggle_handler.h
+            ${lily_inc}/renderable.h
+            ${lily_inc}/update_callback.h
+            ${lily_inc}/adapter_widget.h
+            ${lily_inc}/scene_widget.h
             )
 
-set(srcs    src/main.cpp
-            src/main_window.cpp
-            src/adapter_widget.cpp
-            src/threaded_painter.cpp
-            src/osg_viewer_widget.cpp
-            src/toggle_handler.cpp
-            src/renderable.cpp
-            src/update_callback.cpp
-            src/scene_widget.cpp
+set(lily_srcs    ${lily_src}/main.cpp
+            ${lily_src}/main_window.cpp
+            ${lily_src}/adapter_widget.cpp
+            ${lily_src}/threaded_painter.cpp
+            ${lily_src}/osg_viewer_widget.cpp
+            ${lily_src}/toggle_handler.cpp
+            ${lily_src}/renderable.cpp
+            ${lily_src}/update_callback.cpp
+            ${lily_src}/scene_widget.cpp
             )
+			
+set(blooming_incs	${blooming_inc}/point_cloud.h)
+
+set(blooming_srcs	${blooming_src}/point_cloud.cpp)
+
+set(incs	${lily_incs} ${blooming_incs})
+set(srcs	${lily_srcs} ${blooming_srcs})
+
+set(Headers		"Header Files")
+set(Sources		"Source Files")
+
+set(header_lily		${Headers}\\lily)
+set(header_blooming	${Headers}\\blooming)
+
+set(source_lily		${Sources}\\lily)
+set(source_blooming	${Sources}\\blooming)
+
 
 # Organize files
 SOURCE_GROUP("Resources" FILES ${uis} ${resources})
 SOURCE_GROUP("Generated" FILES ${ui_srcs} ${moc_srcs} ${resource_srcs})
+SOURCE_GROUP(${header_lily} FILES ${lily_incs})
+SOURCE_GROUP(${header_blooming} FILES ${blooming_incs})
+SOURCE_GROUP(${source_lily} FILES ${lily_srcs})
+SOURCE_GROUP(${source_blooming} FILES ${blooming_srcs})
+
+
 SET_SOURCE_FILES_PROPERTIES(${srcs} PROPERTIES OBJECT_DEPENDS "${ui_srcs}")
 
 # Put the ui in the windows project file
