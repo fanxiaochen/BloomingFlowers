@@ -30,7 +30,7 @@ public:
 
 	bool isShown(const std::string& filename) const;
 
-	/*void getFrameRange(int &start, int &end);
+	void getFrameRange(int &start, int &end);
 	int getStartFrame(void) const {return start_frame_;}
 	int getEndFrame(void) const {return end_frame_;}
 
@@ -42,14 +42,18 @@ public:
 
 	void showPointCloud(const std::string& filename);
 	void hidePointCloud(const std::string& filename);
-	void updatePointCloud(int frame);
 
 	void showPointCloud(const QPersistentModelIndex& index);
 	void hidePointCloud(const QPersistentModelIndex& index);
 
+	void showPointCloud(int frame);
+	void hidePointCloud(int frame);
+
+	void updatePointCloud(int frame);
 
 
-	PointCloud* getDisplayFirstFrame(void);
+
+	/*PointCloud* getDisplayFirstFrame(void);
 
 	enum NavigationType
 	{
@@ -61,32 +65,33 @@ public:
 	void navigateToPreviousFrame(NavigationType type);
 	void navigateToNextFrame(NavigationType type);
 	void navigateToPreviousView(NavigationType type);
-	void navigateToNextView(NavigationType type);
+	void navigateToNextView(NavigationType type);*/
 
-	void showPointCloud(int frame, int view);
+	/*void showPointCloud(int frame, int view);
 	void hideAndShowPointCloud(int hide_frame, int hide_view, int show_frame, int show_view);*/
 
 private:
 	Qt::CheckState computeCheckState(const QModelIndex &index) const;
 	bool recursiveCheck(const QModelIndex &index, const QVariant &value);	
 
-	/*void limitPointCloudCacheSize(void);
+	//void limitPointCloudCacheSize(void);
+	void computeFrameRange(void);
 
-	void getDisplayFirstFrameFirstView(int& frame, int& view);
+	/*void getDisplayFirstFrameFirstView(int& frame, int& view);
 	void getDisplayFirstFrameLastView(int& frame, int& view);
-	void getDisplayLastFrameLastView(int& frame, int& view);
+	void getDisplayLastFrameLastView(int& frame, int& view);*/
 
-	void computeFrameRange(void);*/
+	
 signals:
 	/*void timeToHideAndShowPointCloud(int hide_frame, int hide_view, int show_frame, int show_view);
 	void timeToShowPointCloud(int show_frame, int show_view);*/
 
 private:
-	/*typedef QHash<QPersistentModelIndex, osg::ref_ptr<PointCloud> > PointCloudMap;
+	typedef QHash<QPersistentModelIndex, osg::ref_ptr<PointCloud> > PointCloudMap;
     typedef std::unordered_map<std::string, osg::ref_ptr<PointCloud> > PointCloudCacheMap;
 
 	PointCloudMap					point_cloud_map_;
-	PointCloudCacheMap				point_cloud_cache_map_;*/
+	PointCloudCacheMap				point_cloud_cache_map_;
 
   	QSet<QPersistentModelIndex>     checked_indexes_;
   
