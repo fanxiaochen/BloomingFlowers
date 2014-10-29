@@ -8,15 +8,15 @@ class FileSystemModel;
 class FileViewerWidget : public QTreeView
 {
 public:
-	FileViewerWidget(QWidget * parent = 0);
+	FileViewerWidget(QWidget * parent, FileSystemModel* file_system_model);
 	virtual ~FileViewerWidget(void);
 
 	virtual QSize sizeHint() const {return QSize(320, 480);}
-	void setWorkspace(const std::string& workspace);
-	FileSystemModel* getFileSystemModel() {return model_;}
+	void setWorkspace(QString& workspace);
+	inline FileSystemModel* getFileSystemModel() { return file_system_model_; }
 
 private:
-	FileSystemModel*  model_;
+	FileSystemModel*  file_system_model_;
 };
 
 #endif /*FILE_VIEWER_WIDGET_H*/

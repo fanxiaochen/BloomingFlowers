@@ -11,6 +11,8 @@
 #include "ui_main_window.h"
 
 class SceneWidget;
+class FileSystemModel;
+class FileViewerWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -22,9 +24,11 @@ public:
 	virtual ~MainWindow();
 	static MainWindow* getInstance();
 
-	const std::string& getWorkspace(void) const {return workspace_;}
+	inline SceneWidget* getSceneWidget() { return scene_widget_; }
+	inline FileSystemModel* getFileSystemModel() { return file_system_model_; }
+	inline FileViewerWidget* getFileViewerWidget() { return file_viewer_widget_;}
 
-	SceneWidget* getSceneWidget(void);
+	inline std::string& getWorkspace(){ return workspace_; }
 
 	void showInformation(const std::string& information);
 	void showStatus(const std::string& status, int timeout=0);
@@ -42,18 +46,22 @@ protected:
 	virtual void keyPressEvent(QKeyEvent* event);
 
 private slots:
-	bool slotSetWorkspace(void);
 	void slotShowInformation(const QString& information);
 	void slotShowStatus(const QString& status, int timeout);
+	bool slotSetWorkspace();
 
 private:
 	void loadSettings();
 	void saveSettings();
 	void saveStatusLog();
 
-  Ui::MainWindowClass             ui_;
-  std::string                     workspace_;
+private:
+	Ui::MainWindowClass             ui_;
 
+	std::string						workspace_;
+	SceneWidget*					scene_widget_;
+	FileViewerWidget*				file_viewer_widget_;
+	FileSystemModel*				file_system_model_;
 };
 
 class MainWindowInstancer

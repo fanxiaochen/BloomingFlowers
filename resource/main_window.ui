@@ -40,6 +40,7 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionSetWorkspace"/>
    </widget>
    <widget class="QMenu" name="menuAlgorithms">
     <property name="title">
@@ -57,9 +58,6 @@
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar_2</string>
-   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -70,151 +68,6 @@
   <action name="actionSetWorkspace">
    <property name="text">
     <string>Set Workspace</string>
-   </property>
-  </action>
-  <action name="actionOpenPointCloud">
-   <property name="text">
-    <string>Open Point Cloud</string>
-   </property>
-  </action>
-  <action name="actionSavePointCloud">
-   <property name="text">
-    <string>Save Point Cloud</string>
-   </property>
-  </action>
-  <action name="actionNormalEstimation">
-   <property name="text">
-    <string>Normal Estimation</string>
-   </property>
-  </action>
-  <action name="actionVoxelGridFilter">
-   <property name="text">
-    <string>Voxel Grid Filter</string>
-   </property>
-  </action>
-  <action name="actionTogglePointCloud">
-   <property name="text">
-    <string>Toggle Point Cloud</string>
-   </property>
-  </action>
-  <action name="actionToggleCloudNormals">
-   <property name="text">
-    <string>Toggle Cloud Normals</string>
-   </property>
-  </action>
-  <action name="actionColorizeOriginal">
-   <property name="text">
-    <string>Colorize Original</string>
-   </property>
-  </action>
-  <action name="actionColorizeUniform">
-   <property name="text">
-    <string>Colorize Uniform</string>
-   </property>
-  </action>
-  <action name="actionColorizeCategory">
-   <property name="text">
-    <string>Colorize Category</string>
-   </property>
-  </action>
-  <action name="actionColorizeInstance">
-   <property name="text">
-    <string>Colorize Instance</string>
-   </property>
-  </action>
-  <action name="actionColorizeSegment">
-   <property name="text">
-    <string>Colorize Segment</string>
-   </property>
-  </action>
-  <action name="actionColorizeCurvature">
-   <property name="text">
-    <string>Colorize Curvature</string>
-   </property>
-  </action>
-  <action name="actionNormalOrientation">
-   <property name="text">
-    <string>Normal Orientation</string>
-   </property>
-  </action>
-  <action name="actionToggleMeshModels">
-   <property name="text">
-    <string>Toggle Mesh Models</string>
-   </property>
-  </action>
-  <action name="actionColorizeDepth">
-   <property name="text">
-    <string>Colorize Depth</string>
-   </property>
-  </action>
-  <action name="actionPOVRaySnapshot">
-   <property name="text">
-    <string>POV-Ray Snapshot</string>
-   </property>
-  </action>
-  <action name="actionSensorFromCamera">
-   <property name="text">
-    <string>Sensor from Camera</string>
-   </property>
-  </action>
-  <action name="actionCameraFromSensor">
-   <property name="text">
-    <string>Camera from Sensor</string>
-   </property>
-  </action>
-  <action name="actionFlipAllNormals">
-   <property name="text">
-    <string>Flip All Normals</string>
-   </property>
-  </action>
-  <action name="actionPOVRayVideo">
-   <property name="text">
-    <string>POV-Ray Video</string>
-   </property>
-  </action>
-  <action name="actionImportMeshModels">
-   <property name="text">
-    <string>Import Models</string>
-   </property>
-  </action>
-  <action name="actionClearMeshModels">
-   <property name="text">
-    <string>Clear Models</string>
-   </property>
-  </action>
-  <action name="actionToggleCloudDraggers">
-   <property name="text">
-    <string>Toggle Cloud Draggers</string>
-   </property>
-  </action>
-  <action name="actionSampleMeshModels">
-   <property name="text">
-    <string>Sample Models</string>
-   </property>
-  </action>
-  <action name="actionColorizeIntensity">
-   <property name="text">
-    <string>Colorize Intensity</string>
-   </property>
-  </action>
-  <action name="actionToggleCloudScalers">
-   <property name="text">
-    <string>Toggle Cloud Scalers</string>
-   </property>
-  </action>
-  <action name="actionVirtualScan">
-   <property name="text">
-    <string>Virtual Scan</string>
-   </property>
-  </action>
-  <action name="actionCurvatureEstimation">
-   <property name="text">
-    <string>Curvature Estimation</string>
-   </property>
-  </action>
-  <action name="actionBatchScaleModels">
-   <property name="text">
-    <string>Scale Models</string>
    </property>
   </action>
  </widget>

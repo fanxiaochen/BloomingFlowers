@@ -9,10 +9,14 @@
 
 #include "scene_widget.h"
 #include "file_viewer_widget.h"
+#include "file_system_model.h"
+
 #include "main_window.h"
 
 MainWindow::MainWindow(void)
-  :workspace_(".")
+	:workspace_("."),
+	file_system_model_(NULL),
+	file_viewer_widget_(NULL)
 {
 	ui_.setupUi(this);
 
@@ -73,20 +77,18 @@ MainWindow* MainWindow::getInstance()
 	return MainWindowInstancer::getInstance().main_window_;
 }
 
-SceneWidget* MainWindow::getSceneWidget(void)
-{
-	return dynamic_cast<SceneWidget*>(centralWidget());
-}
-
 void MainWindow::init(void)
 {
+	file_system_model_ = new FileSystemModel;
+	file_viewer_widget_ = new FileViewerWidget(this, file_system_model_);
+
 	QDockWidget* dock_widget_file_viewer = new QDockWidget("File Viewer", this);
 	addDockWidget(Qt::LeftDockWidgetArea, dock_widget_file_viewer);
 	dock_widget_file_viewer->setAllowedAreas(Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea);
 
-	FileViewerWidget* file_viewer_widget = new FileViewerWidget(this);
-	file_viewer_widget->setParent(dock_widget_file_viewer);
-	dock_widget_file_viewer->setWidget(file_viewer_widget);
+	file_viewer_widget_->setParent(dock_widget_file_viewer);
+	dock_widget_file_viewer->setWidget(file_viewer_widget_);
+	
 
 	SceneWidget* scene_widget = new SceneWidget(this);
 	setCentralWidget(scene_widget);
@@ -94,9 +96,9 @@ void MainWindow::init(void)
 
 	connect(this, SIGNAL(showInformationRequested(const QString&)), this, SLOT(slotShowInformation(const QString&)));
 	connect(this, SIGNAL(showStatusRequested(const QString&, int)), this, SLOT(slotShowStatus(const QString&, int)));
-
 	loadSettings();
 
+	connect(ui_.actionSetWorkspace, SIGNAL(triggered()), this, SLOT(slotSetWorkspace()));
 	// connect
 
 	return;
@@ -110,6 +112,8 @@ bool MainWindow::slotSetWorkspace(void)
 		return false;
 
 	workspace_ = directory.toStdString();
+
+	file_viewer_widget_->setWorkspace(directory);
 
 	return true;
 }
