@@ -13,6 +13,11 @@ include_directories(${Boost_INCLUDE_DIRS})
 find_package(OpenSceneGraph REQUIRED osgViewer osgText osgDB osgGA osgQt osgManipulator osgUtil)
 include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
 
+find_package(PCL REQUIRED common io)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 find_package(Qt5Core REQUIRED)
@@ -62,6 +67,7 @@ set(lily_srcs    ${lily_src}/main.cpp
 			
 set(blooming_incs	${blooming_inc}/point_cloud.h
 					${blooming_inc}/file_system_model.h
+					${blooming_inc}/types.h
 					)
 
 set(blooming_srcs	${blooming_src}/point_cloud.cpp
@@ -106,6 +112,7 @@ target_link_libraries(${exe_name}
   ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
   ${OPENSCENEGRAPH_LIBRARIES}
   Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent
+  ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES}
 )
 
 if(WIN32 AND MSVC)

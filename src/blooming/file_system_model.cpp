@@ -10,6 +10,7 @@
 
 #include "main_window.h"
 #include "osg_viewer_widget.h"
+#include "point_cloud.h"
 #include "file_system_model.h"
 
 
@@ -145,7 +146,6 @@ QModelIndex FileSystemModel::setRootPath(const QString & root_path)
 
 
 
-
 //void FileSystemModel::limitPointCloudCacheSize(void)
 //{
 //	size_t threshold = 32;
@@ -223,7 +223,7 @@ osg::ref_ptr<PointCloud> FileSystemModel::getPointCloud(const std::string& filen
 {
 	QMutexLocker locker(&mutex_);
 
-	limitPointCloudCacheSize();
+	//limitPointCloudCacheSize();
 
 	QFileInfo fileinfo(filename.c_str());
 	if (!fileinfo.exists() || !fileinfo.isFile())

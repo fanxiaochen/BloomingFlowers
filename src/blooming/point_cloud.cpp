@@ -4,16 +4,8 @@
 #include <QFileInfo>
 #include <QDockWidget>
 #include <QFileDialog>
-#include <QColorDialog>
-#include <QFutureWatcher>
-#include <QtConcurrentRun>
 
-#include <osg/Geode>
-#include <osg/io_utils>
-#include <osg/Geometry>
-#include <osgManipulator/TrackballDragger>
-#include <osgManipulator/TranslateAxisDragger>
-
+#include <pcl/io/pcd_io.h>
 
 #include "main_window.h"
 #include "file_system_model.h"
@@ -22,24 +14,8 @@
 #include "point_cloud.h"
 
 PointCloud::PointCloud(void)
- /* :translate_dragger_(new osgManipulator::TranslateAxisDragger),
-  trackball_dragger_(new osgManipulator::TrackballDragger)*/
 {
-  /*translate_dragger_->setupDefaultGeometry();
-  translate_dragger_->setHandleEvents(true);
-  translate_dragger_->setActivationModKeyMask(osgGA::GUIEventAdapter::MODKEY_CTRL);
-  translate_dragger_->setActivationKeyEvent('d');
-
-  trackball_dragger_->setupDefaultGeometry();
-  trackball_dragger_->setHandleEvents(true);
-  trackball_dragger_->setActivationModKeyMask(osgGA::GUIEventAdapter::MODKEY_CTRL);
-  trackball_dragger_->setActivationKeyEvent('d');
-
-  translate_dragger_->addTransformUpdating(this);
-  translate_dragger_->addTransformUpdating(trackball_dragger_);
-
-  trackball_dragger_->addTransformUpdating(this);
-  trackball_dragger_->addTransformUpdating(translate_dragger_);*/
+  
 }
 
 PointCloud::~PointCloud(void)
@@ -50,16 +26,10 @@ bool PointCloud::open(const std::string& filename)
 {
   clearData();
 
-  QMutexLocker locker(&mutex_);
-
   if (pcl::io::loadPCDFile(filename, *this) != 0)
     return false;
 
   filename_ = filename;
-
-  locker.unlock();
-  loadStatus();
-  locker.relock();
 
   expire();
 
@@ -76,10 +46,9 @@ void PointCloud::reload(void)
 
 void PointCloud::clearData()
 {
-  QMutexLocker locker(&mutex_);
 
-  Renderable::clear();
-  PclRichPointCloud::clear();
+  //Renderable::clear();
+  PclPointCloud::clear();
 
   return;
 }

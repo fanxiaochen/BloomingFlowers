@@ -7,6 +7,7 @@
 #include <osg/Array>
 #include <unordered_set>
 
+#include "types.h"
 #include "renderable.h"
 
 
@@ -16,7 +17,7 @@ namespace osgManipulator
   class TrackballDragger;
 }
 
-class PointCloud : public QObject, public Renderable, public PclRichPointCloud
+class PointCloud : public QObject, public Renderable, public PclPointCloud
 {
   Q_OBJECT
 
@@ -43,12 +44,6 @@ protected:
 
 protected:
   std::string                     filename_;
-
-private:
-  /*osg::ref_ptr<osgManipulator::TranslateAxisDragger>  translate_dragger_;
-  osg::ref_ptr<osgManipulator::TrackballDragger>      trackball_dragger_;*/
-
-  QMutex                          mutex_;
 };
 
 #endif // POINTCLOUD_H
