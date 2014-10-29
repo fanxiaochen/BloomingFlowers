@@ -1,10 +1,54 @@
-#ifndef POINT_CLOUD_H
-#define POINT_CLOUD_H
 
-class PointCloud
+#ifndef POINTCLOUD_H
+#define POINTCLOUD_H
+
+#include <QObject>
+#include <QColor>
+#include <osg/Array>
+#include <unordered_set>
+
+#include "renderable.h"
+
+
+namespace osgManipulator
 {
+  class TranslateAxisDragger;
+  class TrackballDragger;
+}
 
+class PointCloud : public QObject, public Renderable, public PclRichPointCloud
+{
+  Q_OBJECT
 
+public:
+  PointCloud(void);
+  virtual ~PointCloud(void);
+
+  virtual const char* className() const {return "PointCloud";}
+
+  bool open(const std::string& filename);
+  void reload(void);
+
+  inline const std::string& getFilename(void) const {return filename_;}
+
+  int getFrame(void) const;
+  bool isShown(void) const;
+
+protected:
+  virtual void clearData();
+  virtual void updateImpl();
+
+  PointCloud* getPrevFrame(void);
+  PointCloud* getNextFrame(void);
+
+protected:
+  std::string                     filename_;
+
+private:
+  /*osg::ref_ptr<osgManipulator::TranslateAxisDragger>  translate_dragger_;
+  osg::ref_ptr<osgManipulator::TrackballDragger>      trackball_dragger_;*/
+
+  QMutex                          mutex_;
 };
 
-#endif
+#endif // POINTCLOUD_H

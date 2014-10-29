@@ -199,27 +199,15 @@ void FileSystemModel::computeFrameRange(void)
 	QModelIndex root_index = index(root_path);
 
 	if (root_path.contains("frame_")) {
-	start_frame_ = end_frame_ = root_path.right(4).toInt();
-	return;
+		start_frame_ = end_frame_ = root_path.right(4).toInt();
+		return;
 	}
 
 	if (root_path.compare("points") == 0)
 	{
-	QStringList points_entries = QDir(root_path).entryList();
-	extractStartEndFrame(points_entries, start_frame_, end_frame_);
-	return;
-	}
-
-	QStringList root_entries = QDir(root_path).entryList();
-	for (QStringList::const_iterator root_entries_it = root_entries.begin();
-	root_entries_it != root_entries.end(); ++ root_entries_it)
-	{
-	if (root_entries_it->compare("points") != 0)
-		continue;
-
-	QStringList points_entries = QDir(root_path+"/"+*root_entries_it).entryList();
-	extractStartEndFrame(points_entries, start_frame_, end_frame_);
-	return;
+		QStringList points_entries = QDir(root_path).entryList();
+		extractStartEndFrame(points_entries, start_frame_, end_frame_);
+		return;
 	}
 
 	return;
