@@ -10,9 +10,9 @@
 
 #include "ui_main_window.h"
 
-class SceneWidget;
-class FileSystemModel;
-class FileViewerWidget;
+#include "scene_widget.h"
+#include "file_viewer_widget.h"
+#include "file_system_model.h"
 
 class MainWindow : public QMainWindow
 {

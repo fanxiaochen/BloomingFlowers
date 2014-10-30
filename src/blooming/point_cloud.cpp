@@ -1,4 +1,3 @@
-#include <fstream>
 
 #include <QRegExp>
 #include <QFileInfo>
@@ -9,9 +8,8 @@
 
 #include "main_window.h"
 #include "file_system_model.h"
-#include "osg_viewer_widget.h"
-#include "renderable.h"
 #include "point_cloud.h"
+#include "osg_viewer_widget.h"
 
 PointCloud::PointCloud(void)
 {
@@ -60,17 +58,17 @@ void PointCloud::updateImpl()
   return;
 }
 
-PointCloud* PointCloud::getPrevFrame(void)
-{
-  FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
-  return model->getPointCloud(getFrame()-1);
-}
-
-PointCloud* PointCloud::getNextFrame(void)
-{
-  FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
-  return model->getPointCloud(getFrame()+1);
-}
+//PointCloud* PointCloud::getPrevFrame(void)
+//{
+//  FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
+//  return model->getPointCloud(getFrame()-1);
+//}
+//
+//PointCloud* PointCloud::getNextFrame(void)
+//{
+//  FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
+//  return model->getPointCloud(getFrame()+1);
+//}
 
 
 int PointCloud::getFrame(void) const      

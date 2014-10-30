@@ -1,16 +1,13 @@
 #include <QDir>
 #include <QColor>
 #include <QMutexLocker>
-#include <QColorDialog>
-#include <QFutureWatcher>
-#include <QtConcurrentRun>
 
 #include <osg/Group>
 #include <osgDB/ReadFile>
 
 #include "main_window.h"
-#include "osg_viewer_widget.h"
 #include "point_cloud.h"
+#include "osg_viewer_widget.h"
 #include "file_system_model.h"
 
 
@@ -95,10 +92,10 @@ bool FileSystemModel::setData(const QModelIndex &index, const QVariant &value, i
 	{
 		if (is_point_cloud)
 		{
-			/*if(value == Qt::Checked)
+			if(value == Qt::Checked)
 				showPointCloud(index);
 			else
-				hidePointCloud(index);*/
+				hidePointCloud(index);
 		}
 
 		if(hasChildren(index) == true)
@@ -120,23 +117,17 @@ bool FileSystemModel::isShown(const std::string& filename) const
 
 QModelIndex FileSystemModel::setRootPath(const QString & root_path)
 {
-	/*point_cloud_cache_map_.clear();
-	point_cloud_map_.clear();*/
+	point_cloud_cache_map_.clear();
+	point_cloud_map_.clear();
 	checked_indexes_.clear();
 
 	QModelIndex index = QFileSystemModel::setRootPath(root_path);
-	//computeFrameRange();
+	computeFrameRange();
+
 	if (start_frame_ != -1)
 	{
-	/*if (getPointCloud(start_frame_) != NULL)
-		showPointCloud(start_frame_, 12);
-	else if (getPointCloud(start_frame_, 0) != NULL)
-		showPointCloud(start_frame_, 0);
-	else
-	{
-		osg::ref_ptr<MeshModel> mesh_model = getMeshModel(start_frame_);
-		if (mesh_model.valid())
-		showMeshModel(start_frame_);*/
+		if (getPointCloud(start_frame_) != NULL)
+			showPointCloud(start_frame_);
 	}
 
 	//MainWindow::getInstance()->getOSGViewerWidget()->centerScene();
@@ -227,18 +218,18 @@ osg::ref_ptr<PointCloud> FileSystemModel::getPointCloud(const std::string& filen
 
 	QFileInfo fileinfo(filename.c_str());
 	if (!fileinfo.exists() || !fileinfo.isFile())
-	return NULL;
+		return NULL;
 
 	PointCloudCacheMap::iterator it = point_cloud_cache_map_.find(filename);
 	if (it != point_cloud_cache_map_.end())
-	return it->second.get();
+		return it->second.get();
 
 	osg::ref_ptr<PointCloud> point_cloud(new PointCloud());
 	if (!point_cloud->open(filename))
-	return NULL;
+		return NULL;
 
 	if (point_cloud->thread() != qApp->thread())
-	point_cloud->moveToThread(qApp->thread());
+		point_cloud->moveToThread(qApp->thread());
 
 	point_cloud_cache_map_[filename] = point_cloud;
 
@@ -283,12 +274,6 @@ std::string FileSystemModel::getPointsFilename(int frame)
 		return folder;
 
 	return folder+"/points.pcd";
-}
-
-
-osg::ref_ptr<PointCloud> FileSystemModel::getPointCloud(int frame)
-{
-	return getPointCloud(getPointsFilename(frame));
 }
 
 void FileSystemModel::showPointCloud(int frame)
@@ -402,7 +387,7 @@ void FileSystemModel::updatePointCloud(int frame)
 	if (point_cloud_cache_map_.find(filename) == point_cloud_cache_map_.end())
 		return;
 
-	//getPointCloud(frame)->reload();
+	getPointCloud(frame)->reload();
 
 	return;
 }

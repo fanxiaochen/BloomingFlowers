@@ -7,15 +7,8 @@
 #include <osg/Array>
 #include <unordered_set>
 
+#include "Renderable.h"
 #include "types.h"
-#include "renderable.h"
-
-
-namespace osgManipulator
-{
-  class TranslateAxisDragger;
-  class TrackballDragger;
-}
 
 class PointCloud : public QObject, public Renderable, public PclPointCloud
 {
@@ -39,8 +32,8 @@ protected:
   virtual void clearData();
   virtual void updateImpl();
 
-  PointCloud* getPrevFrame(void);
-  PointCloud* getNextFrame(void);
+  /*PointCloud* getPrevFrame(void);
+  PointCloud* getNextFrame(void);*/
 
 protected:
   std::string                     filename_;

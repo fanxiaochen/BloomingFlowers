@@ -1,4 +1,4 @@
-#pragma once
+
 #ifndef FILE_SYSTEM_MODEL_H
 #define FILE_SYSTEM_MODEL_H
 
@@ -11,7 +11,6 @@
 #include <QPersistentModelIndex>
 
 #include <osg/ref_ptr>
-#include <osg/Vec4>
 
 class PointCloud;
 

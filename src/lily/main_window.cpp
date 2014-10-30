@@ -7,10 +7,6 @@
 #include <QMessageBox>
 #include <QApplication>
 
-#include "scene_widget.h"
-#include "file_viewer_widget.h"
-#include "file_system_model.h"
-
 #include "main_window.h"
 
 MainWindow::MainWindow(void)
