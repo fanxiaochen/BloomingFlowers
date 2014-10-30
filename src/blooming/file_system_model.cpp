@@ -194,7 +194,7 @@ void FileSystemModel::computeFrameRange(void)
 		return;
 	}
 
-	if (root_path.compare("points") == 0)
+	if (root_path.contains("points"))
 	{
 		QStringList points_entries = QDir(root_path).entryList();
 		extractStartEndFrame(points_entries, start_frame_, end_frame_);
@@ -258,10 +258,24 @@ std::string FileSystemModel::getPointsFolder(int frame)
 	{
 		folder =  root_path.toStdString();
 	}
-	else if (root_path.compare("points") == 0)
+	else if (root_path.contains("points"))
 	{
+		// not work ??
+		/*std::cout << root_path.toStdString() << std::endl;
 		QModelIndex frame_index = index(frame-start, 0, root_index);
-		folder = filePath(frame_index).toStdString();
+		folder = filePath(frame_index).toStdString();*/
+
+		QString frame_name(QString("frame_%1").arg(frame, 5, 10, QChar('0')));
+		QStringList root_entries = QDir(root_path).entryList();
+		for (QStringList::const_iterator root_entries_it = root_entries.begin();
+			root_entries_it != root_entries.end(); ++ root_entries_it)
+		{
+			if (root_entries_it->compare(frame_name) == 0)
+			{
+				folder = (root_path + QString("/%1").arg(*root_entries_it)).toStdString();
+				break;
+			}
+		}
 	}
 
 	return folder;
