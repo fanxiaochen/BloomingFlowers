@@ -37,6 +37,7 @@ public:
 	bool hasOtherChild(osg::Node* child);
 
 	osg::BoundingSphere getBoundingSphere(void) const;
+	osg::BoundingBox getBoundingBox(void) const;
 
 	void setUpVector(osg::Vec3 up_vector) {up_vector_ = up_vector;}
 	const osg::Vec3& getUpVector(void) const {return up_vector_;}

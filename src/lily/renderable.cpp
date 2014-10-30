@@ -1,3 +1,4 @@
+#include <iostream>
 #include <random>
 
 #include <QMenu>
@@ -56,7 +57,7 @@ void Renderable::update(void)
     read_write_lock_.unlock();
     return;
   }
-
+  
   expired_ = false;
   content_root_->removeChildren(0, content_root_->getNumChildren());
 

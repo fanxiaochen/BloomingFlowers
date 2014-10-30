@@ -130,7 +130,7 @@ QModelIndex FileSystemModel::setRootPath(const QString & root_path)
 			showPointCloud(start_frame_);
 	}
 
-	//MainWindow::getInstance()->getOSGViewerWidget()->centerScene();
+	MainWindow::getInstance()->getSceneWidget()->centerScene();
 
 	return index;
 }
@@ -304,7 +304,7 @@ void FileSystemModel::showPointCloud(const QPersistentModelIndex& index)
 	if (point_cloud_map_it != point_cloud_map_.end())
 		return;
 
-	//MainWindow::getInstance()->getOSGViewerWidget()->addChild(point_cloud);
+	MainWindow::getInstance()->getSceneWidget()->addSceneChild(point_cloud);
 	point_cloud_map_[index] = point_cloud;
 
 	return;
@@ -333,7 +333,7 @@ void FileSystemModel::hidePointCloud(const QPersistentModelIndex& index)
 	if (point_cloud_map_it == point_cloud_map_.end())
 		return;
 
-	//MainWindow::getInstance()->getOSGViewerWidget()->removeChild(point_cloud_map_it.value().get());
+	MainWindow::getInstance()->getSceneWidget()->removeSceneChild(point_cloud_map_it.value().get());
 	point_cloud_map_.erase(point_cloud_map_it);
 
 	return;

@@ -24,19 +24,3 @@ SceneWidget::~SceneWidget()
 {
 
 }
-
-
-Renderable* SceneWidget::getRenderable(void)
-{
-	return renderable_;
-}
-
-void SceneWidget::setRenderable(Renderable* renderable)
-{
-	removeSceneChildren();
-
-	renderable_ = renderable;
-
-	addSceneChild(renderable_);
-	return;
-}

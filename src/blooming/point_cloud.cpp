@@ -6,6 +6,9 @@
 
 #include <pcl/io/pcd_io.h>
 
+#include <osg/Geometry>
+#include <osg/Point>
+
 #include "main_window.h"
 #include "file_system_model.h"
 #include "point_cloud.h"
@@ -46,16 +49,42 @@ void PointCloud::clearData()
 {
 
   //Renderable::clear();
-  PclPointCloud::clear();
+	PointCloud::clear();
 
-  return;
+	return;
 }
 
 
 void PointCloud::updateImpl()
 {
-  // visualize point cloud
-  return;
+	visualizePoints();
+	return;
+}
+
+void PointCloud::visualizePoints()
+{
+	osg::ref_ptr<osg::Vec3Array>  vertices = new osg::Vec3Array;
+	osg::ref_ptr<osg::Vec4Array>  colors = new osg::Vec4Array;
+
+	for (size_t i= 0, i_end = size(); i < i_end; i ++)
+	{
+		const Point& point = at(i);
+
+		vertices->push_back(osg::Vec3(point.x, point.y, point.z));
+		colors->push_back(osg::Vec4(point.r / 255.0, point.g / 255.0, point.b / 255.0, 0));
+	}
+
+	osg::Geometry* geometry = new osg::Geometry;
+	geometry->setVertexArray(vertices);
+	geometry->setColorArray(colors);
+	geometry->setColorBinding(osg::Geometry::BIND_OVERALL);
+	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, size()));
+	geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
+	osg::Geode* geode = new osg::Geode;
+	geode->addDrawable(geometry);
+	addChild(geode);
+
+	return;
 }
 
 //PointCloud* PointCloud::getPrevFrame(void)

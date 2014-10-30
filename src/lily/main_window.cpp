@@ -25,6 +25,10 @@ MainWindow::~MainWindow()
 {
 	saveSettings();
 
+	delete file_system_model_;
+	delete file_viewer_widget_;
+	delete scene_widget_;
+
 	return;
 }
 
@@ -86,9 +90,9 @@ void MainWindow::init(void)
 	dock_widget_file_viewer->setWidget(file_viewer_widget_);
 	
 
-	SceneWidget* scene_widget = new SceneWidget(this);
-	setCentralWidget(scene_widget);
-	scene_widget->startRendering();
+	scene_widget_ = new SceneWidget(this);
+	setCentralWidget(scene_widget_);
+	scene_widget_->startRendering();
 
 	connect(this, SIGNAL(showInformationRequested(const QString&)), this, SLOT(slotShowInformation(const QString&)));
 	connect(this, SIGNAL(showStatusRequested(const QString&, int)), this, SLOT(slotShowStatus(const QString&, int)));

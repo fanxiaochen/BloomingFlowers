@@ -32,6 +32,8 @@ protected:
   virtual void clearData();
   virtual void updateImpl();
 
+  void visualizePoints();
+
   /*PointCloud* getPrevFrame(void);
   PointCloud* getNextFrame(void);*/
 

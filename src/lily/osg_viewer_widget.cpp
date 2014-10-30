@@ -7,6 +7,7 @@
 #include <osg/LineWidth>
 #include <osg/ComputeBoundsVisitor>
 #include <osgGA/TrackballManipulator>
+#include <osgGA/StateSetManipulator>
 
 #include "main_window.h"
 #include "toggle_handler.h"
@@ -145,7 +146,7 @@ void OSGViewerWidget::decreasePointSize(void)
 
 void OSGViewerWidget::startRendering()
 {
-	//addEventHandler(new StateSetManipulator(getSceneData()->getOrCreateStateSet()));
+	addEventHandler(new osgGA::StateSetManipulator(getSceneData()->getOrCreateStateSet()));
 
 	context()->moveToThread(&gl_thread_);
 	threaded_painter_.moveToThread(&gl_thread_);
@@ -193,15 +194,26 @@ osg::BoundingSphere OSGViewerWidget::getBoundingSphere(void) const
 	return scene_root_->getBound();
 }
 
+osg::BoundingBox OSGViewerWidget::getBoundingBox(void) const
+{
+  osgUtil::UpdateVisitor update_visitor;
+  scene_root_->accept(update_visitor);
+
+  osg::ComputeBoundsVisitor visitor;
+  scene_root_->accept(visitor);
+
+  return visitor.getBoundingBox();
+}
+
 void OSGViewerWidget::centerScene(void)
 {
-	/*QMutexLocker locker(&mutex_);
+	QMutexLocker locker(&mutex_);
 
 	osg::BoundingBox bounding_box = getBoundingBox();
 	if (bounding_box.xMax() == -std::numeric_limits<float>::max())
 	{
-	bounding_box._min = osg::Vec3(0.0, 0.0, 0.0);
-	bounding_box._max = osg::Vec3(1.0, 1.0, 1.0);
+		bounding_box._min = osg::Vec3(0.0, 0.0, 0.0);
+		bounding_box._max = osg::Vec3(1.0, 1.0, 1.0);
 	}
 
 	osg::Vec3 center = (bounding_box._min+bounding_box._max)/2;
@@ -212,7 +224,7 @@ void OSGViewerWidget::centerScene(void)
 
 	osgGA::CameraManipulator* camera_manipulator = getCameraManipulator();
 	camera_manipulator->setHomePosition(center+eye_offset, center, up_vector_);
-	camera_manipulator->home(0);*/
+	camera_manipulator->home(0);
 
 	return;
 }
@@ -258,7 +270,7 @@ void OSGViewerWidget::removeSceneChildren(void)
 	QMutexLocker locker(&mutex_);
 
 	if (scene_root_->getNumChildren() != 0)
-	scene_root_->removeChildren(0, scene_root_->getNumChildren());
+		scene_root_->removeChildren(0, scene_root_->getNumChildren());
 
 	return;
 }

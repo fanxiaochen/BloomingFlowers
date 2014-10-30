@@ -2,8 +2,6 @@
 #ifndef SCENE_WIDGET_H_
 #define SCENE_WIDGET_H_
 
-#include "renderable.h"
-
 #include "osg_viewer_widget.h"
 
 class SceneWidget : public OSGViewerWidget
@@ -15,10 +13,6 @@ public:
 	virtual ~SceneWidget();
 
 	virtual QSize sizeHint() const {return QSize(256, 256);}
-
-	Renderable* getRenderable(void);
-
-	void setRenderable(Renderable* renderable);
 
 public slots:
 	/*void slotOpenPointCloud(void);
@@ -57,9 +51,6 @@ public slots:
 	void slotSampleMeshModels(void);
 	void slotClearMeshModels(void);
 	void slotVirtualScan(void);*/
-
-private:
-	osg::ref_ptr<Renderable>              renderable_;
 };
 
 #endif // SCENE_WIDGET_H_
