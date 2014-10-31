@@ -77,7 +77,7 @@ void PointCloud::visualizePoints()
 	osg::Geometry* geometry = new osg::Geometry;
 	geometry->setVertexArray(vertices);
 	geometry->setColorArray(colors);
-	geometry->setColorBinding(osg::Geometry::BIND_OVERALL);
+	geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
 	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, size()));
 	geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
 	osg::Geode* geode = new osg::Geode;
