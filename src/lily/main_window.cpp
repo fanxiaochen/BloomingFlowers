@@ -90,9 +90,9 @@ MainWindow* MainWindow::getInstance()
 void MainWindow::init(void)
 {
 	points_files_ = new PointsFileSystem;
-	//mesh_files_ = new MeshFileSystem;
+	mesh_files_ = new MeshFileSystem;
 	points_widget_ = new FileViewerWidget(this, points_files_);
-	//mesh_widget_ = new FileViewerWidget(this, mesh_files_);
+	mesh_widget_ = new FileViewerWidget(this, mesh_files_);
 
 	QDockWidget* points_viewer = new QDockWidget("Points Viewer", this);
 	addDockWidget(Qt::LeftDockWidgetArea, points_viewer);
@@ -101,12 +101,12 @@ void MainWindow::init(void)
 	points_widget_->setParent(points_viewer);
 	points_viewer->setWidget(points_widget_);
 
-	/*QDockWidget* mesh_viewer = new QDockWidget("Mesh Viewer", this);
+	QDockWidget* mesh_viewer = new QDockWidget("Mesh Viewer", this);
 	addDockWidget(Qt::LeftDockWidgetArea, mesh_viewer);
 	mesh_viewer->setAllowedAreas(Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea);
 
 	mesh_widget_->setParent(mesh_viewer);
-	mesh_viewer->setWidget(mesh_widget_);*/
+	mesh_viewer->setWidget(mesh_widget_);
 	
 
 	scene_widget_ = new SceneWidget(this);
