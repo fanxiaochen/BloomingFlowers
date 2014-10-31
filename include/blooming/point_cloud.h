@@ -7,8 +7,13 @@
 #include <osg/Array>
 #include <unordered_set>
 
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+
 #include "Renderable.h"
-#include "types.h"
+
+typedef	 pcl::PointXYZRGB  Point;
+typedef	 pcl::PointCloud<Point>  PclPointCloud;
 
 class PointCloud : public QObject, public Renderable, public PclPointCloud
 {

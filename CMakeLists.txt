@@ -40,6 +40,7 @@ set(blooming_src	src/blooming)
 
 include_directories(${PROJECT_SOURCE_DIR}/${lily_inc})
 include_directories(${PROJECT_SOURCE_DIR}/${blooming_inc})
+include_directories(${PROJECT_SOURCE_DIR}/3rdparty)
 
 set(lily_incs    ${lily_inc}/main_window.h
 			${lily_inc}/threaded_painter.h
@@ -66,7 +67,7 @@ set(lily_srcs    ${lily_src}/main.cpp
 			
 set(blooming_incs	${blooming_inc}/point_cloud.h
 					${blooming_inc}/file_system_model.h
-					${blooming_inc}/types.h
+					${blooming_inc}/types_wrapper.h
 					${blooming_inc}/points_file_system.h
 					${blooming_inc}/mesh_file_system.h
 					${blooming_inc}/tracking_system.h

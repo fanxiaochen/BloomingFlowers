@@ -2,19 +2,23 @@
 #define TRACKING_SYSTEM_H
 
 class PointCloud;
-class FileSystemModel;
+class PointsFileSystem;
+class MeshFileSystem;
 
 class TrackingSystem
 {
 public:
-	TrackingSystem(FileSystemModel* points_file_system, FileSystemModel* mesh_file_system);
+	TrackingSystem(PointsFileSystem* points_file_system, MeshFileSystem* mesh_file_system);
 	~TrackingSystem();
 	
 	void track();
 
 private:
-	FileSystemModel*	points_file_system_;
-	FileSystemModel*	mesh_file_system_;
+	void cpd_registration(PointCloud* tracking_template, PointCloud* tracked_frame);
+
+private:
+	PointsFileSystem*	points_file_system_;
+	MeshFileSystem*		mesh_file_system_;
 };
 
 #endif
