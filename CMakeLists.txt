@@ -67,10 +67,16 @@ set(lily_srcs    ${lily_src}/main.cpp
 set(blooming_incs	${blooming_inc}/point_cloud.h
 					${blooming_inc}/file_system_model.h
 					${blooming_inc}/types.h
+					${blooming_inc}/points_file_system.h
+					${blooming_inc}/mesh_file_system.h
+					${blooming_inc}/tracking_system.h
 					)
 
 set(blooming_srcs	${blooming_src}/point_cloud.cpp
 					${blooming_src}/file_system_model.cpp
+					${blooming_src}/points_file_system.cpp
+					${blooming_src}/mesh_file_system.cpp
+					${blooming_src}/tracking_system.cpp
 					)
 
 set(incs	${lily_incs} ${blooming_incs})

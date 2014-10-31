@@ -10,7 +10,7 @@
 #include <osg/Point>
 
 #include "main_window.h"
-#include "file_system_model.h"
+#include "points_file_system.h"
 #include "point_cloud.h"
 #include "osg_viewer_widget.h"
 
@@ -112,7 +112,7 @@ int PointCloud::getFrame(void) const
 
 bool PointCloud::isShown(void) const
 {
-  FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
+  PointsFileSystem* model = dynamic_cast<PointsFileSystem*>(MainWindow::getInstance()->getPointsSystem());
 
   return model->isShown(filename_);
 }

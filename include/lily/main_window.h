@@ -10,9 +10,9 @@
 
 #include "ui_main_window.h"
 
-#include "scene_widget.h"
-#include "file_viewer_widget.h"
-#include "file_system_model.h"
+class FileSystemModel;
+class FileViewerWidget;
+class SceneWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -25,10 +25,13 @@ public:
 	static MainWindow* getInstance();
 
 	inline SceneWidget* getSceneWidget() { return scene_widget_; }
-	inline FileSystemModel* getFileSystemModel() { return file_system_model_; }
-	inline FileViewerWidget* getFileViewerWidget() { return file_viewer_widget_;}
+	inline FileSystemModel* getPointsSystem() { return points_files_; }
+	inline FileSystemModel* getMeshSystem() { return mesh_files_; }
+	inline FileViewerWidget* getPointsWidget() { return points_widget_; }
+	inline FileViewerWidget* getMeshWidget() { return mesh_widget_; }
 
-	inline std::string& getWorkspace(){ return workspace_; }
+	inline std::string& getPointsPath(){ return points_path_; }
+	inline std::string& getMeshPath(){ return mesh_path_; }
 
 	void showInformation(const std::string& information);
 	void showStatus(const std::string& status, int timeout=0);
@@ -48,7 +51,8 @@ protected:
 private slots:
 	void slotShowInformation(const QString& information);
 	void slotShowStatus(const QString& status, int timeout);
-	bool slotSetWorkspace();
+	bool slotLoadPoints();
+	bool slotLoadMesh();
 
 private:
 	void loadSettings();
@@ -58,10 +62,13 @@ private:
 private:
 	Ui::MainWindowClass             ui_;
 
-	std::string						workspace_;
+	std::string						points_path_;
+	std::string						mesh_path_;
 	SceneWidget*					scene_widget_;
-	FileViewerWidget*				file_viewer_widget_;
-	FileSystemModel*				file_system_model_;
+	FileViewerWidget*				points_widget_;
+	FileViewerWidget*				mesh_widget_;
+	FileSystemModel*				points_files_;
+	FileSystemModel*				mesh_files_;
 };
 
 class MainWindowInstancer

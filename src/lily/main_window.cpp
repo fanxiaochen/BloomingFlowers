@@ -7,12 +7,20 @@
 #include <QMessageBox>
 #include <QApplication>
 
+#include "file_viewer_widget.h"
+#include "scene_widget.h"
+#include "points_file_system.h"
+#include "mesh_file_system.h"
+
 #include "main_window.h"
 
 MainWindow::MainWindow(void)
-	:workspace_("."),
-	file_system_model_(NULL),
-	file_viewer_widget_(NULL)
+	:points_path_("."),
+	mesh_path_("."),
+	points_files_(NULL),
+	mesh_files_(NULL),
+	points_widget_(NULL),
+	mesh_widget_(NULL)
 {
 	ui_.setupUi(this);
 
@@ -25,8 +33,10 @@ MainWindow::~MainWindow()
 {
 	saveSettings();
 
-	delete file_system_model_;
-	delete file_viewer_widget_;
+	delete points_files_;
+	delete mesh_files_;
+	delete points_widget_;
+	delete mesh_widget_;
 	delete scene_widget_;
 
 	return;
@@ -79,15 +89,24 @@ MainWindow* MainWindow::getInstance()
 
 void MainWindow::init(void)
 {
-	file_system_model_ = new FileSystemModel;
-	file_viewer_widget_ = new FileViewerWidget(this, file_system_model_);
+	points_files_ = new PointsFileSystem;
+	//mesh_files_ = new MeshFileSystem;
+	points_widget_ = new FileViewerWidget(this, points_files_);
+	//mesh_widget_ = new FileViewerWidget(this, mesh_files_);
 
-	QDockWidget* dock_widget_file_viewer = new QDockWidget("File Viewer", this);
-	addDockWidget(Qt::LeftDockWidgetArea, dock_widget_file_viewer);
-	dock_widget_file_viewer->setAllowedAreas(Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea);
+	QDockWidget* points_viewer = new QDockWidget("Points Viewer", this);
+	addDockWidget(Qt::LeftDockWidgetArea, points_viewer);
+	points_viewer->setAllowedAreas(Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea);
 
-	file_viewer_widget_->setParent(dock_widget_file_viewer);
-	dock_widget_file_viewer->setWidget(file_viewer_widget_);
+	points_widget_->setParent(points_viewer);
+	points_viewer->setWidget(points_widget_);
+
+	/*QDockWidget* mesh_viewer = new QDockWidget("Mesh Viewer", this);
+	addDockWidget(Qt::LeftDockWidgetArea, mesh_viewer);
+	mesh_viewer->setAllowedAreas(Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea);
+
+	mesh_widget_->setParent(mesh_viewer);
+	mesh_viewer->setWidget(mesh_widget_);*/
 	
 
 	scene_widget_ = new SceneWidget(this);
@@ -98,22 +117,37 @@ void MainWindow::init(void)
 	connect(this, SIGNAL(showStatusRequested(const QString&, int)), this, SLOT(slotShowStatus(const QString&, int)));
 	loadSettings();
 
-	connect(ui_.actionSetWorkspace, SIGNAL(triggered()), this, SLOT(slotSetWorkspace()));
+	connect(ui_.actionLoadPoints, SIGNAL(triggered()), this, SLOT(slotLoadPoints()));
+	connect(ui_.actionLoadMesh, SIGNAL(triggered()), this, SLOT(slotLoadMesh()));
 	// connect
 
 	return;
 }
 
-bool MainWindow::slotSetWorkspace(void)
+bool MainWindow::slotLoadPoints(void)
 {
-	QString directory = QFileDialog::getExistingDirectory(this, tr("Set Workspace"), workspace_.c_str(), QFileDialog::ShowDirsOnly);
+	QString directory = QFileDialog::getExistingDirectory(this, tr("Load Points"), points_path_.c_str(), QFileDialog::ShowDirsOnly);
 
 	if (directory.isEmpty())
 		return false;
 
-	workspace_ = directory.toStdString();
+	points_path_ = directory.toStdString();
 
-	file_viewer_widget_->setWorkspace(directory);
+	points_widget_->setWorkspace(directory);
+
+	return true;
+}
+
+bool MainWindow::slotLoadMesh(void)
+{
+	QString directory = QFileDialog::getExistingDirectory(this, tr("Load Mesh"), mesh_path_.c_str(), QFileDialog::ShowDirsOnly);
+
+	if (directory.isEmpty())
+		return false;
+
+	mesh_path_ = directory.toStdString();
+
+	mesh_widget_->setWorkspace(directory);
 
 	return true;
 }
@@ -122,7 +156,7 @@ void MainWindow::loadSettings()
 {
 	QSettings settings("Blooming Flower", "Blooming Flower");
 
-	workspace_ = settings.value("workspace").toString().toStdString();
+	points_path_ = settings.value("workspace").toString().toStdString();
 
 	return;
 }
@@ -131,7 +165,7 @@ void MainWindow::saveSettings()
 {
 	QSettings settings("Blooming Flower", "Blooming Flower");
 
-	QString workspace(workspace_.c_str());
+	QString workspace(points_path_.c_str());
 	settings.setValue("workspace", workspace);
 
 	return;

@@ -40,7 +40,8 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionSetWorkspace"/>
+    <addaction name="actionLoadPoints"/>
+    <addaction name="actionLoadMesh"/>
    </widget>
    <widget class="QMenu" name="menuAlgorithms">
     <property name="title">
@@ -65,9 +66,14 @@
     <bool>false</bool>
    </attribute>
   </widget>
-  <action name="actionSetWorkspace">
+  <action name="actionLoadPoints">
    <property name="text">
-    <string>Set Workspace</string>
+    <string>Load Points</string>
+   </property>
+  </action>
+  <action name="actionLoadMesh">
+   <property name="text">
+    <string>Load Mesh</string>
    </property>
   </action>
  </widget>
