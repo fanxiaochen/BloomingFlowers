@@ -17,7 +17,6 @@ typedef	 pcl::PointCloud<Point>  PclPointCloud;
 
 class PointCloud : public QObject, public Renderable, public PclPointCloud
 {
-  Q_OBJECT
 
 public:
   PointCloud(void);

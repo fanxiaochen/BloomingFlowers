@@ -38,9 +38,11 @@ set(lily_src	src/lily)
 set(blooming_inc	include/blooming)
 set(blooming_src	src/blooming)
 
+set(cpd_inc			3rdparty/cpd)
+
 include_directories(${PROJECT_SOURCE_DIR}/${lily_inc})
 include_directories(${PROJECT_SOURCE_DIR}/${blooming_inc})
-include_directories(${PROJECT_SOURCE_DIR}/3rdparty)
+include_directories(${PROJECT_SOURCE_DIR}/${cpd_inc})
 
 set(lily_incs    ${lily_inc}/main_window.h
 			${lily_inc}/threaded_painter.h

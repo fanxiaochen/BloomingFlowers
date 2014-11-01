@@ -47,6 +47,7 @@
     <property name="title">
      <string>Algorithms</string>
     </property>
+    <addaction name="actionTrack"/>
    </widget>
    <widget class="QMenu" name="menuVisualization">
     <property name="title">
@@ -74,6 +75,11 @@
   <action name="actionLoadMesh">
    <property name="text">
     <string>Load Mesh</string>
+   </property>
+  </action>
+  <action name="actionTrack">
+   <property name="text">
+    <string>Track</string>
    </property>
   </action>
  </widget>

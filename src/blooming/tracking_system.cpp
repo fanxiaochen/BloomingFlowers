@@ -1,5 +1,5 @@
 
-#include "cpd/core/cpd_nonrigid.hpp"
+#include "core/cpd_nonrigid.hpp"
 
 #include "main_window.h"
 #include "points_file_system.h"
@@ -33,7 +33,7 @@ void TrackingSystem::track()
 		PointCloud* tracked_frame = points_file_system_->getPointCloud(i);	
 		points_file_system_->showPointCloud(i);
 
-		cpd_registration(tracking_template, tracked_frame);
+		cpd_registration(*tracked_frame, *tracking_template);
 
 		points_file_system_->hidePointCloud(i);
 	}
@@ -41,12 +41,12 @@ void TrackingSystem::track()
 	return;
 }
 
-void TrackingSystem::cpd_registration(PointCloud* tracking_template, PointCloud* tracked_frame)
-{
-	PointMatrix tracking_pm = POINTCLOUD_TO_MATRIX(*tracking_template);
-	PointMatrix tracked_pm = POINTCLOUD_TO_MATRIX(*tracked_frame);
+void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, PointCloud& tracking_template)
+{	
+	PointMatrix tracked_pm = POINTCLOUD_TO_MATRIX(tracked_frame);
+	PointMatrix tracking_pm = POINTCLOUD_TO_MATRIX(tracking_template);
 
-	cpd::CPDNRigid<float, 3>* reg = new cpd::CPDNRigid<float, 3>();
+	cpd::CPDNRigid<value_type, 3>* reg = new cpd::CPDNRigid<value_type, 3>();
 
 	reg->setInputData(tracking_pm, tracked_pm);
 	reg->setVision(true);
@@ -59,6 +59,6 @@ void TrackingSystem::cpd_registration(PointCloud* tracking_template, PointCloud*
 	reg->setKLowRank(10);*/
 	reg->run();
 
-
+	MATRIX_TO_POINTCLOUD(tracking_pm, tracking_template);
 }
 

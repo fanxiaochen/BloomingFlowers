@@ -11,6 +11,7 @@
 #include "scene_widget.h"
 #include "points_file_system.h"
 #include "mesh_file_system.h"
+#include "tracking_system.h"
 
 #include "main_window.h"
 
@@ -20,7 +21,8 @@ MainWindow::MainWindow(void)
 	points_files_(NULL),
 	mesh_files_(NULL),
 	points_widget_(NULL),
-	mesh_widget_(NULL)
+	mesh_widget_(NULL),
+	tracking_system_(NULL)
 {
 	ui_.setupUi(this);
 
@@ -38,6 +40,7 @@ MainWindow::~MainWindow()
 	delete points_widget_;
 	delete mesh_widget_;
 	delete scene_widget_;
+	delete tracking_system_;
 
 	return;
 }
@@ -94,6 +97,9 @@ void MainWindow::init(void)
 	points_widget_ = new FileViewerWidget(this, points_files_);
 	mesh_widget_ = new FileViewerWidget(this, mesh_files_);
 
+	tracking_system_ = new TrackingSystem(
+		dynamic_cast<PointsFileSystem*>(points_files_), dynamic_cast<MeshFileSystem*>(mesh_files_));
+
 	QDockWidget* points_viewer = new QDockWidget("Points Viewer", this);
 	addDockWidget(Qt::LeftDockWidgetArea, points_viewer);
 	points_viewer->setAllowedAreas(Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea);
@@ -119,6 +125,7 @@ void MainWindow::init(void)
 
 	connect(ui_.actionLoadPoints, SIGNAL(triggered()), this, SLOT(slotLoadPoints()));
 	connect(ui_.actionLoadMesh, SIGNAL(triggered()), this, SLOT(slotLoadMesh()));
+	connect(ui_.actionTrack, SIGNAL(triggered()), tracking_system_, SLOT(track()));
 	// connect
 
 	return;

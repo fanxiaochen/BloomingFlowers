@@ -13,6 +13,7 @@
 class FileSystemModel;
 class FileViewerWidget;
 class SceneWidget;
+class TrackingSystem;
 
 class MainWindow : public QMainWindow
 {
@@ -29,6 +30,7 @@ public:
 	inline FileSystemModel* getMeshSystem() { return mesh_files_; }
 	inline FileViewerWidget* getPointsWidget() { return points_widget_; }
 	inline FileViewerWidget* getMeshWidget() { return mesh_widget_; }
+	inline TrackingSystem* getTrackingSystem() { return tracking_system_; }
 
 	inline std::string& getPointsPath(){ return points_path_; }
 	inline std::string& getMeshPath(){ return mesh_path_; }
@@ -69,6 +71,8 @@ private:
 	FileViewerWidget*				mesh_widget_;
 	FileSystemModel*				points_files_;
 	FileSystemModel*				mesh_files_;
+
+	TrackingSystem*					tracking_system_;
 };
 
 class MainWindowInstancer
