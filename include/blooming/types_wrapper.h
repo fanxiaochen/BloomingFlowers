@@ -1,5 +1,6 @@
 #ifndef TYPES_WRAPPER_H
 #define TYPES_WRAPPER_H
+#include <QMutex>
 
 #include "base/matrix.hpp"
 
@@ -10,18 +11,24 @@ typedef cpd::MatrixType<value_type, 3>::MatrixD PointMatrix;
 
 static void MATRIX_TO_POINTCLOUD(const PointMatrix& point_matrix, PointCloud& point_cloud)
 {
-	point_cloud.clear();
+	QWriteLocker locker(&point_cloud.getReadWriteLock());
 
 	size_t point_size = point_matrix.rows();
 	
 	for (size_t i = 0; i < point_size; i ++)
 	{
-		point_cloud.push_back(Point(point_matrix(i,0), point_matrix(i,1), point_matrix(i,2)));
+		Point& point = point_cloud.at(i);
+		point.x = point_matrix(i,0);
+		point.y = point_matrix(i,1);
+		point.z = point_matrix(i,2);
+		//point_cloud.push_back(Point(point_matrix(i,0), point_matrix(i,1), point_matrix(i,2)));
 	}
 }
 
-static PointMatrix& POINTCLOUD_TO_MATRIX(const PointCloud& point_cloud)
+static PointMatrix POINTCLOUD_TO_MATRIX(const PointCloud& point_cloud)
 {
+	QMutexLocker locker(&point_cloud_mutex_);
+
 	PointMatrix point_matrix;
 	size_t point_size = point_cloud.size();
 	point_matrix.resize(point_size, 3);

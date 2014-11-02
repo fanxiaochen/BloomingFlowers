@@ -82,7 +82,7 @@ void PointCloud::visualizePoints()
 	geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
 	osg::Geode* geode = new osg::Geode;
 	geode->addDrawable(geometry);
-	addChild(geode);
+	content_root_->addChild(geode);
 
 	return;
 }

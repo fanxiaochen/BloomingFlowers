@@ -2,6 +2,7 @@
 #include "core/cpd_nonrigid.hpp"
 
 #include "main_window.h"
+#include "scene_widget.h"
 #include "points_file_system.h"
 #include "mesh_file_system.h"
 #include "point_cloud.h"
@@ -22,22 +23,23 @@ TrackingSystem::~TrackingSystem()
 void TrackingSystem::track()
 {
 	//Mesh* tracking_template = mesh_file_system_->getMesh();
-	PointCloud* tracking_template = points_file_system_->getPointCloud(0);
-	points_file_system_->showPointCloud(0);
+	PointCloud* tracking_template = points_file_system_->getPointCloud(1);
+	MainWindow::getInstance()->getSceneWidget()->addSceneChild(tracking_template);
 
 	int start_frame = points_file_system_->getStartFrame();
 	int end_frame = points_file_system_->getEndFrame();
 
-	for (int i = start_frame; i <= end_frame; i ++)
+	for (int i = start_frame + 2; i <= end_frame - 23; i ++)
 	{
 		PointCloud* tracked_frame = points_file_system_->getPointCloud(i);	
-		points_file_system_->showPointCloud(i);
+		//points_file_system_->showPointCloud(i);
 
 		cpd_registration(*tracked_frame, *tracking_template);
-
-		points_file_system_->hidePointCloud(i);
+		
+		tracking_template->expire();
+		//points_file_system_->hidePointCloud(i);
 	}
-
+	
 	return;
 }
 
@@ -49,7 +51,7 @@ void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, PointClou
 	cpd::CPDNRigid<value_type, 3>* reg = new cpd::CPDNRigid<value_type, 3>();
 
 	reg->setInputData(tracking_pm, tracked_pm);
-	reg->setVision(true);
+	reg->setVision(false);
 	reg->setIterativeNumber(100);
 	reg->setVarianceTolerance(1e-5);
 	reg->setEnergyTolerance(1e-3);
@@ -59,6 +61,6 @@ void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, PointClou
 	reg->setKLowRank(10);*/
 	reg->run();
 
-	MATRIX_TO_POINTCLOUD(tracking_pm, tracking_template);
+	MATRIX_TO_POINTCLOUD(reg->getModel(), tracking_template);
 }
 
