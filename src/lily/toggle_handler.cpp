@@ -1,5 +1,4 @@
-#include "renderable.h"
-#include "toggle_handler.h"
+#include "lily.h"
 
 ToggleHandler::ToggleHandler(Renderable* renderable, int key, const std::string& description)
   :renderable_(renderable),

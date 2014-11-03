@@ -1,13 +1,9 @@
 
-#include "core/cpd_nonrigid.hpp"
+#include "lily.h"
 
-#include "main_window.h"
-#include "scene_widget.h"
-#include "points_file_system.h"
-#include "mesh_file_system.h"
+#include <core/cpd_nonrigid.hpp>
+
 #include "point_cloud.h"
-#include "types_wrapper.h"
-
 #include "tracking_system.h"
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system, MeshFileSystem* mesh_file_system)
@@ -36,7 +32,7 @@ void TrackingSystem::track()
 
 		cpd_registration(*tracked_frame, *tracking_template);
 		
-		tracking_template->expire();
+		//tracking_template->expire();
 		//points_file_system_->hidePointCloud(i);
 	}
 	
@@ -52,7 +48,7 @@ void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, PointClou
 
 	reg->setInputData(tracking_pm, tracked_pm);
 	reg->setVision(false);
-	reg->setIterativeNumber(100);
+	reg->setIterativeNumber(50);
 	reg->setVarianceTolerance(1e-5);
 	reg->setEnergyTolerance(1e-3);
 	reg->setOutlierWeight(0.1);

@@ -1,3 +1,5 @@
+#include "lily.h"
+
 #include <QFileDialog>
 #include <QTextStream>
 #include <QResizeEvent>
@@ -8,12 +10,6 @@
 #include <osg/ComputeBoundsVisitor>
 #include <osgGA/TrackballManipulator>
 #include <osgGA/StateSetManipulator>
-
-#include "main_window.h"
-#include "toggle_handler.h"
-
-#include "osg_viewer_widget.h"
-
 
 QMutex OSGViewerWidget::mutex_first_frame_;
 

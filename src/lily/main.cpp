@@ -1,6 +1,7 @@
-#include <QApplication>
 
-#include "main_window.h"
+#include "lily.h"
+
+#include <QApplication>
 
 int main(int argc, char *argv[])
 {

@@ -1,6 +1,4 @@
-
-#include "file_system_model.h"
-#include "file_viewer_widget.h"
+#include "lily.h"
 
 FileViewerWidget::FileViewerWidget(QWidget * parent, FileSystemModel* file_system_model)
   : QTreeView(parent),

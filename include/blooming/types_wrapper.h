@@ -1,8 +1,9 @@
 #ifndef TYPES_WRAPPER_H
 #define TYPES_WRAPPER_H
+
 #include <QMutex>
 
-#include "base/matrix.hpp"
+#include <base/matrix.hpp>
 
 #include "point_cloud.h"
 
@@ -24,11 +25,8 @@ static void MATRIX_TO_POINTCLOUD(const PointMatrix& point_matrix, PointCloud& po
 		//point_cloud.push_back(Point(point_matrix(i,0), point_matrix(i,1), point_matrix(i,2)));
 	}
 }
-
 static PointMatrix POINTCLOUD_TO_MATRIX(const PointCloud& point_cloud)
 {
-	QMutexLocker locker(&point_cloud_mutex_);
-
 	PointMatrix point_matrix;
 	size_t point_size = point_cloud.size();
 	point_matrix.resize(point_size, 3);

@@ -15,8 +15,6 @@
 typedef	 pcl::PointXYZRGB  Point;
 typedef	 pcl::PointCloud<Point>  PclPointCloud;
 
-static QMutex point_cloud_mutex_;
-
 class PointCloud : public QObject, public Renderable, public PclPointCloud
 {
 

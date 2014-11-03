@@ -53,6 +53,7 @@ set(lily_incs    ${lily_inc}/main_window.h
             ${lily_inc}/adapter_widget.h
             ${lily_inc}/scene_widget.h
 			${lily_inc}/file_viewer_widget.h
+			${lily_inc}/lily.h
             )
 
 set(lily_srcs    ${lily_src}/main.cpp
@@ -65,11 +66,11 @@ set(lily_srcs    ${lily_src}/main.cpp
             ${lily_src}/update_callback.cpp
             ${lily_src}/scene_widget.cpp
 			${lily_src}/file_viewer_widget.cpp
+			${lily_src}/lily.cpp
             )
 			
 set(blooming_incs	${blooming_inc}/point_cloud.h
 					${blooming_inc}/file_system_model.h
-					${blooming_inc}/types_wrapper.h
 					${blooming_inc}/points_file_system.h
 					${blooming_inc}/mesh_file_system.h
 					${blooming_inc}/tracking_system.h
@@ -79,6 +80,7 @@ set(blooming_srcs	${blooming_src}/point_cloud.cpp
 					${blooming_src}/file_system_model.cpp
 					${blooming_src}/points_file_system.cpp
 					${blooming_src}/mesh_file_system.cpp
+					${blooming_src}/types_wrapper.cpp
 					${blooming_src}/tracking_system.cpp
 					)
 
