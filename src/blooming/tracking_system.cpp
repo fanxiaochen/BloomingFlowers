@@ -68,7 +68,7 @@ void TrackThread::run()
 
 	for (int i = start_frame; i <= end_frame; i ++)
 	{
-		std::cout << "tracking frame " << i << std::endl;
+		std::cout << "tracking [frame " << i << "]" << std::endl;
 
 		PointCloud* tracked_frame = tracking_system_->points_file_system_->getPointCloud(i);	
 		tracking_system_->points_file_system_->showPointCloud(i);
