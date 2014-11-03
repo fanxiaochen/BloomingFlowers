@@ -10,6 +10,9 @@ TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system, MeshFileSys
 {
 	points_file_system_ = points_file_system;
 	mesh_file_system_ = mesh_file_system;
+	track_thread_ = new TrackThread(this);
+
+	connect(track_thread_, SIGNAL(finished()), track_thread_, SLOT(quit()));
 }
 
 TrackingSystem::~TrackingSystem()
@@ -18,24 +21,7 @@ TrackingSystem::~TrackingSystem()
 
 void TrackingSystem::track()
 {
-	//Mesh* tracking_template = mesh_file_system_->getMesh();
-	PointCloud* tracking_template = points_file_system_->getPointCloud(1);
-	MainWindow::getInstance()->getSceneWidget()->addSceneChild(tracking_template);
-
-	int start_frame = points_file_system_->getStartFrame();
-	int end_frame = points_file_system_->getEndFrame();
-
-	for (int i = start_frame + 2; i <= end_frame - 23; i ++)
-	{
-		PointCloud* tracked_frame = points_file_system_->getPointCloud(i);	
-		//points_file_system_->showPointCloud(i);
-
-		cpd_registration(*tracked_frame, *tracking_template);
-		
-		//tracking_template->expire();
-		//points_file_system_->hidePointCloud(i);
-	}
-	
+	track_thread_->start();
 	return;
 }
 
@@ -60,3 +46,38 @@ void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, PointClou
 	MATRIX_TO_POINTCLOUD(reg->getModel(), tracking_template);
 }
 
+
+TrackThread::TrackThread(TrackingSystem* tracking_system)
+	:QThread()
+{
+	tracking_system_ = tracking_system;
+}
+
+TrackThread::~TrackThread()
+{}
+
+void TrackThread::run()
+{
+	std::cout << "Tracking Thread Starts..." << std::endl;
+	//Mesh* tracking_template = mesh_file_system_->getMesh();
+	PointCloud* tracking_template = tracking_system_->points_file_system_->getPointCloud(0);
+	MainWindow::getInstance()->getSceneWidget()->addSceneChild(tracking_template);
+
+	int start_frame = tracking_system_->points_file_system_->getStartFrame();
+	int end_frame = tracking_system_->points_file_system_->getEndFrame();
+
+	for (int i = start_frame; i <= end_frame; i ++)
+	{
+		std::cout << "tracking frame " << i << std::endl;
+
+		PointCloud* tracked_frame = tracking_system_->points_file_system_->getPointCloud(i);	
+		tracking_system_->points_file_system_->showPointCloud(i);
+
+		tracking_system_->cpd_registration(*tracked_frame, *tracking_template);
+		
+		tracking_template->expire();
+		tracking_system_->points_file_system_->hidePointCloud(i);
+	}
+
+	std::cout << "Tracking Finished!" << std::endl;
+}

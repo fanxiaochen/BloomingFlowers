@@ -47,23 +47,19 @@ void Renderable::expire(void)
 
 void Renderable::update(void)
 {
-  if (!read_write_lock_.tryLockForRead()){
-    std::cout << "bug here?" << std::endl;
+  if (!read_write_lock_.tryLockForRead())
 	  return;
-  }
 
   if (!expired_)
   {
-	  std::cout <<"expired_ = false " << std::endl;
     read_write_lock_.unlock();
     return;
   }
-  std::cout << "expired_ = true " << std::endl;
+ 
   expired_ = false;
   content_root_->removeChildren(0, content_root_->getNumChildren());
 
   if (!hidden_){
-	std::cout << "update" << std::endl;
     updateImpl();
   }
 
