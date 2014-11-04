@@ -20,6 +20,8 @@ public:
 	virtual QModelIndex setRootPath ( const QString & root_path );
 	virtual bool setData(const QModelIndex &index, const QVariant &value, int role);
 
+	inline QSet<QPersistentModelIndex> getCheckedIndexes(){ return checked_indexes_; }
+
 protected:
 	Qt::CheckState computeCheckState(const QModelIndex &index) const;
 	bool recursiveCheck(const QModelIndex &index, const QVariant &value);	

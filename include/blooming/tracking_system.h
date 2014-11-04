@@ -5,6 +5,7 @@
 #include <QThread>
 
 class PointCloud;
+class MeshModel;
 class PointsFileSystem;
 class MeshFileSystem;
 class TaskController;
@@ -24,6 +25,7 @@ public slots:
 
 private:
 	void cpd_registration(const PointCloud& tracked_frame, PointCloud& tracking_template);
+	void cpd_registration(const PointCloud& tracked_frame, MeshModel& tracking_template);
 
 private:
 	PointsFileSystem*	points_file_system_;

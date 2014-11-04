@@ -76,4 +76,3 @@ bool FileSystemModel::setData(const QModelIndex &index, const QVariant &value, i
 {
 	return QFileSystemModel::setData(index, value, role);
 }
-

@@ -9,7 +9,7 @@
 
 #include "file_system_model.h"
 
-class PointCloud;
+class MeshModel;
 
 class MeshFileSystem : public FileSystemModel
 {
@@ -23,18 +23,18 @@ public:
 
 	bool isShown(const std::string& filename) const;
 
-	/*std::string getPointsFolder(int frame);
-	std::string getPointsFilename(int frame);
+	osg::ref_ptr<MeshModel> getMeshModel(const std::string& filename);
+	osg::ref_ptr<MeshModel> getMeshModel(QPersistentModelIndex index);
 
-	osg::ref_ptr<PointCloud> getPointCloud(const std::string& filename);
-	osg::ref_ptr<PointCloud> getPointCloud(int frame);
-
-	void updatePointCloud(int frame);*/
-
-	/*void showMeshModel(const std::string& filename);
+	void showMeshModel(const std::string& filename);
 	void hideMeshModel(const std::string& filename);
 
 	void showMeshModel(const QPersistentModelIndex& index);
-	void hideMeshModel(const QPersistentModelIndex& index);*/
+	void hideMeshModel(const QPersistentModelIndex& index);
+
+private:
+	typedef QHash<QPersistentModelIndex, osg::ref_ptr<MeshModel> > MeshModelMap;
+	
+	MeshModelMap	mesh_model_map_;
 };
-#endif // FILE_SYSTEM_MODEL_H
+#endif 

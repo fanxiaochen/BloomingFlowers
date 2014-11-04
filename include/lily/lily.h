@@ -15,6 +15,8 @@
 #include "file_system_model.h"
 #include "points_file_system.h"
 #include "mesh_file_system.h"
+#include "tiny_obj_loader.h"
+
 #include "types_wrapper.h"
 
 #endif
