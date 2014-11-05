@@ -15,7 +15,8 @@ using namespace std;
 
 int main()
 {
-	MatrixType<double, 3>::MatrixD model, data;
+
+	MatrixType<float, 3>::MatrixD model, data;
 	//model << 1,2,
 	//		4,5,
 	//		7,8,
@@ -26,9 +27,9 @@ int main()
 	//		10,10;
 	////data = - model;
 //	getInputData<double, 3>("y-nonrigid-392.txt", "x-nonrigid-392.txt", model, data);
-	getInputData<double, 3>("lily-5.txt", "lily-30.txt", model, data);
+	getInputData<float, 3>("lily-5.txt", "lily-30.txt", model, data);
 
-	CPDNRigid<double, 3>* reg = new CPDNRigid<double, 3>();
+	CPDNRigid<float, 3>* reg = new CPDNRigid<float, 3>();
 	reg->setInputData(model, data);
 	reg->setVision(true);
 	reg->setIterativeNumber(100);
@@ -36,9 +37,15 @@ int main()
 	reg->setEnergyTolerance(1e-3);
 	reg->setOutlierWeight(0.1);
 	reg->setFgtFlag(true);
-	/*reg->setLowRankFlag(true);
-	reg->setKLowRank(10);*/
+	reg->setLowRankFlag(true);
+	reg->setKLowRank(50);
 	reg->run();
+
+	/*RenderThread<double, 3>::instance()->updateModel(reg->getModel());
+	RenderThread<double, 3>::instance()->updateData(data);
+	RenderThread<double, 3>::instance()->startThread();*/
+
+	std::cout << reg->getModel() << std::endl;
 
 	/*std::cout << "results:" << std::endl;
 	std::cout << "model:" << std::endl;

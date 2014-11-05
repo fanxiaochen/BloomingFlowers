@@ -2,6 +2,7 @@
 #define CPD_NRIGID_HPP
 
 #define _USE_MATH_DEFINES
+
 #include <cmath>
 #include <vector>
 
@@ -91,8 +92,6 @@ namespace cpd
 
 		while (iter_num < _iter_num && e_tol > _e_tol && _paras._sigma2 > 10 * _v_tol)
 		{
-            if (iter_num == 12)
-                std::cout << "debug" << std::endl;
 			e_step();
 			
 
@@ -123,7 +122,7 @@ namespace cpd
 		{
 			typename std::vector<T> t_exp;
 			T sum_exp = 0;
-			T c = pow((2*M_PI*_paras._sigma2), 0.5*D) * (_w/(1-_w)) * (_M/_N);
+			T c = pow((2*M_PI*_paras._sigma2), 0.5*D) * (_w/(1-_w)) * (T(_M)/_N);
 			for (size_t m = 0; m < _M; m ++)
 			{
 				T m_exp = computeGaussianExp(m, n);
@@ -209,16 +208,6 @@ namespace cpd
 
 		align();
 	
-        T N_PD = 1 / (N_P*D);
-        T a = (_data.transpose()*_PT1.asDiagonal()*_data).trace();
-        std::cout << _data.transpose()*_PT1.asDiagonal()*_data << std::endl;
-        T b = 2*(_PX.transpose()*_T).trace();
-        T c = (_T.transpose()*_P1.asDiagonal()*_T).trace();
-        /*std::cout << "NPD " << N_PD << std::endl;
-        std::cout << "a " << a << std::endl;
-        std::cout << "b " << b << std::endl;
-        std::cout << "c " << c << std::endl;*/
-
 		_paras._sigma2 = 1/(N_P*D) * ((_data.transpose()*_PT1.asDiagonal()*_data).trace() -
 			2*(_PX.transpose()*_T).trace() + (_T.transpose()*_P1.asDiagonal()*_T).trace());
 
@@ -243,7 +232,7 @@ namespace cpd
 				sp += computeGaussianExp(m, n);
 			}
 
-			sp += pow((2*M_PI*_paras._sigma2), 0.5*D) * (_w/(1-_w)) * (_M/_N);
+			sp += pow((2*M_PI*_paras._sigma2), 0.5*D) * (_w/(1-_w)) * (T(_M)/_N);
 
 			e += -log(sp);
 
