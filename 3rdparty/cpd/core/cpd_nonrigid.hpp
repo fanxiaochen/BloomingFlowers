@@ -91,6 +91,8 @@ namespace cpd
 
 		while (iter_num < _iter_num && e_tol > _e_tol && _paras._sigma2 > 10 * _v_tol)
 		{
+            if (iter_num == 12)
+                std::cout << "debug" << std::endl;
 			e_step();
 			
 
@@ -169,7 +171,7 @@ namespace cpd
 		}
 		else
 		{
-			T c = pow((2*M_PI*_paras._sigma2), 0.5*D) * (_w/(1-_w)) * (_M/_N);
+			T c = pow((2*M_PI*_paras._sigma2), 0.5*D) * (_w/(1-_w)) * (T(_M)/_N);
 			TMatrix KT1 = fgt<T, D>(_T, _data, TVector(_M).setOnes(), sqrt(2*_paras._sigma2));
 			TVector a = (TVector(KT1) + c*TVector(_N).setOnes()).cwiseInverse();
 
@@ -207,6 +209,16 @@ namespace cpd
 
 		align();
 	
+        T N_PD = 1 / (N_P*D);
+        T a = (_data.transpose()*_PT1.asDiagonal()*_data).trace();
+        std::cout << _data.transpose()*_PT1.asDiagonal()*_data << std::endl;
+        T b = 2*(_PX.transpose()*_T).trace();
+        T c = (_T.transpose()*_P1.asDiagonal()*_T).trace();
+        /*std::cout << "NPD " << N_PD << std::endl;
+        std::cout << "a " << a << std::endl;
+        std::cout << "b " << b << std::endl;
+        std::cout << "c " << c << std::endl;*/
+
 		_paras._sigma2 = 1/(N_P*D) * ((_data.transpose()*_PT1.asDiagonal()*_data).trace() -
 			2*(_PX.transpose()*_T).trace() + (_T.transpose()*_P1.asDiagonal()*_T).trace());
 
