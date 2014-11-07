@@ -9,7 +9,8 @@
 MeshModel::MeshModel()
 	:vertices_(new osg::Vec3Array),
 	colors_(new osg::Vec4Array),
-	face_normals_(new osg::Vec3Array)
+	face_normals_(new osg::Vec3Array),
+    smoothing_visitor_(new osgUtil::SmoothingVisitor)
 {
 }
 
@@ -33,13 +34,14 @@ void MeshModel::updateImpl(void)
   }
   else
   {
-	  /*geometry->setNormalArray(face_normals_);
-	  face_normals_->setBinding(osg::Array::BIND_PER_PRIMITIVE_SET);*/
+      /*geometry->setNormalArray(face_normals_);
+      face_normals_->setBinding(osg::Array::BIND_PER_VERTEX);*/
+      geode->accept(*smoothing_visitor_);
 
     for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
     {
       size_t vertex_num = faces_[i].size();
-      osg::ref_ptr<osg::DrawElementsUInt> face = new osg::DrawElementsUInt(GL_TRIANGLE_FAN, vertex_num);
+      osg::ref_ptr<osg::DrawElementsUInt> face = new osg::DrawElementsUInt(GL_TRIANGLES, vertex_num);
       for (size_t j = 0; j < vertex_num; ++ j)
         face->at(j) = faces_[i][j];
 

@@ -2,6 +2,8 @@
 #ifndef MESH_MODEL_H
 #define MESH_MODEL_H
 
+#include <osgUtil/SmoothingVisitor>
+
 #include "renderable.h"
 
 class MeshModel : public Renderable
@@ -28,6 +30,8 @@ protected:
 	osg::ref_ptr<osg::Vec4Array>        colors_;
 	std::vector<std::vector<int> >      faces_;
 	osg::ref_ptr<osg::Vec3Array>        face_normals_;
+
+    osg::ref_ptr<osgUtil::SmoothingVisitor>     smoothing_visitor_;
 };
 
 #endif // MESH_MODEL_H

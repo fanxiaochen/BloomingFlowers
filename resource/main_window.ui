@@ -45,9 +45,10 @@
    </widget>
    <widget class="QMenu" name="menuAlgorithms">
     <property name="title">
-     <string>Algorithms</string>
+     <string>Tracking</string>
     </property>
-    <addaction name="actionTrack"/>
+    <addaction name="actionPointCloudTracking"/>
+    <addaction name="actionMeshTracking"/>
    </widget>
    <widget class="QMenu" name="menuVisualization">
     <property name="title">
@@ -77,9 +78,14 @@
     <string>Load Mesh</string>
    </property>
   </action>
-  <action name="actionTrack">
+  <action name="actionPointCloudTracking">
    <property name="text">
-    <string>Track</string>
+    <string>Point Cloud Tracking</string>
+   </property>
+  </action>
+  <action name="actionMeshTracking">
+   <property name="text">
+    <string>Mesh Tracking</string>
    </property>
   </action>
  </widget>

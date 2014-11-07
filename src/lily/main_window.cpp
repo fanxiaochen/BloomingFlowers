@@ -121,7 +121,9 @@ void MainWindow::init(void)
 
 	connect(ui_.actionLoadPoints, SIGNAL(triggered()), this, SLOT(slotLoadPoints()));
 	connect(ui_.actionLoadMesh, SIGNAL(triggered()), this, SLOT(slotLoadMesh()));
-	connect(ui_.actionTrack, SIGNAL(triggered()), tracking_system_, SLOT(track()));
+	connect(ui_.actionPointCloudTracking, SIGNAL(triggered()), tracking_system_, SLOT(pointcloud_tracking()));
+    connect(ui_.actionMeshTracking, SIGNAL(triggered()), tracking_system_, SLOT(mesh_tracking()));
+
 	// connect
 
 	return;
