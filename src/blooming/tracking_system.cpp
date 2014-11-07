@@ -40,8 +40,9 @@ void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, PointClou
 	reg->setEnergyTolerance(1e-3);
 	reg->setOutlierWeight(0.1);
 	reg->setFgtFlag(true);
-	/*reg->setLowRankFlag(true);
-	reg->setKLowRank(10);*/
+    reg->setFgtEpsilon(1e-4);
+    reg->setLowRankFlag(true);
+    reg->setKLowRank(10);
 	reg->run();
 
 	MATRIX_TO_POINTCLOUD(reg->getModel(), tracking_template);
@@ -62,13 +63,13 @@ void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, MeshModel
 	reg->setVarianceTolerance(1e-5);
 	reg->setEnergyTolerance(1e-3);
 	reg->setOutlierWeight(0.1);
-	reg->setFgtFlag(true);
-	/*reg->setLowRankFlag(true);
-	reg->setKLowRank(10);*/
-	reg->run();
+    reg->setLowRankFlag(true);
+    reg->setKLowRank(40);
+    reg->run();
 
 	MATRIX_TO_MESHMODEL(reg->getModel(), tracking_template);
-	std::cout << reg->getModel() << std::endl;
+
+    std::cout << reg->getModel() << std::endl;
 }
 
 
@@ -93,7 +94,7 @@ void TrackThread::run()
 	//PointCloud* tracking_template = tracking_system_->points_file_system_->getPointCloud(start_frame);
 	//MainWindow::getInstance()->getSceneWidget()->addSceneChild(tracking_template);
 
-	for (int i = start_frame + 5; i <= end_frame; i ++)
+	for (int i = start_frame + 1; i <= end_frame; i ++)
 	{
 		std::cout << "tracking [frame " << i << "]" << std::endl;
 
