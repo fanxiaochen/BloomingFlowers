@@ -1,6 +1,7 @@
-#include "lily.h"
 
 #include <QResizeEvent>
+
+#include "osg_viewer_widget.h"
 
 
 ThreadedPainter::ThreadedPainter(OSGViewerWidget *widget)

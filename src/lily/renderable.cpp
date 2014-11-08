@@ -1,4 +1,3 @@
-#include "lily.h"
 
 #include <iostream>
 #include <random>
@@ -16,6 +15,8 @@
 #include <osgUtil/UpdateVisitor>
 #include <osg/ComputeBoundsVisitor>
 
+#include "update_callback.h"
+#include "renderable.h"
 
 QMutex Renderable::mutex_graphics_context_;
 

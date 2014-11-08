@@ -1,7 +1,8 @@
-#include "lily.h"
 
 #include <cassert>
 
+#include "renderable.h"
+#include "update_callback.h"
 
 UpdateCallback::UpdateCallback(void)
 {

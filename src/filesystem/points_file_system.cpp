@@ -1,4 +1,3 @@
-#include "lily.h"
 
 #include <QDir>
 #include <QMutexLocker>
@@ -6,7 +5,12 @@
 #include <osg/Group>
 #include <osgDB/ReadFile>
 
+
+#include "main_window.h"
 #include "point_cloud.h"
+#include "osg_viewer_widget.h"
+#include "points_file_system.h"
+#include "scene_widget.h"
 
 PointsFileSystem::PointsFileSystem()
 	:start_frame_(-1),

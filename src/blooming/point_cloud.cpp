@@ -1,6 +1,4 @@
 
-#include "lily.h"
-
 #include <QRegExp>
 #include <QFileInfo>
 #include <QDockWidget>
@@ -11,6 +9,9 @@
 #include <osg/Geometry>
 #include <osg/Point>
 
+#include "main_window.h"
+#include "points_file_system.h"
+#include "osg_viewer_widget.h"
 #include "point_cloud.h"
 
 PointCloud::PointCloud(void)

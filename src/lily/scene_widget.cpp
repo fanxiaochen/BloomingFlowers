@@ -1,4 +1,3 @@
-#include "lily.h"
 
 #include <QMenu>
 #include <QFile>
@@ -7,6 +6,10 @@
 #include <QElapsedTimer>
 
 #include <osg/LightModel>
+
+#include "main_window.h"
+#include "scene_widget.h"
+
 
 SceneWidget::SceneWidget(QWidget * parent, const QGLWidget * shareWidget, Qt::WindowFlags f)
 	:OSGViewerWidget(parent, shareWidget, f)

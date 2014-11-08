@@ -1,7 +1,7 @@
 
-#include "lily.h"
-
 #include <QKeyEvent>
+
+#include "adapter_widget.h"
 
 class QtKeyboardMap
 {

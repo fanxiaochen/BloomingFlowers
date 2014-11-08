@@ -1,5 +1,4 @@
-﻿#include "lily.h"
-
+﻿
 #include <QToolTip>
 #include <QKeyEvent>
 #include <QSettings>
@@ -9,7 +8,13 @@
 #include <QMessageBox>
 #include <QApplication>
 
+#include "main_window.h"
+#include "file_viewer_widget.h"
+#include "scene_widget.h"
+#include "points_file_system.h"
+#include "mesh_file_system.h"
 #include "tracking_system.h"
+
 
 MainWindow::MainWindow(void)
 	:points_path_("."),

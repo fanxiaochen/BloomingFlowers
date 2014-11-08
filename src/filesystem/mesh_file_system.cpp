@@ -1,6 +1,4 @@
 
-#include "lily.h"
-
 #include <QDir>
 #include <QMutexLocker>
 
@@ -8,6 +6,11 @@
 #include <osgDB/ReadFile>
 
 #include "mesh_model.h"
+#include "main_window.h"
+#include "point_cloud.h"
+#include "osg_viewer_widget.h"
+#include "scene_widget.h"
+#include "mesh_file_system.h"
 
 MeshFileSystem::MeshFileSystem()
 {
