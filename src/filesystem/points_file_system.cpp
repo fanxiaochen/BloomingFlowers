@@ -6,6 +6,7 @@
 #include <osg/Group>
 #include <osgDB/ReadFile>
 
+#include "point_cloud.h"
 
 PointsFileSystem::PointsFileSystem()
 	:start_frame_(-1),

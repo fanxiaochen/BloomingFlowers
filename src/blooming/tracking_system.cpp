@@ -1,7 +1,8 @@
 
-#include "lily.h"
 
 #include <core/cpd_nonrigid.hpp>
+
+#include "types_wrapper.h"
 
 #include "point_cloud.h"
 #include "mesh_model.h"
