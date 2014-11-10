@@ -297,47 +297,45 @@ void PointsFileSystem::hidePointCloud(const QPersistentModelIndex& index)
 	return;
 }
 
-//void PointsFileSystem::hideAndShowPointCloud(int hide_frame, int show_frame)
-//{
-//	bool to_hide = true;
-//	bool to_show = true;
-//
-//	osg::ref_ptr<PointCloud> show_cloud = getPointCloud(show_frame);
-//	osg::ref_ptr<PointCloud> hide_cloud = getPointCloud(hide_frame);
-//
-//	/*QModelIndex show_index = this->index(QString(getPointsFilename(show_frame).c_str()));
-//	checked_indexes_.insert(show_index);
-//	PointCloudMap::iterator point_cloud_map_it = point_cloud_map_.find(show_index);
-//	if (point_cloud_map_it == point_cloud_map_.end())
-//	{
-//	if (show_cloud != NULL)
-//		point_cloud_map_[show_index] = show_cloud;
-//	else
-//		to_show = false;
-//	}
-//	else
-//	to_show = false;*/
-//
-//	/*QModelIndex hide_index = this->index(QString(getPointsFilename(hide_frame).c_str()));
-//	checked_indexes_.remove(hide_index);
-//	point_cloud_map_it = point_cloud_map_.find(hide_index);
-//	if (point_cloud_map_it != point_cloud_map_.end())
-//	point_cloud_map_.erase(point_cloud_map_it);
-//	else
-//	to_hide = false;*/
-//
-//	/*OSGViewerWidget* osg_viewer_widget = MainWindow::getInstance()->getOSGViewerWidget();
-//	if (to_hide && to_show)
-//	osg_viewer_widget->replaceChild(hide_cloud, show_cloud, true);
-//	else if (to_hide)
-//	osg_viewer_widget->removeChild(getPointCloud(hide_frame, hide_view), true);
-//	else if (to_show)
-//	osg_viewer_widget->addChild(getPointCloud(show_frame, show_view), true);
-//
-//	showPointCloudSceneInformation();*/
-//
-//	return;
-//}
+void PointsFileSystem::hideAndShowPointCloud(int hide_frame, int show_frame)
+{
+	bool to_hide = true;
+	bool to_show = true;
+
+	osg::ref_ptr<PointCloud> show_cloud = getPointCloud(show_frame);
+	osg::ref_ptr<PointCloud> hide_cloud = getPointCloud(hide_frame);
+
+    QModelIndex show_index = this->index(QString(getPointsFilename(show_frame).c_str()));
+    checked_indexes_.insert(show_index);
+    PointCloudMap::iterator point_cloud_map_it = point_cloud_map_.find(show_index);
+    if (point_cloud_map_it == point_cloud_map_.end())
+    {
+        if (show_cloud != NULL)
+            point_cloud_map_[show_index] = show_cloud;
+        else
+            to_show = false;
+    }
+    else
+        to_show = false;
+
+    QModelIndex hide_index = this->index(QString(getPointsFilename(hide_frame).c_str()));
+    checked_indexes_.remove(hide_index);
+    point_cloud_map_it = point_cloud_map_.find(hide_index);
+    if (point_cloud_map_it != point_cloud_map_.end())
+        point_cloud_map_.erase(point_cloud_map_it);
+    else
+        to_hide = false;
+
+	SceneWidget* scene_widget = MainWindow::getInstance()->getSceneWidget();
+	if (to_hide && to_show)
+	    scene_widget->replaceSceneChild(hide_cloud, show_cloud);
+	else if (to_hide)
+	scene_widget->removeSceneChild(getPointCloud(hide_frame));
+	else if (to_show)
+	scene_widget->addSceneChild(getPointCloud(show_frame));
+
+	return;
+}
 
 void PointsFileSystem::updatePointCloud(int frame)
 {
@@ -351,250 +349,54 @@ void PointsFileSystem::updatePointCloud(int frame)
 }
 
 
-//PointCloud* PointsFileSystem::getDisplayFirstFrame(void)
-//{
-//	if (point_cloud_map_.empty())
-//		return NULL;
-//
-//	osg::ref_ptr<PointCloud> first_cloud = *point_cloud_map_.begin();
-//	int frame = first_cloud->getFrame();
-//	int view = first_cloud->getView();
-//
-//	for (PointCloudMap::const_iterator it = point_cloud_map_.begin(); it != point_cloud_map_.end(); ++ it)
-//	{
-//	osg::ref_ptr<PointCloud> point_cloud = *it;
-//	int this_frame = point_cloud->getFrame();
-//	int this_view = point_cloud->getView();
-//	if (this_frame < frame)
-//	{
-//		frame = this_frame;
-//		view = this_view;
-//	}
-//	else if(this_frame == frame && this_view > view)
-//	{
-//		frame = this_frame;
-//		view = this_view;
-//	}
-//	}
-//
-//	if (view != 12)
-//	return NULL;
-//
-//	return getPointCloud(frame);
-//}
-//
-//void PointsFileSystem::getDisplayFirstFrameFirstView(int& frame, int& view)
-//{
-//	if (point_cloud_map_.empty())
-//	{
-//	frame = -1;
-//	view = -1;
-//	return;
-//	}
-//
-//	osg::ref_ptr<PointCloud> first_cloud = *point_cloud_map_.begin();
-//	frame = first_cloud->getFrame();
-//	view = first_cloud->getView();
-//
-//	for (PointCloudMap::const_iterator it = point_cloud_map_.begin(); it != point_cloud_map_.end(); ++ it)
-//	{
-//	osg::ref_ptr<PointCloud> point_cloud = *it;
-//	int this_frame = point_cloud->getFrame();
-//	int this_view = point_cloud->getView();
-//	if (this_frame < frame)
-//	{
-//		frame = this_frame;
-//		view = this_view;
-//	}
-//	else if(this_frame == frame && this_view < view)
-//	{
-//		frame = this_frame;
-//		view = this_view;
-//	}
-//	}
-//	return;
-//}
-//
-//void PointsFileSystem::getDisplayFirstFrameLastView(int& frame, int& view)
-//{
-//	if (point_cloud_map_.empty())
-//	{
-//	frame = -1;
-//	view = -1;
-//	return;
-//	}
-//
-//	std::vector<std::pair<int, int> > display_items;
-//	for (PointCloudMap::const_iterator it = point_cloud_map_.begin(); it != point_cloud_map_.end(); ++ it)
-//	{
-//	osg::ref_ptr<PointCloud> point_cloud = *it;
-//	display_items.push_back(std::make_pair(point_cloud->getFrame(), point_cloud->getView()));
-//	}
-//
-//	frame = display_items[0].first;
-//	view = display_items[0].second;
-//	for (size_t i = 1, i_end = display_items.size(); i < i_end; ++ i)
-//	{
-//	int this_frame = display_items[i].first;
-//	if (this_frame < frame)
-//		frame = this_frame;
-//	}
-//	for (size_t i = 1, i_end = display_items.size(); i < i_end; ++ i)
-//	{
-//	int this_frame = display_items[i].first;
-//	int this_view = display_items[i].second;
-//	if (this_frame == frame && this_view > view)
-//		view = this_view;
-//	}
-//	return;
-//}
-//
-//void PointsFileSystem::getDisplayLastFrameLastView(int& frame, int& view)
-//{
-//	if (point_cloud_map_.empty())
-//	{
-//	frame = -1;
-//	view = -1;
-//	return;
-//	}
-//
-//	osg::ref_ptr<PointCloud> first_cloud = *point_cloud_map_.begin();
-//	frame = first_cloud->getFrame();
-//	view = first_cloud->getView();
-//
-//	for (PointCloudMap::const_iterator it = point_cloud_map_.begin(); it != point_cloud_map_.end(); ++ it)
-//	{
-//	osg::ref_ptr<PointCloud> point_cloud = *it;
-//	int this_frame = point_cloud->getFrame();
-//	int this_view = point_cloud->getView();
-//	if (this_frame > frame)
-//	{
-//		frame = this_frame;
-//		view = this_view;
-//	}
-//	else if(this_frame == frame && this_view > view)
-//	{
-//		frame = this_frame;
-//		view = this_view;
-//	}
-//	}
-//	return;
-//}
-//
-//
-//
-//void PointsFileSystem::navigateToPreviousFrame(NavigationType type)
-//{
-//	int first_frame, first_view;
-//	getDisplayLastFrameLastView(first_frame, first_view);
-//
-//	if (first_frame == -1 || first_view == -1)
-//	{
-//	showPointCloud(getStartFrame(), 12);
-//	return;
-//	}
-//
-//	if (type == ERASE)
-//	{
-//	hidePointCloud(first_frame, first_view);
-//	return;
-//	}
-//
-//	int current_frame = first_frame-1;
-//	if (current_frame < getStartFrame())
-//	return;
-//
-//	if (type == APPEND)
-//	showPointCloud(current_frame, first_view);
-//	else
-//	hideAndShowPointCloud(first_frame, first_view, current_frame, first_view);
-//
-//	return;
-//}
-//
-//void PointsFileSystem::navigateToNextFrame(NavigationType type)
-//{
-//	int last_frame, last_view;
-//	getDisplayFirstFrameLastView(last_frame, last_view);
-//
-//	if (last_frame == -1 || last_view == -1)
-//	{
-//	showPointCloud(getEndFrame(), 12);
-//	return;
-//	}
-//
-//	if (type == ERASE)
-//	{
-//	hidePointCloud(last_frame, last_view);
-//	return;
-//	}
-//
-//	int current_frame = last_frame+1;
-//	if (current_frame > getEndFrame())
-//	return;
-//
-//	if (type == APPEND)
-//	showPointCloud(current_frame, last_view);
-//	else
-//	hideAndShowPointCloud(last_frame, last_view, current_frame, last_view);
-//
-//	return;
-//}
-//
-//void PointsFileSystem::navigateToPreviousView(NavigationType type)
-//{
-//	int first_frame, first_view;
-//	getDisplayFirstFrameFirstView(first_frame, first_view);
-//
-//	if (first_frame == -1 || first_view == -1)
-//	{
-//	showPointCloud(getStartFrame(), 0);
-//	return;
-//	}
-//
-//	if (type == ERASE)
-//	{
-//	hidePointCloud(first_frame, first_view);
-//	return;
-//	}
-//
-//	int current_view = first_view-1;
-//	if (current_view < 0)
-//	return;
-//
-//	if (type == APPEND)
-//	showPointCloud(first_frame, current_view);
-//	else
-//	hideAndShowPointCloud(first_frame, first_view, first_frame, current_view);
-//
-//	return;
-//}
-//
-//void PointsFileSystem::navigateToNextView(NavigationType type)
-//{
-//	int first_frame, last_view;
-//	getDisplayFirstFrameLastView(first_frame, last_view);
-//
-//	if (first_frame == -1 || last_view == -1)
-//	{
-//	showPointCloud(getStartFrame(), 11);
-//	return;
-//	}
-//
-//	if (type == ERASE)
-//	{
-//	hidePointCloud(first_frame, last_view);
-//	return;
-//	}
-//
-//	int current_view = last_view+1;
-//	if (current_view > 12)
-//	return;
-//
-//	if (type == APPEND)
-//	showPointCloud(first_frame, current_view);
-//	else
-//	hideAndShowPointCloud(first_frame, last_view, first_frame, current_view);
-//
-//	return;
-//}
+PointCloud* PointsFileSystem::getDisplayFirstFrame(void)
+{
+    if (point_cloud_map_.empty())
+        return NULL;
+
+    osg::ref_ptr<PointCloud> first_cloud = *point_cloud_map_.begin();
+    int frame = first_cloud->getFrame();
+
+    for (PointCloudMap::const_iterator it = point_cloud_map_.begin(); it != point_cloud_map_.end(); ++ it)
+    {
+        osg::ref_ptr<PointCloud> point_cloud = *it;
+        int this_frame = point_cloud->getFrame();
+   
+        if (this_frame < frame)
+        {
+            frame = this_frame;
+        }
+    }
+
+    return getPointCloud(frame);
+}
+
+
+void PointsFileSystem::navigateToPreviousFrame()
+{
+    int current_frame = getDisplayFirstFrame()->getFrame();
+
+    if (current_frame == getStartFrame())
+        return;
+
+    int prev_frame = current_frame - 1;
+
+    hideAndShowPointCloud(current_frame, prev_frame);
+
+    return;
+}
+
+void PointsFileSystem::navigateToNextFrame()
+{
+    int current_frame = getDisplayFirstFrame()->getFrame();
+
+    if (current_frame == getEndFrame())
+        return;
+
+    int next_frame = current_frame + 1;
+
+    hideAndShowPointCloud(current_frame, next_frame);
+
+    return;
+}
+

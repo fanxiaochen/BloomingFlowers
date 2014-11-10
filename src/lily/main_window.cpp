@@ -75,12 +75,21 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
-	if (event->key() == Qt::Key_Down)
-	{
-		emit keyDownPressed();
-	}
+    PointsFileSystem* points_file = dynamic_cast<PointsFileSystem*>(points_files_);
 
-	QMainWindow::keyPressEvent(event);
+    switch(event->key())
+    {
+    case(Qt::Key_Up):
+            points_file->navigateToPreviousFrame();
+            break;
+    case(Qt::Key_Down):
+            points_file->navigateToNextFrame();
+            break;
+    default:
+            QMainWindow::keyPressEvent(event);
+            break;
+
+    }
 
 	return;
 }

@@ -2,6 +2,13 @@
 #ifndef LILY_H
 #define LILY_H
 
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+#include <pcl/io/pcd_io.h>
+
+#include <base/matrix.hpp>
+#include <core/cpd_nonrigid.hpp>
+
 #include "adapter_widget.h"
 #include "file_viewer_widget.h"
 #include "main_window.h"

@@ -1,5 +1,3 @@
-
-
 #include <core/cpd_nonrigid.hpp>
 
 #include "types_wrapper.h"

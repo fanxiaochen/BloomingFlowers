@@ -52,31 +52,21 @@ public:
 	void hideMeshModel(const QPersistentModelIndex& index);
 
 
-	/*PointCloud* getDisplayFirstFrame(void);
+	PointCloud* getDisplayFirstFrame(void);
 
-	enum NavigationType
-	{
-	SWITCH,
-	APPEND,
-	ERASE
-	};
+    void navigateToPreviousFrame();
+    void navigateToNextFrame();
 
-	void navigateToPreviousFrame(NavigationType type);
-	void navigateToNextFrame(NavigationType type);
-	void navigateToPreviousView(NavigationType type);
-	void navigateToNextView(NavigationType type);*/
-
-	/*void showPointCloud(int frame, int view);
-	void hideAndShowPointCloud(int hide_frame, int hide_view, int show_frame, int show_view);*/
+    void hideAndShowPointCloud(int hide_frame, int show_frame);
 
 private:
 
 	//void limitPointCloudCacheSize(void);
 	void computeFrameRange(void);
 
-	/*void getDisplayFirstFrameFirstView(int& frame, int& view);
-	void getDisplayFirstFrameLastView(int& frame, int& view);
-	void getDisplayLastFrameLastView(int& frame, int& view);*/
+    /* void getDisplayFirstFrameFirstView(int& frame, int& view);
+    void getDisplayFirstFrameLastView(int& frame, int& view);
+    void getDisplayLastFrameLastView(int& frame, int& view);*/
 
 	
 signals:

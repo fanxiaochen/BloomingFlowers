@@ -1,10 +1,12 @@
-#include "lily.h"
 
 #include <iostream>
 
 #include "main_window.h"
 #include "point_cloud.h"
 #include "mesh_model.h"
+#include "points_file_system.h"
+#include "mesh_file_system.h"
+#include "scene_widget.h"
 #include "tracking_system.h"
 #include "track_thread.h"
 
