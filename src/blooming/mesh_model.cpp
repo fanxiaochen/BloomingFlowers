@@ -115,9 +115,39 @@ bool MeshModel::readObjFile(const std::string& filename)
 	return true;
 }
 
-void MeshModel::deform()
+void MeshModel::recoverAdjList()
 {
 
+}
+
+void MeshModel::deform()
+{
+    Eigen::Matrix3Xf p;
+    int p_num = vertices_->size();
+    p.resize(3, p_num);
+
+    for (size_t i = 0; i < p_num; i ++)
+    {
+        const osg::Vec3& point = vertices_->at(i);
+        p(0, i) = point.x();
+        p(1, i) = point.y();
+        p(2, i) = point.z();
+    }
+
+    Deform::FaceList face_list;
+    for (size_t i = 0, i_end = faces_.size(); i < i_end; i ++)
+    {
+        std::vector<int> face = faces_.at(i);
+        Eigen::Vector3i face_i;
+        face_i(0) = face.at(0);
+        face_i(1) = face.at(1);
+        face_i(2) = face.at(2);
+
+        face_list.push_back(face_i);
+    }
+
+    Deform deform_model(p, p_num, adj_list_, face_list);
+    
 }
 
 

@@ -153,8 +153,8 @@ set_target_properties(${exe_name} PROPERTIES COTIRE_UNITY_LINK_LIBRARIES_INIT "C
 cotire(${exe_name})
 
 if(WIN32 AND MSVC)
-  set_target_properties(${exe_name} PROPERTIES LINK_FLAGS /INCREMENTAL:YES)
-  #set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/INCREMENTAL:YES")
+  #set_target_properties(${exe_name} PROPERTIES LINK_FLAGS /INCREMENTAL:YES)
+  set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/INCREMENTAL:YES")
 elseif(CMAKE_SYSTEMname STREQUAL "Darwin")
   if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set_target_properties(${exe_name} PROPERTIES LINK_FLAGS -Wl)
