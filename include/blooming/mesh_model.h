@@ -19,6 +19,8 @@ public:
 
 	inline osg::ref_ptr<osg::Vec3Array> getVertices() { return vertices_; }
 
+    void deform();
+
 protected:
 	virtual void updateImpl(void);
 

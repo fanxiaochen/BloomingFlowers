@@ -2,6 +2,8 @@
 #include <boost/filesystem.hpp>
 #include <osgDB/WriteFile>
 
+#include <Deform.h>
+
 #include "tiny_obj_loader.h"
 
 #include "mesh_model.h"
@@ -113,5 +115,9 @@ bool MeshModel::readObjFile(const std::string& filename)
 	return true;
 }
 
+void MeshModel::deform()
+{
+
+}
 
 

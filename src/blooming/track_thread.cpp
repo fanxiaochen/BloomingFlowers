@@ -75,6 +75,7 @@ void MeshTrackThread::run()
         tracking_template->expire();
 
         tracking_system_->cpd_registration(*tracked_frame, *tracking_template);
+        tracking_template->deform();
 
         tracking_system_->points_file_system_->hidePointCloud(i - 1);
     }
