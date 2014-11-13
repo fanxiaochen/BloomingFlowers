@@ -112,32 +112,70 @@ bool MeshModel::readObjFile(const std::string& filename)
 		faces_.push_back(face);
 	}
 
+    recoverAdjList();
+
 	return true;
 }
 
 void MeshModel::recoverAdjList()
 {
+    const size_t pre_ver_num = 10000;
+    const size_t ver_num = vertices_->size();
+
+    if (pre_ver_num < ver_num)
+    {
+        std::cerr << "vertice number exceeds pre-setting!" << std::endl;
+        return;
+    }
+
+    std::array<std::set<int>, pre_ver_num > index_list;
+
+    for (size_t i = 0, i_end = faces_.size(); i < i_end; i ++)
+    {
+        std::vector<int> face = faces_.at(i);
+        int x = face.at(0);
+        int y = face.at(1);
+        int z = face.at(2);
+        
+        index_list[x].insert(y);
+        index_list[x].insert(z);
+
+        index_list[y].insert(x);
+        index_list[y].insert(z);
+
+        index_list[z].insert(x);
+        index_list[z].insert(y);
+    }
+
+    for (size_t i = 0, i_end = ver_num; i < i_end; i ++)
+    {
+        std::set<int> index_i = index_list.at(i);
+        std::vector<int> adj_list(index_i.begin(), index_i.end());
+        adj_list_.push_back(adj_list);
+    }
 
 }
 
-void MeshModel::deform()
+void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
 {
-    Eigen::Matrix3Xf p;
+    double* p;
     int p_num = vertices_->size();
-    p.resize(3, p_num);
+    p = (double*)malloc(sizeof(double)*p_num*3);
 
     for (size_t i = 0; i < p_num; i ++)
     {
         const osg::Vec3& point = vertices_->at(i);
-        p(0, i) = point.x();
-        p(1, i) = point.y();
-        p(2, i) = point.z();
+        p[3*i+0] = point.x();
+        p[3*i+1] = point.y();
+        p[3*i+2] = point.z();
     }
 
     Deform::FaceList face_list;
     for (size_t i = 0, i_end = faces_.size(); i < i_end; i ++)
     {
         std::vector<int> face = faces_.at(i);
+        std::sort(face.begin(), face.end());
+
         Eigen::Vector3i face_i;
         face_i(0) = face.at(0);
         face_i(1) = face.at(1);
@@ -146,8 +184,37 @@ void MeshModel::deform()
         face_list.push_back(face_i);
     }
 
+    Deform::VectorD points_indicator;
+    Deform::VectorI points_index;
+
+    for (size_t i = 0, i_end = indicators.size(); i < i_end; i ++)
+    {
+        osg::Vec3 indicator = indicators.at(i);
+        points_indicator.push_back(indicator.x());
+        points_indicator.push_back(indicator.y());
+        points_indicator.push_back(indicator.z()); 
+    }
+
+    for (size_t i = 0, i_end = index.size(); i < i_end; i ++)
+    {
+        points_index.push_back(index.at(i));
+    }
+
     Deform deform_model(p, p_num, adj_list_, face_list);
+    deform_model.do_Deform(points_indicator, points_index);
     
+    float* new_p = deform_model.get_P_Prime();
+
+    for (size_t i = 0; i < p_num; i ++)
+    {
+        osg::Vec3& point = vertices_->at(i);
+        point.x() = new_p[3*i+0];
+        point.y() = new_p[3*i+1];
+        point.z() = new_p[3*i+2];
+    }
+
+    free(p);
 }
+
 
 

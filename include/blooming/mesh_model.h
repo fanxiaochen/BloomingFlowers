@@ -17,9 +17,10 @@ public:
   
 	bool empty(void) const {return vertices_->empty();}
 
-	inline osg::ref_ptr<osg::Vec3Array> getVertices() { return vertices_; }
+    inline osg::ref_ptr<osg::Vec3Array> getVertices(){ return vertices_; }
+  
 
-    void deform();
+    void deform(const osg::Vec3Array& indicators, const std::vector<int>& index);
 
 protected:
 	virtual void updateImpl(void);
