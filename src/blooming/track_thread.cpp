@@ -66,9 +66,9 @@ void MeshTrackThread::run()
     QSet<QPersistentModelIndex> mesh_indexes = tracking_system_->mesh_file_system_->getCheckedIndexes();
     MeshModel* tracking_template = tracking_system_->mesh_file_system_->getMeshModel(mesh_indexes.values().at(0));
 
-    std::vector<int> deform_idx;
+    /*std::vector<int> deform_idx;
     for (size_t i = 0, i_end = tracking_template->getVertices()->size(); i < i_end; i ++)
-        deform_idx.push_back(i);
+        deform_idx.push_back(i);*/
 
     for (int i = start_frame + 1; i <= end_frame; i ++)
     {
@@ -80,7 +80,8 @@ void MeshTrackThread::run()
 
         tracking_system_->cpd_registration(*tracked_frame, *tracking_template);
 
-        tracking_template->deform(*tracking_template->getVertices(), deform_idx);
+       // tracking_template->deform(*tracking_template->getVertices(), deform_idx);
+        tracking_template->deform(*tracking_template->getVertices());
 
         tracking_system_->points_file_system_->hidePointCloud(i - 1);
     }

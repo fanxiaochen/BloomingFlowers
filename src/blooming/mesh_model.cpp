@@ -114,6 +114,8 @@ bool MeshModel::readObjFile(const std::string& filename)
 
     recoverAdjList();
 
+    buildDeformModel();
+
 	return true;
 }
 
@@ -154,6 +156,14 @@ void MeshModel::recoverAdjList()
         adj_list_.push_back(adj_list);
     }
 
+}
+
+void MeshModel::buildDeformModel()
+{
+    Build_triangle<Polyhedron::HalfedgeDS> triangle(this);
+    deform_model_.delegate(triangle);
+    CGAL_assertion( deform_model_.is_triangle(deform_model_.halfedges_begin()));
+    return;
 }
 
 void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
@@ -216,5 +226,49 @@ void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>&
     free(p);
 }
 
+
+void MeshModel::deform(const osg::Vec3Array& indicators)
+{
+    // Init the indices of the halfedges and the vertices.
+    set_halfedgeds_items_id(deform_model_);
+    // Create a deformation object
+    Surface_mesh_deformation deform_mesh(deform_model_);
+    // Definition of the region of interest (use the whole mesh)
+    vertex_iterator vb,ve;
+    boost::tie(vb, ve) = vertices(deform_model_);
+    deform_mesh.insert_roi_vertices(vb, ve);
+    // Select control vertices ...and insert them
+    std::vector<vertex_descriptor> control_vertices;
+    for (size_t i = 0, i_end = vertices_->size(); i < i_end; i ++)
+    {
+        control_vertices.push_back(*CGAL::cpp11::next(vb, i));
+        deform_mesh.insert_control_vertex(control_vertices.at(i));
+    }
+    // The definition of the ROI and the control vertices is done, call preprocess
+    bool is_matrix_factorization_OK = deform_mesh.preprocess();
+    if(!is_matrix_factorization_OK){
+        std::cerr << "Error in preprocessing, check documentation of preprocess()" << std::endl;
+        return;
+    }
+    // Use set_target_position() to set the constained position
+    for (size_t i = 0, i_end = indicators.size(); i < i_end; i ++)
+    {
+        const osg::Vec3& indicator = indicators.at(i);
+        Surface_mesh_deformation::Point constrained_pos(indicator.x(), indicator.y(), indicator.z());
+        deform_mesh.set_target_position(control_vertices[i], constrained_pos);
+    }
+    
+    // Deform the mesh, the positions of vertices of 'mesh' are updated
+    deform_mesh.deform();
+    
+    for (Polyhedron::Vertex_iterator vb = deform_model_.vertices_begin(), ve = deform_model_.vertices_end();
+    vb != ve; vb ++)
+    {
+        osg::Vec3& point = vertices_->at(vb->id());
+        point.x() = vb->point().x();
+        point.y() = vb->point().y();
+        point.z() = vb->point().z();
+    }
+}
 
 

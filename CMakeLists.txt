@@ -19,6 +19,18 @@ find_package(PCL REQUIRED common io)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 
+find_package(CGAL REQUIRED)
+if(CGAL_FOUND)
+  include_directories(${CGAL_INCLUDE_DIRS})
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CGAL_DIR}/cmake/modules)
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CGAL_DIR})
+  include(CGAL_Macros)
+  find_package(GMP REQUIRED)
+  if(GMP_FOUND)
+    include_directories(${GMP_INCLUDE_DIR})
+  endif(GMP_FOUND)
+endif(CGAL_FOUND)
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 find_package(Qt5Core REQUIRED)
@@ -141,7 +153,7 @@ ENDIF (${CMAKE_BUILD_TOOL} MATCHES "devenv")
 set(link_libraies	${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
   ${OPENSCENEGRAPH_LIBRARIES}
   Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent
-  ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES}
+  ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${CGAL_LIBRARIES}
   ${CPD_LIBRARY} ${ARAP_LIBRARY})
 
 set(exe_name BloomingFlower)
