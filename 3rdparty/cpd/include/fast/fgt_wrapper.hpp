@@ -26,7 +26,7 @@
 
 #define FIGTREE_NO_ANN 
 
-#include "figtree.h"
+#include "3rdparty/figtree/figtree.h"
 #include "base/Matrix.hpp"
 
 namespace cpd

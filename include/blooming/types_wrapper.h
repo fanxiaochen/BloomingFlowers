@@ -10,6 +10,7 @@
 
 typedef double value_type;
 typedef cpd::MatrixType<value_type, 3>::MatrixD PointMatrix;
+typedef cpd::MatrixType<value_type, 3>::Matrix CorresMatrix;
 
 static void MATRIX_TO_POINTCLOUD(const PointMatrix& point_matrix, PointCloud& point_cloud)
 {

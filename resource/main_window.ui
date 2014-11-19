@@ -49,6 +49,8 @@
     </property>
     <addaction name="actionPointCloudTracking"/>
     <addaction name="actionMeshTracking"/>
+    <addaction name="separator"/>
+    <addaction name="actionTrajectoryTracking"/>
    </widget>
    <widget class="QMenu" name="menuVisualization">
     <property name="title">
@@ -86,6 +88,11 @@
   <action name="actionMeshTracking">
    <property name="text">
     <string>Mesh Tracking</string>
+   </property>
+  </action>
+  <action name="actionTrajectoryTracking">
+   <property name="text">
+    <string>Trajectory Tracking</string>
    </property>
   </action>
  </widget>

@@ -33,5 +33,18 @@ protected:
     TrackingSystem*	tracking_system_;
 };
 
+class TrajectoryTrackThread: public QThread
+{
+public:
+    TrajectoryTrackThread(TrackingSystem* tracking_system);
+    virtual ~TrajectoryTrackThread();
+
+protected:
+    void run();
+
+protected:
+    TrackingSystem*	tracking_system_;
+};
+
 
 #endif
