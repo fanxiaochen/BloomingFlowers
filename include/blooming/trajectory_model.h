@@ -35,12 +35,14 @@ public:
 
 private:
     value_type distance(const TrajectoryPath& path_1, const TrajectoryPath& path_2);
+    void k_means();
 
 
 private:
    PointsFileSystem*    points_file_system_;
 
    TrajectoryPaths      traj_path_;
+   int                  cluster_num_;
 };
 
 #endif
