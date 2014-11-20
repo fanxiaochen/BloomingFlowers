@@ -4,14 +4,21 @@
 #include <string>
 #include <vector>
 
+#include "types_wrapper.h"
+
 class PointsFileSystem;
 
 class Trajectories
 {
 public:
-    typedef std::vector<int> TrajectoryPath;
-    typedef std::vector<TrajectoryPath> TrajectoryPaths;
+    typedef struct
+    {
+        std::vector<int> _trajectory;
+        int _label;
+    }TrajectoryPath;
 
+    typedef std::vector<TrajectoryPath> TrajectoryPaths;
+   
 public:
     Trajectories(PointsFileSystem* points_file_system);
     ~Trajectories();
@@ -19,10 +26,15 @@ public:
     void load(const std::string& file);
     void save(const std::string& file);
 
+    void clustering();
+
     void build();
 
     inline TrajectoryPath& getPath(int index) { return traj_path_[index]; }
     inline TrajectoryPaths& getPaths(){ return traj_path_; }
+
+private:
+    value_type distance(const TrajectoryPath& path_1, const TrajectoryPath& path_2);
 
 
 private:

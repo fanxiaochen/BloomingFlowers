@@ -26,3 +26,21 @@ void Trajectories::build()
 
 }
 
+void Trajectories::clustering()
+{
+
+}
+
+value_type Trajectories::distance(const TrajectoryPath& path_1, const TrajectoryPath& path_2)
+{
+    value_type dist = 0;
+    
+    for (size_t i = 0, i_end = path_1._trajectory.size(); i < i_end; i ++)
+    {
+        for (size_t j = 0, j_end = path_2._trajectory.size(); j < j_end; j ++)
+        {
+
+        }
+    }
+}
+

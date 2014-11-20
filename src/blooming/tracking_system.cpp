@@ -9,6 +9,7 @@
 #include "tracking_system.h"
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system, MeshFileSystem* mesh_file_system)
+    :trajectories_(new Trajectories(points_file_system))
 {
 	points_file_system_ = points_file_system;
 	mesh_file_system_ = mesh_file_system;	

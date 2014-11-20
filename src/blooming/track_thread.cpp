@@ -8,6 +8,7 @@
 #include "mesh_file_system.h"
 #include "scene_widget.h"
 #include "tracking_system.h"
+#include "trajectory_model.h"
 #include "track_thread.h"
 
 
@@ -136,6 +137,12 @@ void TrajectoryTrackThread::run()
 
         source = target;
         src_idx = tar_idx;
+    }
+
+    for (size_t i = 0, i_end = trajectories->getPaths().size(); i < i_end; i ++)
+    {
+        Trajectories::TrajectoryPath trajectory = trajectories->getPath(i);
+        trajectory._label = -1;
     }
 
     std::cout << "Trajectory Tracking Finished!" << std::endl;
