@@ -120,7 +120,12 @@ void TrajectoryTrackThread::run()
 
     std::vector<int> src_idx;
     for (size_t i = 0, i_end = source->size(); i < i_end; i ++)
+    {
         src_idx.push_back(i);
+        trajectories->getPath(i)._trajectory.push_back(i);
+        trajectories->getPath(i)._id = i;
+        trajectories->getPath(i)._label = -1;
+    }
 
     for (int i = start_frame + 1; i <= end_frame; i ++)
     {
@@ -137,12 +142,6 @@ void TrajectoryTrackThread::run()
 
         source = target;
         src_idx = tar_idx;
-    }
-
-    for (size_t i = 0, i_end = trajectories->getPaths().size(); i < i_end; i ++)
-    {
-        Trajectories::TrajectoryPath trajectory = trajectories->getPath(i);
-        trajectory._label = -1;
     }
 
     std::cout << "Trajectory Tracking Finished!" << std::endl;

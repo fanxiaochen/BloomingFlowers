@@ -127,7 +127,7 @@ void TrackingSystem::cpd_registration(const PointCloud& source_frame, const Poin
         corres.row(i).maxCoeff(&max_index);
         tar_idx.push_back(int(max_index));
 
-        trajectories_->getPath(i).push_back(int(max_index));
+        trajectories_->getPath(i)._trajectory.push_back(int(max_index));
     }    
 }
 
