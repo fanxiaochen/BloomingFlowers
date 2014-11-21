@@ -1,5 +1,6 @@
 
 #include "points_file_system.h"
+#include "color_map.h"
 #include "trajectory_model.h"
 
 Trajectories::Trajectories(PointsFileSystem* points_file_system)
@@ -186,4 +187,38 @@ bool Trajectories::terminal(const TrajectoryPoints& current_centers, const Traje
     }
 
     return true;
+}
+
+void Trajectories::updateImpl()
+{
+    osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
+    osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
+
+    for (size_t i = 0, i_end = traj_paths_.size(); i < i_end; i ++)
+    {
+        TrajectoryPath trajectory = traj_paths_.at(i);
+        int cluster_id = trajectory._label;
+
+        TrajectoryPoint traj_point;
+        getPointsFromPath(trajectory._id, traj_point);
+        
+        for (size_t j = 0, j_end = traj_point.size(); j < j_end; j ++)
+        {
+            vertices->push_back(osg::Vec3(traj_point[j].x, traj_point[j].y, traj_point[j].z));
+            colors->push_back(ColorMap::getInstance().getDiscreteColor(cluster_id));
+        }
+    }
+
+    osg::ref_ptr<osg::Geode> geode(new osg::Geode);
+    osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry;
+    geometry->setUseDisplayList(true);
+    geometry->setVertexArray(vertices);
+    geometry->setColorArray(colors);
+    colors->setBinding(osg::Array::BIND_PER_PRIMITIVE_SET);
+    geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINES, 0, vertices->size()));
+
+    geode->addDrawable(geometry);
+    content_root_->addChild(geode);
+
+    return;
 }

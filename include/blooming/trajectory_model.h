@@ -5,10 +5,11 @@
 #include <vector>
 
 #include "types_wrapper.h"
+#include "renderable.h"
 
 class PointsFileSystem;
 
-class Trajectories
+class Trajectories: public Renderable
 {
 public:
     typedef std::vector<Point> TrajectoryPoint;
@@ -36,6 +37,9 @@ public:
 
     inline TrajectoryPath& getPath(int index) { return traj_paths_[index]; }
     inline TrajectoryPaths& getPaths(){ return traj_paths_; }
+
+protected:
+    virtual void updateImpl(void);
 
 private:
     value_type distance(const TrajectoryPath& path_1, const TrajectoryPath& path_2);

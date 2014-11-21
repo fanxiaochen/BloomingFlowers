@@ -75,6 +75,7 @@ set(lily_incs       ${lily_inc}/main_window.h
                     ${lily_inc}/adapter_widget.h
                     ${lily_inc}/scene_widget.h
                     ${lily_inc}/file_viewer_widget.h
+                    ${lily_inc}/color_map.h
             )
 
 set(lily_srcs       ${lily_src}/main.cpp
@@ -87,6 +88,7 @@ set(lily_srcs       ${lily_src}/main.cpp
                     ${lily_src}/update_callback.cpp
                     ${lily_src}/scene_widget.cpp
                     ${lily_src}/file_viewer_widget.cpp
+                    ${lily_src}/color_map.cpp
             )
             
 set(blooming_incs   ${blooming_inc}/point_cloud.h
