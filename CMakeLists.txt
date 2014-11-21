@@ -76,6 +76,8 @@ set(lily_incs       ${lily_inc}/main_window.h
                     ${lily_inc}/scene_widget.h
                     ${lily_inc}/file_viewer_widget.h
                     ${lily_inc}/color_map.h
+                    ${lily_inc}/pick_handler.h
+                    ${lily_inc}/point_intersector.h
             )
 
 set(lily_srcs       ${lily_src}/main.cpp
@@ -89,6 +91,8 @@ set(lily_srcs       ${lily_src}/main.cpp
                     ${lily_src}/scene_widget.cpp
                     ${lily_src}/file_viewer_widget.cpp
                     ${lily_src}/color_map.cpp
+                    ${lily_src}/pick_handler.cpp
+                    ${lily_src}/point_intersector.cpp
             )
             
 set(blooming_incs   ${blooming_inc}/point_cloud.h

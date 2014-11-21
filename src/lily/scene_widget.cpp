@@ -8,6 +8,7 @@
 #include <osg/LightModel>
 
 #include "main_window.h"
+#include "pick_handler.h"
 #include "scene_widget.h"
 
 
@@ -19,6 +20,7 @@ SceneWidget::SceneWidget(QWidget * parent, const QGLWidget * shareWidget, Qt::Wi
 	scene_root_->getOrCreateStateSet()->setAttributeAndModes(light_model.get(), osg::StateAttribute::ON);
 
 	//addSceneChild(point_cloud_);
+    addEventHandler(new PickHandler());
 }
 
 SceneWidget::~SceneWidget()
