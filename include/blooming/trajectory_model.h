@@ -23,17 +23,15 @@ public:
     }TrajectoryPath;
 
     typedef std::vector<TrajectoryPath> TrajectoryPaths;
-   
+    
 public:
     Trajectories(PointsFileSystem* points_file_system);
     ~Trajectories();
 
-    void load(const std::string& file);
-    void save(const std::string& file);
+    bool load(const std::string& file);
+    bool save(const std::string& file);
 
     void clustering();
-
-    void build();
 
     inline TrajectoryPath& getPath(int index) { return traj_paths_[index]; }
     inline TrajectoryPaths& getPaths(){ return traj_paths_; }

@@ -1,3 +1,9 @@
+#include <boost/math/special_functions/round.hpp>
+
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonValue>
 
 #include "points_file_system.h"
 #include "color_map.h"
@@ -13,19 +19,76 @@ Trajectories::~Trajectories()
 
 }
 
-void Trajectories::load(const std::string& file)
+bool Trajectories::load(const std::string& file)
 {
+    QFile load_file(QString(file.c_str()));
 
+    if (!load_file.open(QIODevice::ReadOnly)) {
+        qWarning("Couldn't open save file.");
+        return false;
+    }
+
+    QByteArray data = load_file.readAll();
+    QJsonDocument load_doc(QJsonDocument::fromJson(data));
+    QJsonArray trajs = load_doc.array();
+
+   // read
+    traj_paths_.clear();
+
+    for (size_t i = 0, i_end = trajs.size(); i < i_end; i ++)
+    {
+        TrajectoryPath traj_path;
+        QJsonObject traj = trajs[i].toObject();
+        traj_path._id = boost::math::iround(traj["id"].toDouble());
+        traj_path._label = boost::math::iround(traj["label"].toDouble());
+
+        QJsonArray traj_array = traj["trajectory"].toArray();
+        for (size_t j = 0, j_end = traj.size(); j < j_end; j ++)
+        {
+            QJsonValue traj_id = traj_array[j];
+            traj_path._trajectory.push_back(boost::math::iround(traj_id.toDouble()));
+        }
+    }
+
+    return true;
 }
 
-void Trajectories::save(const std::string& file)
+bool Trajectories::save(const std::string& file)
 {
+    QFile save_file(QString(file.c_str()));
 
-}
+    if (!save_file.open(QIODevice::WriteOnly)) 
+    {
+        qWarning("Couldn't open save file.");
+        return false;
+    }
 
-void Trajectories::build()
-{
+    //write
+    QJsonArray trajs;
+    for (size_t i = 0, i_end = traj_paths_.size(); i < i_end; i ++)
+    {
+        TrajectoryPath traj_path;
 
+        QJsonObject traj;
+        traj["id"] = traj_path._id;
+        traj["label"] = traj_path._label;
+        
+        QJsonArray traj_array;
+        for (size_t j = 0, j_end = traj_path._trajectory.size(); j < j_end; j ++)
+        {
+            QJsonValue traj_id(traj_path._trajectory[j]);
+            traj_array.append(traj_id);
+        }
+        traj["trajectory"] = traj_array;
+
+        trajs.append(traj);
+    }
+
+
+    QJsonDocument save_doc(trajs);
+    save_file.write(save_doc.toJson());
+
+    return true;
 }
 
 void Trajectories::clustering()
