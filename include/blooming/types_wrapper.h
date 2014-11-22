@@ -8,9 +8,8 @@
 #include "point_cloud.h"
 #include "mesh_model.h"
 
-typedef double value_type;
-typedef cpd::MatrixType<value_type, 3>::MatrixD PointMatrix;
-typedef cpd::MatrixType<value_type, 3>::Matrix CorresMatrix;
+typedef cpd::MatrixType<float, 3>::MatrixD PointMatrix;
+typedef cpd::MatrixType<float, 3>::Matrix CorresMatrix;
 
 static void MATRIX_TO_POINTCLOUD(const PointMatrix& point_matrix, PointCloud& point_cloud)
 {
@@ -37,9 +36,9 @@ static PointMatrix POINTCLOUD_TO_MATRIX(const PointCloud& point_cloud)
 	{
 		const Point& point = point_cloud.at(i);
 
-		point_matrix(i, 0) = value_type(point.x);
-		point_matrix(i, 1) = value_type(point.y);
-		point_matrix(i, 2) = value_type(point.z);
+		point_matrix(i, 0) = float(point.x);
+		point_matrix(i, 1) = float(point.y);
+		point_matrix(i, 2) = float(point.z);
 
 	}
 
@@ -74,9 +73,9 @@ static PointMatrix MESHMODEL_TO_MATRIX(MeshModel& mesh_model)
 	{
 		const osg::Vec3& point = points->at(i);
 
-		point_matrix(i, 0) = value_type(point.x());
-		point_matrix(i, 1) = value_type(point.y());
-		point_matrix(i, 2) = value_type(point.z());
+		point_matrix(i, 0) = float(point.x());
+		point_matrix(i, 1) = float(point.y());
+		point_matrix(i, 2) = float(point.z());
 
 	}
 

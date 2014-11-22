@@ -97,7 +97,7 @@ void Trajectories::clustering()
     return;
 }
 
-value_type Trajectories::distance(const TrajectoryPath& path_1, const TrajectoryPath& path_2)
+float Trajectories::distance(const TrajectoryPath& path_1, const TrajectoryPath& path_2)
 {
     TrajectoryPoint point_1, point_2;
     getPointsFromPath(path_1._id, point_1);
@@ -106,13 +106,13 @@ value_type Trajectories::distance(const TrajectoryPath& path_1, const Trajectory
     return distance(point_1, point_2);
 }
 
-value_type Trajectories::distance(const TrajectoryPoint& point_1, const TrajectoryPoint& point_2)
+float Trajectories::distance(const TrajectoryPoint& point_1, const TrajectoryPoint& point_2)
 {
     int point1_size = point_1.size();
     int point2_size = point_2.size();
     assert(point1_size == point2_size);
 
-    value_type dist = 0;
+    float dist = 0;
     int n = point1_size;
 
     for (size_t i = 0, i_end = n; i < i_end; i ++)
@@ -172,12 +172,12 @@ int Trajectories::determineCluster(const TrajectoryPath& path)
     TrajectoryPoint traj_point;
     getPointsFromPath(path._id, traj_point);
 
-    value_type min = std::numeric_limits<value_type>::max();
+    float min = std::numeric_limits<float>::max();
     int cluster_id = -1;
 
     for (size_t i = 0, i_end = cluster_num_; i < i_end; i ++)
     {
-        value_type temp_dist = distance(traj_point, center_trajs_[i]);
+        float temp_dist = distance(traj_point, center_trajs_[i]);
         if (min > temp_dist)
         {
             min = temp_dist;
@@ -218,7 +218,7 @@ void Trajectories::mean_path(const std::vector<int>& ids, TrajectoryPoint& traj_
     for (size_t i = 0, i_end = traj_length; i < i_end; i ++)
     {
         Point mean_point;
-        value_type x = 0, y = 0, z = 0;
+        float x = 0, y = 0, z = 0;
 
         size_t traj_num = traj_points.size();
         for (size_t j = 0, j_end = traj_num; j < j_end; j ++)
@@ -240,11 +240,11 @@ void Trajectories::mean_path(const std::vector<int>& ids, TrajectoryPoint& traj_
 
 bool Trajectories::terminal(const TrajectoryPoints& current_centers, const TrajectoryPoints& next_centers)
 {
-    const value_type eps = 1e-3;
+    const float eps = 1e-3;
 
     for (size_t i = 0; i < cluster_num_; i ++)
     {
-        value_type delta = distance(current_centers[i], next_centers[i]);
+        float delta = distance(current_centers[i], next_centers[i]);
         if (delta > eps)
             return false;
     }

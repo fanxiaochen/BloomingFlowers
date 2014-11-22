@@ -28,9 +28,13 @@ public:
   void reload(void);
 
   inline const std::string& getFilename(void) const {return filename_;}
+  inline const std::vector<int>& getPickedPoints() const { return picked_indices_; }
 
   int getFrame(void) const;
   bool isShown(void) const;
+
+  virtual void pickEvent(int pick_mode, osg::Vec3 position);
+
 
 protected:
   virtual void clearData();
@@ -42,7 +46,10 @@ protected:
   PointCloud* getNextFrame(void);*/
 
 protected:
-  std::string                     filename_;
+  std::string                    filename_;
+
+  std::vector<int>               picked_indices_;
+  std::vector<osg::Vec3>         picked_points_;
 };
 
 #endif // POINTCLOUD_H

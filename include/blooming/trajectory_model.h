@@ -36,13 +36,14 @@ public:
     inline TrajectoryPath& getPath(int index) { return traj_paths_[index]; }
     inline TrajectoryPaths& getPaths(){ return traj_paths_; }
 
+    void getPointsFromPath(int id, TrajectoryPoint& traj_point);
+
 protected:
     virtual void updateImpl(void);
 
 private:
-    value_type distance(const TrajectoryPath& path_1, const TrajectoryPath& path_2);
-    value_type distance(const TrajectoryPoint& point_1, const TrajectoryPoint& point_2);
-    void getPointsFromPath(int id, TrajectoryPoint& traj_point);
+    float distance(const TrajectoryPath& path_1, const TrajectoryPath& path_2);
+    float distance(const TrajectoryPoint& point_1, const TrajectoryPoint& point_2);
 
     int determineCluster(const TrajectoryPath& path);
     void mean_path(const std::vector<int>& ids, TrajectoryPoint& traj_point);

@@ -51,7 +51,7 @@ void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, PointClou
 	PointMatrix tracked_pm = POINTCLOUD_TO_MATRIX(tracked_frame);
 	PointMatrix tracking_pm = POINTCLOUD_TO_MATRIX(tracking_template);
 
-	cpd::CPDNRigid<value_type, 3>* reg = new cpd::CPDNRigid<value_type, 3>();
+	cpd::CPDNRigid<float, 3>* reg = new cpd::CPDNRigid<float, 3>();
 
 	reg->setInputData(tracking_pm, tracked_pm);
 	reg->setVision(false);
@@ -73,7 +73,7 @@ void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, MeshModel
 	PointMatrix tracked_pm = POINTCLOUD_TO_MATRIX(tracked_frame);
 	PointMatrix tracking_pm = MESHMODEL_TO_MATRIX(tracking_template);
 
-	cpd::CPDNRigid<value_type, 3>* reg = new cpd::CPDNRigid<value_type, 3>();
+	cpd::CPDNRigid<float, 3>* reg = new cpd::CPDNRigid<float, 3>();
 
 	reg->setInputData(tracking_pm, tracked_pm);
 	reg->setVision(false);
@@ -106,7 +106,7 @@ void TrackingSystem::cpd_registration(const PointCloud& source_frame, const Poin
 
     PointMatrix target_pm = POINTCLOUD_TO_MATRIX(target_frame);
 
-    cpd::CPDNRigid<value_type, 3>* reg = new cpd::CPDNRigid<value_type, 3>();
+    cpd::CPDNRigid<float, 3>* reg = new cpd::CPDNRigid<float, 3>();
 
     reg->setInputData(source_pm, target_pm);
     reg->setVision(false);
