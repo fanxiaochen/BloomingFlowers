@@ -199,6 +199,7 @@ void Trajectories::k_means()
         }
         
         updateCenterTrajectories();
+        expire();
 
     } while (!terminal(center_trajs_, next_centers));
 
