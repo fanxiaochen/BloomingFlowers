@@ -116,12 +116,13 @@ void TrackingSystem::cpd_registration(const PointCloud& source_frame, const Poin
     reg->setOutlierWeight(0.1);
     reg->setFgtFlag(true);
     reg->setFgtEpsilon(1e-3);
-    reg->setLowRankFlag(true);
-    reg->setKLowRank(40);
+//    reg->setLowRankFlag(true);
+//    reg->setKLowRank(40);
     reg->run();
 
     CorresMatrix corres = reg->getCorrespondences();
     CorresMatrix::Index max_index;
+
     for (size_t i = 0, i_end = corres.rows(); i < i_end; i ++)
     {
         corres.row(i).maxCoeff(&max_index);

@@ -28,7 +28,7 @@ public:
   void reload(void);
 
   inline const std::string& getFilename(void) const {return filename_;}
-  inline const std::vector<int>& getPickedPoints() const { return picked_indices_; }
+  inline const std::vector<int>& getPickedIndices() const { return picked_indices_; }
 
   int getFrame(void) const;
   bool isShown(void) const;

@@ -38,6 +38,9 @@ public:
 
     void getPointsFromPath(int id, TrajectoryPoint& traj_point);
 
+    void showTrajectories();
+    void hideTrajectories();
+
 protected:
     virtual void updateImpl(void);
 

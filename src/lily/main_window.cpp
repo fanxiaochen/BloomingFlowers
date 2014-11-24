@@ -14,6 +14,7 @@
 #include "points_file_system.h"
 #include "mesh_file_system.h"
 #include "tracking_system.h"
+#include "trajectory_model.h"
 
 
 MainWindow::MainWindow(void)
@@ -135,6 +136,8 @@ void MainWindow::init(void)
 
 	connect(ui_.actionLoadPoints, SIGNAL(triggered()), this, SLOT(slotLoadPoints()));
 	connect(ui_.actionLoadMesh, SIGNAL(triggered()), this, SLOT(slotLoadMesh()));
+    connect(ui_.actionLoadTrajectories, SIGNAL(triggered()), this, SLOT(slotLoadTrajectories()));
+
 	connect(ui_.actionPointCloudTracking, SIGNAL(triggered()), tracking_system_, SLOT(pointcloud_tracking()));
     connect(ui_.actionMeshTracking, SIGNAL(triggered()), tracking_system_, SLOT(mesh_tracking()));
     connect(ui_.actionTrajectoryTracking, SIGNAL(triggered()), tracking_system_, SLOT(buildTrajectories()));
@@ -155,6 +158,9 @@ bool MainWindow::slotLoadPoints(void)
 
 	points_widget_->setWorkspace(directory);
 
+    directory.resize(directory.size()-7); // remove string "/points", the workspace is based on points path
+    workspace_ = directory.toStdString();
+
 	return true;
 }
 
@@ -170,6 +176,19 @@ bool MainWindow::slotLoadMesh(void)
 	mesh_widget_->setWorkspace(directory);
 
 	return true;
+}
+
+bool MainWindow::slotLoadTrajectories()
+{
+    QString traj_file = QFileDialog::getOpenFileName(this, tr("Load Trajectories"), workspace_.c_str(),  tr("Files (*.json)"));
+
+    if (traj_file.isEmpty())
+        return false;
+
+    tracking_system_->getTrajectories()->load(traj_file.toStdString());
+    MainWindow::getInstance()->getSceneWidget()->addSceneChild(tracking_system_->getTrajectories());
+
+    return true;
 }
 
 void MainWindow::loadSettings()

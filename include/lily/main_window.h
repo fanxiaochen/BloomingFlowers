@@ -34,6 +34,7 @@ public:
 
 	inline std::string& getPointsPath(){ return points_path_; }
 	inline std::string& getMeshPath(){ return mesh_path_; }
+    inline std::string& getWorkspace(){ return workspace_; }
 
 	void showInformation(const std::string& information);
 	void showStatus(const std::string& status, int timeout=0);
@@ -55,6 +56,7 @@ private slots:
 	void slotShowStatus(const QString& status, int timeout);
 	bool slotLoadPoints();
 	bool slotLoadMesh();
+    bool slotLoadTrajectories();
 
 private:
 	void loadSettings();
@@ -64,6 +66,7 @@ private:
 private:
 	Ui::MainWindowClass             ui_;
 
+    std::string                     workspace_;
 	std::string						points_path_;
 	std::string						mesh_path_;
 	SceneWidget*					scene_widget_;

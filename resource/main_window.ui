@@ -42,6 +42,8 @@
     </property>
     <addaction name="actionLoadPoints"/>
     <addaction name="actionLoadMesh"/>
+    <addaction name="separator"/>
+    <addaction name="actionLoadTrajectories"/>
    </widget>
    <widget class="QMenu" name="menuAlgorithms">
     <property name="title">
@@ -93,6 +95,11 @@
   <action name="actionTrajectoryTracking">
    <property name="text">
     <string>Trajectory Tracking</string>
+   </property>
+  </action>
+  <action name="actionLoadTrajectories">
+   <property name="text">
+    <string>Load Trajectories</string>
    </property>
   </action>
  </widget>
