@@ -29,6 +29,7 @@ public:
 
   inline const std::string& getFilename(void) const {return filename_;}
   inline const std::vector<int>& getPickedIndices() const { return picked_indices_; }
+  inline std::vector<osg::Vec3>& getPickedPoints() { return picked_points_; }
 
   int getFrame(void) const;
   bool isShown(void) const;

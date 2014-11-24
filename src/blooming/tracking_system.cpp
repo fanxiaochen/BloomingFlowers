@@ -4,7 +4,7 @@
 
 #include "point_cloud.h"
 #include "mesh_model.h"
-#include "track_thread.h"
+#include "task_thread.h"
 #include "trajectory_model.h"
 #include "tracking_system.h"
 
@@ -48,7 +48,11 @@ void TrackingSystem::buildTrajectories()
 
 void TrackingSystem::clusterTrajectories()
 {
-    trajectories_->clustering();
+    TrajClusteringThread* clustering_thread = new TrajClusteringThread(trajectories_);
+    connect(clustering_thread, SIGNAL(finished()), clustering_thread, SLOT(quit()));
+
+    clustering_thread->start();
+    return;
 }
 
 void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, PointCloud& tracking_template)

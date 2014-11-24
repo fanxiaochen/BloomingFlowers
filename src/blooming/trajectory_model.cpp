@@ -5,6 +5,7 @@
 #include <QJsonArray>
 #include <QJsonValue>
 
+#include "point_cloud.h"
 #include "points_file_system.h"
 #include "color_map.h"
 #include "main_window.h"
@@ -96,18 +97,15 @@ bool Trajectories::save(const std::string& file)
 
 void Trajectories::clustering()
 {
-    std::cout << "Start Trajectory Clustering..." << std::endl;
-    PointCloud* picked_cloud = points_file_system_->getPointCloud(points_file_system_->getStartFrame());
-    setCeterTrajectories(picked_cloud->getPickedIndices());
     k_means();
-
-    std::cout << "Trajectory Clustering Finished..." << std::endl;
-    expire();
     return;
 }
 
-void Trajectories::setCeterTrajectories(const std::vector<int>& picked_points)
+void Trajectories::setCeterTrajectories()
 {
+    PointCloud* start_cloud = points_file_system_->getPointCloud(points_file_system_->getStartFrame());
+    const std::vector<int>& picked_points = start_cloud->getPickedIndices();
+
     for (size_t i = 0, i_end = picked_points.size(); i < i_end; ++ i)
     {
         TrajectoryPoint traj_point;
@@ -116,6 +114,24 @@ void Trajectories::setCeterTrajectories(const std::vector<int>& picked_points)
     }
 
     cluster_num_ = picked_points.size();
+}
+
+void Trajectories::updateCenterTrajectories()
+{
+    PointCloud* start_cloud = points_file_system_->getPointCloud(points_file_system_->getStartFrame());
+    std::vector<osg::Vec3>& picked_points = start_cloud->getPickedPoints();
+
+    for (size_t i = 0, i_end = picked_points.size(); i < i_end; ++ i)
+    {
+        TrajectoryPoint center_traj = center_trajs_[i];
+        const Point& point = center_traj[0];
+
+        picked_points[i].x() = point.x;
+        picked_points[i].y() = point.y;
+        picked_points[i].z() = point.z;
+    }
+
+    start_cloud->expire();
 }
 
 float Trajectories::distance(const TrajectoryPath& path_1, const TrajectoryPath& path_2)
@@ -149,11 +165,7 @@ float Trajectories::distance(const TrajectoryPoint& point_1, const TrajectoryPoi
 
 void Trajectories::k_means()
 {
-    if (center_trajs_.size() != cluster_num_)
-    {
-        std::cerr << "the number of centers is not the same as cluster number..." << std::endl;
-        return;
-    }
+    setCeterTrajectories();
 
     TrajectoryPoints next_centers;
     
@@ -185,6 +197,8 @@ void Trajectories::k_means()
             mean_path(ids, next_center);
             next_centers.push_back(next_center);
         }
+        
+        updateCenterTrajectories();
 
     } while (!terminal(center_trajs_, next_centers));
 
@@ -214,9 +228,10 @@ int Trajectories::determineCluster(const TrajectoryPath& path)
 void Trajectories::getPointsFromPath(int id, TrajectoryPoint& traj_point)
 {
     TrajectoryPath traj_path = traj_paths_.at(id);
+    int start_frame = points_file_system_->getStartFrame();
     for (size_t j = 0, j_end = traj_path._trajectory.size(); j < j_end; j ++)
     {
-        PointCloud* point_cloud = points_file_system_->getPointCloud(j);
+        PointCloud* point_cloud = points_file_system_->getPointCloud(start_frame + j);
         const Point& point = point_cloud->at(traj_path._trajectory[j]);
         Point center_point;
         center_point.x = point.x;

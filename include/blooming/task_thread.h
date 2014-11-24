@@ -5,6 +5,7 @@
 #include <QThread>
 
 class TrackingSystem;
+class Trajectories;
 
 class PointsTrackThread: public QThread
 {
@@ -44,6 +45,20 @@ protected:
 
 protected:
     TrackingSystem*	tracking_system_;
+};
+
+
+class TrajClusteringThread: public QThread
+{
+public:
+    TrajClusteringThread(Trajectories* trajectories);
+    virtual ~TrajClusteringThread();
+
+protected:
+    void run();
+
+protected:
+    Trajectories*	trajectories_;
 };
 
 

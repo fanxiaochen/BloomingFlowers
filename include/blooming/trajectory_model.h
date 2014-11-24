@@ -36,12 +36,15 @@ public:
     inline TrajectoryPath& getPath(int index) { return traj_paths_[index]; }
     inline TrajectoryPaths& getPaths(){ return traj_paths_; }
 
+    inline PointsFileSystem* getPointsFileSystem(){ return points_file_system_; }
+
     void getPointsFromPath(int id, TrajectoryPoint& traj_point);
 
     void showTrajectories();
     void hideTrajectories();
 
-    void setCeterTrajectories(const std::vector<int>& picked_points);
+    void setCeterTrajectories();
+    void updateCenterTrajectories();
 
 protected:
     virtual void updateImpl(void);

@@ -131,7 +131,7 @@ void TrajectoryTrackThread::run()
         trajectories->getPaths().push_back(traj_path);
     }
 
-    for (int i = start_frame + 1; i <= start_frame + 3; i ++)
+    for (int i = start_frame + 1; i <= end_frame; i ++)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
 
@@ -141,6 +141,7 @@ void TrajectoryTrackThread::run()
         std::vector<int> tar_idx;
 
         tracking_system_->cpd_registration(*source, *target, src_idx, tar_idx);
+
         trajectories->expire();
 
         //points_file_system->hidePointCloud(i - 1);
@@ -163,4 +164,26 @@ void TrajectoryTrackThread::run()
         std::cerr << "trajectories save error!" << std::endl;
 
     std::cout << "Trajectory Tracking Finished!" << std::endl;
+}
+
+
+TrajClusteringThread::TrajClusteringThread(Trajectories* trajectories)
+    :QThread()
+{
+    trajectories_ = trajectories;
+}
+
+TrajClusteringThread::~TrajClusteringThread()
+{}
+
+void TrajClusteringThread::run()
+{
+    std::cout << "Start Trajectory Clustering..." << std::endl;
+
+    trajectories_->clustering();
+
+    trajectories_->expire();
+
+    std::cout << "Trajectory Clustering Finished..." << std::endl;
+    return;
 }
