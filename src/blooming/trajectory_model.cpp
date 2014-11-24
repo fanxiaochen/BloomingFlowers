@@ -44,7 +44,7 @@ bool Trajectories::load(const std::string& file)
         traj_path._label = boost::math::iround(traj["label"].toDouble());
 
         QJsonArray traj_array = traj["trajectory"].toArray();
-        for (size_t j = 0, j_end = traj.size(); j < j_end; j ++)
+        for (size_t j = 0, j_end = traj_array.size(); j < j_end; j ++)
         {
             QJsonValue traj_id = traj_array[j];
             traj_path._trajectory.push_back(boost::math::iround(traj_id.toDouble()));
@@ -96,8 +96,26 @@ bool Trajectories::save(const std::string& file)
 
 void Trajectories::clustering()
 {
+    std::cout << "Start Trajectory Clustering..." << std::endl;
+    PointCloud* picked_cloud = points_file_system_->getPointCloud(points_file_system_->getStartFrame());
+    setCeterTrajectories(picked_cloud->getPickedIndices());
     k_means();
+
+    std::cout << "Trajectory Clustering Finished..." << std::endl;
+    expire();
     return;
+}
+
+void Trajectories::setCeterTrajectories(const std::vector<int>& picked_points)
+{
+    for (size_t i = 0, i_end = picked_points.size(); i < i_end; ++ i)
+    {
+        TrajectoryPoint traj_point;
+        getPointsFromPath(i, traj_point);
+        center_trajs_.push_back(traj_point);
+    }
+
+    cluster_num_ = picked_points.size();
 }
 
 float Trajectories::distance(const TrajectoryPath& path_1, const TrajectoryPath& path_2)
@@ -163,7 +181,9 @@ void Trajectories::k_means()
                     ids.push_back(j);
             }
 
-            mean_path(ids, next_centers[i]);
+            TrajectoryPoint next_center;
+            mean_path(ids, next_center);
+            next_centers.push_back(next_center);
         }
 
     } while (!terminal(center_trajs_, next_centers));

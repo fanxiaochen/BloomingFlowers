@@ -142,6 +142,8 @@ void MainWindow::init(void)
     connect(ui_.actionMeshTracking, SIGNAL(triggered()), tracking_system_, SLOT(mesh_tracking()));
     connect(ui_.actionTrajectoryTracking, SIGNAL(triggered()), tracking_system_, SLOT(buildTrajectories()));
 
+    connect(ui_.actionKMeansForTrajectories, SIGNAL(triggered()), tracking_system_, SLOT(clusterTrajectories()));
+
 	// connect
 
 	return;

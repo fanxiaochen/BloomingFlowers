@@ -41,6 +41,8 @@ public:
     void showTrajectories();
     void hideTrajectories();
 
+    void setCeterTrajectories(const std::vector<int>& picked_points);
+
 protected:
     virtual void updateImpl(void);
 

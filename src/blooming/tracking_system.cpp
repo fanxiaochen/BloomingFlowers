@@ -46,6 +46,11 @@ void TrackingSystem::buildTrajectories()
     return;
 }
 
+void TrackingSystem::clusterTrajectories()
+{
+    trajectories_->clustering();
+}
+
 void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, PointCloud& tracking_template)
 {	
 	PointMatrix tracked_pm = POINTCLOUD_TO_MATRIX(tracked_frame);

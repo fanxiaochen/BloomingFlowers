@@ -9,7 +9,7 @@
 #include "scene_widget.h"
 #include "tracking_system.h"
 #include "trajectory_model.h"
-#include "track_thread.h"
+#include "task_thread.h"
 
 
 PointsTrackThread::PointsTrackThread(TrackingSystem* tracking_system)
@@ -131,7 +131,7 @@ void TrajectoryTrackThread::run()
         trajectories->getPaths().push_back(traj_path);
     }
 
-    for (int i = start_frame + 1; i <= start_frame + 5; i ++)
+    for (int i = start_frame + 1; i <= start_frame + 3; i ++)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
 

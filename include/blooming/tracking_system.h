@@ -27,6 +27,7 @@ public slots:
     void mesh_tracking();
 
     void buildTrajectories();
+    void clusterTrajectories();
 
 public:
 	void cpd_registration(const PointCloud& tracked_frame, PointCloud& tracking_template);

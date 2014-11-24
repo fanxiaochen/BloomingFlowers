@@ -56,8 +56,9 @@
    </widget>
    <widget class="QMenu" name="menuVisualization">
     <property name="title">
-     <string>Visualization</string>
+     <string>Segmentation</string>
     </property>
+    <addaction name="actionKMeansForTrajectories"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuAlgorithms"/>
@@ -100,6 +101,11 @@
   <action name="actionLoadTrajectories">
    <property name="text">
     <string>Load Trajectories</string>
+   </property>
+  </action>
+  <action name="actionKMeansForTrajectories">
+   <property name="text">
+    <string>K-Means For Trajectories</string>
    </property>
   </action>
  </widget>
