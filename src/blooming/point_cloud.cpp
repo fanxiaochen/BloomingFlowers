@@ -167,3 +167,74 @@ void PointCloud::pickEvent(int pick_mode, osg::Vec3 position)
         break;
     }
 }
+
+
+void PointCloud::petal_segmentation(std::vector<PetalCloud>& petal_clouds)
+{
+    int cluster_num = picked_indices_.size();
+
+    setCenters();
+
+    std::vector<ClusterPoint> next_centers;
+
+    do 
+    {
+        if (!next_centers.empty())
+        {
+            cluster_centers_ = next_centers;
+            next_centers.clear();
+        }
+
+        size_t points_num = cluster_points_.size();
+        for (size_t i = 0; i < points_num; i ++)
+        {
+            int cluster_id = determineCluster(cluster_points_[i]);
+            cluster_points_[i]._label = cluster_id;
+        }
+
+        for (size_t i = 0; i < cluster_num; i ++)
+        {
+            std::vector<int> ids;
+            for (size_t j = 0; j < points_num; j ++)
+            {
+                if (cluster_points_[j]._label == i)
+                    ids.push_back(j);
+            }
+
+            ClusterPoint next_center = mean_path(ids);
+            next_centers.push_back(next_center);
+        }
+
+        updateCenters();
+        expire();
+
+    } while (!terminal(cluster_centers_, next_centers));
+}
+
+void PointCloud::setCenters()
+{
+
+}
+
+void PointCloud::updateCenters()
+{
+
+}
+
+float PointCloud::distance(const ClusterPoint& p1, const ClusterPoint& p2)
+{
+
+}
+
+void PointCloud::computeClusterPoints()
+{
+
+}
+
+int PointCloud::determineCluster(const ClusterPoint& point)
+{
+
+}
+
+
+
