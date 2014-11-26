@@ -15,7 +15,7 @@ include(cotire)
 find_package(OpenSceneGraph REQUIRED osgViewer osgText osgDB osgGA osgQt osgManipulator osgUtil)
 include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
 
-find_package(PCL REQUIRED common io)
+find_package(PCL REQUIRED common io search features kdtree)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 
@@ -163,7 +163,8 @@ ENDIF (${CMAKE_BUILD_TOOL} MATCHES "devenv")
 set(link_libraies	${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
   ${OPENSCENEGRAPH_LIBRARIES}
   Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent
-  ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${CGAL_LIBRARY}
+  ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_KDTREE_LIBRARIES}
+  ${CGAL_LIBRARY}
   ${CPD_LIBRARY} ${ARAP_LIBRARY})
 
 set(exe_name BloomingFlower)

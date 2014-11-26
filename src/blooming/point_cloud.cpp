@@ -5,6 +5,7 @@
 #include <QFileDialog>
 
 #include <pcl/io/pcd_io.h>
+#include <pcl/features/normal_3d.h>
 
 #include <osg/Geometry>
 #include <osg/ShapeDrawable>
@@ -231,33 +232,29 @@ void PointCloud::k_means()
 
 void PointCloud::computeClusterPoints()
 {
-    PointsFileSystem* points_file_system = dynamic_cast<PointsFileSystem*>(MainWindow::getInstance()->getPointsSystem());
-    TrackingSystem* tracking_system = new TrackingSystem(points_file_system);
-    PointCloud* next_cloud = getNextFrame();
+    //// using cpd to find movement direction
+    //PointsFileSystem* points_file_system = dynamic_cast<PointsFileSystem*>(MainWindow::getInstance()->getPointsSystem());
+    //TrackingSystem* tracking_system = new TrackingSystem(points_file_system);
+    //PointCloud* next_cloud = getNextFrame();
 
-    std::vector<int> src_idx, tar_idx;
-    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
-        src_idx.push_back(i);
+    //std::vector<int> src_idx, tar_idx;
+    //for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+    //    src_idx.push_back(i);
 
-    tracking_system->cpd_registration(*this, *next_cloud, src_idx, tar_idx);
+    //tracking_system->cpd_registration(*this, *next_cloud, src_idx, tar_idx);
+
     
     for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
     {
         ClusterPoint cp;
-
-        osg::Vec3 mv(next_cloud->at(i).x - this->at(i).x, 
-            next_cloud->at(i).y - this->at(i).y,
-            next_cloud->at(i).z - this->at(i).z);
-        mv.normalize();
-        cp._mv.x() = mv.x();
-        cp._mv.y() = mv.y();
-        cp._mv.z() = mv.z();
 
         cp._label = -1;
         cp._pt = this->at(i);
 
         cluster_points_.push_back(cp);
     }
+
+    estimateNormals();
 }
 
 void PointCloud::setCenters()
@@ -285,7 +282,8 @@ float PointCloud::distance(const ClusterPoint& p1, const ClusterPoint& p2)
 
     float euc_dist = pow(p1._pt.x - p2._pt.x, 2.0) + pow(p1._pt.y - p2._pt.y, 2.0) +
         pow(p1._pt.z - p2._pt.z, 2.0);
-    float mv_dist = (p1._mv - p2._mv).length2();
+
+    float mv_dist = p1._mv * p2._mv >= 0 ? (p1._mv - p2._mv).length2() : (p1._mv + p2._mv).length2();
 
     float dist = euc_dist * (1 + lambda * mv_dist);
 
@@ -344,4 +342,38 @@ bool PointCloud::terminal(const std::vector<ClusterPoint>& cluster_centers, cons
     return true;
 }
 
+void PointCloud::estimateNormals()
+{
+    std::cout << "estimate normals started" << std::endl;
 
+    PointCloud::Ptr point_cloud(new PointCloud);
+    for (auto& it = this->begin(); it != this->end(); ++ it)
+        point_cloud->push_back(*it);
+
+    // Create the normal estimation class, and pass the input dataset to it
+    pcl::NormalEstimation<Point, pcl::Normal> ne;
+    ne.setInputCloud (point_cloud);
+
+    // Create an empty kdtree representation, and pass it to the normal estimation object.
+    // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+    pcl::search::KdTree<Point>::Ptr tree (new pcl::search::KdTree<Point> ());
+    ne.setSearchMethod (tree);
+
+    // Output datasets
+    pcl::PointCloud<pcl::Normal>::Ptr cloud_normals (new pcl::PointCloud<pcl::Normal>);
+
+    // Use all neighbors in a sphere of radius 0.01m
+    ne.setRadiusSearch (0.005);
+
+    // Compute the features
+    ne.compute (*cloud_normals);
+
+    for (size_t i = 0, i_end = cloud_normals->size(); i < i_end; ++ i)
+    {
+        cluster_points_[i]._mv.x() = cloud_normals->at(i).normal_x;
+        cluster_points_[i]._mv.y() = cloud_normals->at(i).normal_y;
+        cluster_points_[i]._mv.z() = cloud_normals->at(i).normal_z;
+    }
+
+    std::cout << "estimate normals finished" << std::endl;
+}

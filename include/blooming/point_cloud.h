@@ -104,6 +104,7 @@ protected:
 
   void k_means();
   float distance(const ClusterPoint& p1, const ClusterPoint& p2);
+  void estimateNormals();
   void computeClusterPoints();
   void setCenters();
   void updateCenters();
