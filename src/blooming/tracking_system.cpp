@@ -8,6 +8,12 @@
 #include "trajectory_model.h"
 #include "tracking_system.h"
 
+TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system)
+    :trajectories_(new Trajectories(points_file_system))
+{
+    points_file_system_ = points_file_system;
+}
+
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system, MeshFileSystem* mesh_file_system)
     :trajectories_(new Trajectories(points_file_system))
 {
@@ -137,7 +143,7 @@ void TrackingSystem::cpd_registration(const PointCloud& source_frame, const Poin
         corres.row(i).maxCoeff(&max_index);
         tar_idx.push_back(int(max_index));
 
-        trajectories_->getPath(i)._trajectory.push_back(int(max_index));
+    //    trajectories_->getPath(i)._trajectory.push_back(int(max_index));
     }    
 }
 

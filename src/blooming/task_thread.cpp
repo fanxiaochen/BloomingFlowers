@@ -187,3 +187,24 @@ void TrajClusteringThread::run()
     std::cout << "Trajectory Clustering Finished..." << std::endl;
     return;
 }
+
+SegmentThread::SegmentThread(PointsFileSystem* points_file_system)
+    :QThread()
+{
+    points_file_system_ = points_file_system;
+}
+
+SegmentThread::~SegmentThread()
+{}
+
+void SegmentThread::run()
+{
+    std::cout << "Start Segmentation..." << std::endl;
+
+    int frame = 10;
+    points_file_system_->segmentPointCloud(frame);
+
+    std::cout << "Segmentation Finished..." << std::endl;
+    return;
+}
+

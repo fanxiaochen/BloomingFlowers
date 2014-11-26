@@ -6,6 +6,7 @@
 
 class TrackingSystem;
 class Trajectories;
+class PointsFileSystem;
 
 class PointsTrackThread: public QThread
 {
@@ -59,6 +60,19 @@ protected:
 
 protected:
     Trajectories*	trajectories_;
+};
+
+class SegmentThread: public QThread
+{
+public:
+    SegmentThread(PointsFileSystem* points_file_system);
+    virtual ~SegmentThread();
+
+protected:
+    void run();
+
+protected:
+    PointsFileSystem*	points_file_system_;
 };
 
 

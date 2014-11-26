@@ -11,6 +11,7 @@
 #include "osg_viewer_widget.h"
 #include "points_file_system.h"
 #include "scene_widget.h"
+#include "task_thread.h"
 
 PointsFileSystem::PointsFileSystem()
 	:start_frame_(-1),
@@ -400,3 +401,19 @@ void PointsFileSystem::navigateToNextFrame()
     return;
 }
 
+void PointsFileSystem::segmentPointCloud(int frame)
+{
+    PointCloud* point_cloud = getPointCloud(frame);
+    point_cloud->petal_segmentation();
+
+    return;
+}
+
+void PointsFileSystem::segmentation()
+{
+    SegmentThread* seg_thread = new SegmentThread(this);
+    connect(seg_thread, SIGNAL(finished()), seg_thread, SLOT(quit()));
+
+    seg_thread->start();
+    return;
+}

@@ -13,6 +13,8 @@
 #include "main_window.h"
 #include "points_file_system.h"
 #include "osg_viewer_widget.h"
+#include "tracking_system.h"
+#include "color_map.h"
 #include "point_cloud.h"
 
 PointCloud::PointCloud(void)
@@ -72,7 +74,15 @@ void PointCloud::visualizePoints()
 		const Point& point = at(i);
 
 		vertices->push_back(osg::Vec3(point.x, point.y, point.z));
-		colors->push_back(osg::Vec4(point.r / 255.0, point.g / 255.0, point.b / 255.0, 0));
+
+        if (cluster_points_.empty())
+		    colors->push_back(osg::Vec4(point.r / 255.0, point.g / 255.0, point.b / 255.0, 0));
+        else
+        {
+            ClusterPoint cp = cluster_points_.at(i);
+            osg::Vec4 color = ColorMap::getInstance().getDiscreteColor(cp._label + 1);
+            colors->push_back(color);
+        }
 	}
 
 	osg::Geometry* geometry = new osg::Geometry;
@@ -99,17 +109,17 @@ void PointCloud::visualizePoints()
 	return;
 }
 
-//PointCloud* PointCloud::getPrevFrame(void)
-//{
-//  FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
-//  return model->getPointCloud(getFrame()-1);
-//}
-//
-//PointCloud* PointCloud::getNextFrame(void)
-//{
-//  FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
-//  return model->getPointCloud(getFrame()+1);
-//}
+PointCloud* PointCloud::getPrevFrame(void)
+{
+    PointsFileSystem* model = dynamic_cast<PointsFileSystem*>(MainWindow::getInstance()->getPointsSystem());
+    return model->getPointCloud(getFrame()-1);
+}
+
+PointCloud* PointCloud::getNextFrame(void)
+{
+    PointsFileSystem* model = dynamic_cast<PointsFileSystem*>(MainWindow::getInstance()->getPointsSystem());
+    return model->getPointCloud(getFrame()+1);
+}
 
 
 int PointCloud::getFrame(void) const      
@@ -169,9 +179,17 @@ void PointCloud::pickEvent(int pick_mode, osg::Vec3 position)
 }
 
 
-void PointCloud::petal_segmentation(std::vector<PetalCloud>& petal_clouds)
+void PointCloud::petal_segmentation()
+{
+    k_means();
+    return;
+}
+
+void PointCloud::k_means()
 {
     int cluster_num = picked_indices_.size();
+
+    computeClusterPoints();
 
     setCenters();
 
@@ -201,7 +219,7 @@ void PointCloud::petal_segmentation(std::vector<PetalCloud>& petal_clouds)
                     ids.push_back(j);
             }
 
-            ClusterPoint next_center = mean_path(ids);
+            ClusterPoint next_center = mean_center(ids);
             next_centers.push_back(next_center);
         }
 
@@ -211,30 +229,119 @@ void PointCloud::petal_segmentation(std::vector<PetalCloud>& petal_clouds)
     } while (!terminal(cluster_centers_, next_centers));
 }
 
+void PointCloud::computeClusterPoints()
+{
+    PointsFileSystem* points_file_system = dynamic_cast<PointsFileSystem*>(MainWindow::getInstance()->getPointsSystem());
+    TrackingSystem* tracking_system = new TrackingSystem(points_file_system);
+    PointCloud* next_cloud = getNextFrame();
+
+    std::vector<int> src_idx, tar_idx;
+    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+        src_idx.push_back(i);
+
+    tracking_system->cpd_registration(*this, *next_cloud, src_idx, tar_idx);
+    
+    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+    {
+        ClusterPoint cp;
+
+        osg::Vec3 mv(next_cloud->at(i).x - this->at(i).x, 
+            next_cloud->at(i).y - this->at(i).y,
+            next_cloud->at(i).z - this->at(i).z);
+        mv.normalize();
+        cp._mv.x() = mv.x();
+        cp._mv.y() = mv.y();
+        cp._mv.z() = mv.z();
+
+        cp._label = -1;
+        cp._pt = this->at(i);
+
+        cluster_points_.push_back(cp);
+    }
+}
+
 void PointCloud::setCenters()
 {
-
+    for (size_t i = 0, i_end = picked_indices_.size(); i < i_end; ++ i)
+    {
+        cluster_centers_.push_back(cluster_points_[picked_indices_[i]]);
+    }
 }
 
 void PointCloud::updateCenters()
 {
-
+    for (size_t i = 0, i_end = picked_points_.size(); i < i_end; ++i)
+    {
+        ClusterPoint cp = cluster_centers_.at(i);
+        picked_points_[i].x() = cp._pt.x;
+        picked_points_[i].y() = cp._pt.y;
+        picked_points_[i].z() = cp._pt.z;
+    }
 }
 
 float PointCloud::distance(const ClusterPoint& p1, const ClusterPoint& p2)
 {
+    float lambda = 1.0;
 
-}
+    float euc_dist = pow(p1._pt.x - p2._pt.x, 2.0) + pow(p1._pt.y - p2._pt.y, 2.0) +
+        pow(p1._pt.z - p2._pt.z, 2.0);
+    float mv_dist = (p1._mv - p2._mv).length2();
 
-void PointCloud::computeClusterPoints()
-{
+    float dist = euc_dist * (1 + lambda * mv_dist);
 
+    return dist;
 }
 
 int PointCloud::determineCluster(const ClusterPoint& point)
 {
+    int cluster_num = cluster_centers_.size();
 
+    float min = std::numeric_limits<float>::max();
+    int cluster_id = -1;
+
+    for (size_t i = 0, i_end = cluster_num; i < i_end; i ++)
+    {
+        float temp_dist = distance(point, cluster_centers_[i]);
+        if (min > temp_dist)
+        {
+            min = temp_dist;
+            cluster_id = i;
+        }
+    }
+
+    return cluster_id;
 }
 
+PointCloud::ClusterPoint PointCloud::mean_center(const std::vector<int>& ids)
+{
+    ClusterPoint cp;
+
+    for (size_t i = 0, i_end = ids.size(); i < i_end; i ++)
+    {
+        ClusterPoint tmp_cp = cluster_points_.at(ids[i]);
+        
+        cp = cp + tmp_cp;
+    }
+
+    cp = cp / ids.size();
+
+    return cp;
+}
+
+bool PointCloud::terminal(const std::vector<ClusterPoint>& cluster_centers, const std::vector<ClusterPoint>& next_centers)
+{
+    int cluster_num = cluster_centers_.size();
+
+    const float eps = 1e-3;
+
+    for (size_t i = 0; i < cluster_num; i ++)
+    {
+        float delta = distance(cluster_centers[i], next_centers[i]);
+        if (delta > eps)
+            return false;
+    }
+
+    return true;
+}
 
 

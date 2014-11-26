@@ -11,7 +11,7 @@
 #include <pcl/point_cloud.h>
 
 #include "renderable.h"
-#include "petal_cloud.h"
+//#include "petal_cloud.h"
 
 typedef	 pcl::PointXYZRGB  Point;
 typedef	 pcl::PointCloud<Point>  PclPointCloud;
@@ -38,7 +38,7 @@ public:
 
   virtual void pickEvent(int pick_mode, osg::Vec3 position);
 
-  void petal_segmentation(std::vector<PetalCloud>& petal_clouds);
+  void petal_segmentation();
 
 
 protected:
@@ -47,8 +47,8 @@ protected:
 
   void visualizePoints();
 
-  /*PointCloud* getPrevFrame(void);
-  PointCloud* getNextFrame(void);*/
+  PointCloud* getPrevFrame(void);
+  PointCloud* getNextFrame(void);
 
   struct ClusterPoint
   {
@@ -56,27 +56,61 @@ protected:
       Point _pt;
       osg::Vec3 _mv;
 
-      bool operator = (const ClusterPoint& point)
+      ClusterPoint()
+      {
+          _pt.x = 0;
+          _pt.y = 0;
+          _pt.z = 0;
+
+          _mv.x() = 0;
+          _mv.y() = 0;
+          _mv.z() = 0;
+
+          _label = -1;
+      }
+
+      ClusterPoint& operator + (const ClusterPoint& point)
+      {
+          this->_mv = this->_mv + point._mv;
+          this->_pt.x = this->_pt.x + point._pt.x;
+          this->_pt.y = this->_pt.y + point._pt.y;
+          this->_pt.z = this->_pt.z + point._pt.z;
+
+          return *this;
+      }
+
+      ClusterPoint& operator / (float div)
+      {
+          this->_mv = this->_mv / div;
+          this->_pt.x = this->_pt.x / div;
+          this->_pt.y = this->_pt.y / div;
+          this->_pt.z = this->_pt.z / div;
+
+          return *this;
+      }
+
+      bool operator == (const ClusterPoint& point)
       {
           const float eps = 1e-3;
-          
-          if (fabs(this->_pt.x - point._pt.x)&&
-              fabs(this->_pt.y - point._pt.y)&&
-              fabs(this->_pt.z - this->_pt.z))
+
+          if (fabs(this->_pt.x - point._pt.x) < eps&&
+              fabs(this->_pt.y - point._pt.y) < eps&&
+              fabs(this->_pt.z - point._pt.z) < eps)
               return true;
           else
               return false;
       }
   };
 
+  void k_means();
   float distance(const ClusterPoint& p1, const ClusterPoint& p2);
   void computeClusterPoints();
   void setCenters();
   void updateCenters();
   int determineCluster(const ClusterPoint& point);
-  ClusterPoint& mean_center(const std::vector<int>& ids);
+  ClusterPoint mean_center(const std::vector<int>& ids);
   bool terminal(const std::vector<ClusterPoint>& cluster_centers, const std::vector<ClusterPoint>& next_centers);
-  void k_means();
+
 
 protected:
   std::string                    filename_;

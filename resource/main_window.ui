@@ -33,7 +33,7 @@
      <x>0</x>
      <y>0</y>
      <width>1301</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -58,6 +58,7 @@
     <property name="title">
      <string>Segmentation</string>
     </property>
+    <addaction name="actionKMeansForFlower"/>
     <addaction name="actionKMeansForTrajectories"/>
    </widget>
    <addaction name="menuFile"/>
@@ -106,6 +107,11 @@
   <action name="actionKMeansForTrajectories">
    <property name="text">
     <string>K-Means For Trajectories</string>
+   </property>
+  </action>
+  <action name="actionKMeansForFlower">
+   <property name="text">
+    <string>K-Means For Flower</string>
    </property>
   </action>
  </widget>

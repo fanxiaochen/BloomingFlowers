@@ -59,6 +59,10 @@ public:
 
     void hideAndShowPointCloud(int hide_frame, int show_frame);
 
+    void segmentPointCloud(int frame);
+
+    public slots:
+        void segmentation();
 private:
 
 	//void limitPointCloudCacheSize(void);
