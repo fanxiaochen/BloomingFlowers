@@ -201,7 +201,7 @@ void SegmentThread::run()
 {
     std::cout << "Start Segmentation..." << std::endl;
 
-    int frame = 10;
+    int frame = 30;
     points_file_system_->segmentPointCloud(frame);
 
     std::cout << "Segmentation Finished..." << std::endl;

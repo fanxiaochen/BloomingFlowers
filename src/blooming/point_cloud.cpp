@@ -232,21 +232,29 @@ void PointCloud::k_means()
 
 void PointCloud::computeClusterPoints()
 {
-    //// using cpd to find movement direction
-    //PointsFileSystem* points_file_system = dynamic_cast<PointsFileSystem*>(MainWindow::getInstance()->getPointsSystem());
-    //TrackingSystem* tracking_system = new TrackingSystem(points_file_system);
-    //PointCloud* next_cloud = getNextFrame();
+    // using cpd to find movement direction
+    /*PointsFileSystem* points_file_system = dynamic_cast<PointsFileSystem*>(MainWindow::getInstance()->getPointsSystem());
+    TrackingSystem* tracking_system = new TrackingSystem(points_file_system);
+    PointCloud* next_cloud = getNextFrame();
 
-    //std::vector<int> src_idx, tar_idx;
-    //for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
-    //    src_idx.push_back(i);
+    std::vector<int> src_idx, tar_idx;
+    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+        src_idx.push_back(i);
 
-    //tracking_system->cpd_registration(*this, *next_cloud, src_idx, tar_idx);
+    tracking_system->cpd_registration(*this, *next_cloud, src_idx, tar_idx);*/
 
     
     for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
     {
         ClusterPoint cp;
+
+        /*osg::Vec3 mv(next_cloud->at(tar_idx[i]).x - this->at(i).x, 
+        next_cloud->at(tar_idx[i]).y - this->at(i).y,
+        next_cloud->at(tar_idx[i]).z - this->at(i).z);
+        mv.normalize();
+        cp._mv.x() = mv.x();
+        cp._mv.y() = mv.y();
+        cp._mv.z() = mv.z();*/
 
         cp._label = -1;
         cp._pt = this->at(i);
@@ -362,8 +370,8 @@ void PointCloud::estimateNormals()
     // Output datasets
     pcl::PointCloud<pcl::Normal>::Ptr cloud_normals (new pcl::PointCloud<pcl::Normal>);
 
-    // Use all neighbors in a sphere of radius 0.01m
-    ne.setRadiusSearch (0.005);
+    // Use k neighbors
+    ne.setKSearch (10);
 
     // Compute the features
     ne.compute (*cloud_normals);
