@@ -9,16 +9,22 @@
 #include "tracking_system.h"
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system)
-    :trajectories_(new Trajectories(points_file_system))
+    :trajectories_(new Trajectories(points_file_system)), key_frame_(16)
 {
     points_file_system_ = points_file_system;
+
+    start_frame_ = points_file_system_->getStartFrame();
+    end_frame_ = points_file_system_->getEndFrame();
 }
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system, MeshFileSystem* mesh_file_system)
-    :trajectories_(new Trajectories(points_file_system))
+    :trajectories_(new Trajectories(points_file_system)), key_frame_(16)
 {
 	points_file_system_ = points_file_system;
 	mesh_file_system_ = mesh_file_system;	
+    
+    start_frame_ = points_file_system_->getStartFrame();
+    end_frame_ = points_file_system_->getEndFrame();
 }
 
 TrackingSystem::~TrackingSystem()
@@ -60,6 +66,16 @@ void TrackingSystem::clusterTrajectories()
     clustering_thread->start();
     return;
 }
+
+void TrackingSystem::propagateSegments()
+{
+    PropagateSegmentsThread* propagate_thread = new PropagateSegmentsThread(this);
+    connect(propagate_thread, SIGNAL(finished()), propagate_thread, SLOT(quit()));
+
+    propagate_thread->start();
+    return;
+}
+
 
 void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, PointCloud& tracking_template)
 {	

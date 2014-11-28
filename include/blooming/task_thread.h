@@ -65,7 +65,7 @@ protected:
 class SegmentThread: public QThread
 {
 public:
-    SegmentThread(PointsFileSystem* points_file_system);
+    SegmentThread(PointsFileSystem* points_file_system, int frame);
     virtual ~SegmentThread();
 
 protected:
@@ -73,7 +73,21 @@ protected:
 
 protected:
     PointsFileSystem*	points_file_system_;
+    int                 frame_;
 };
 
+
+class PropagateSegmentsThread: public QThread
+{
+public:
+    PropagateSegmentsThread(TrackingSystem* tracking_system);
+    virtual ~PropagateSegmentsThread();
+
+protected:
+    void run();
+
+protected:
+    TrackingSystem* tracking_system_;
+};
 
 #endif

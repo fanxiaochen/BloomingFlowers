@@ -60,6 +60,8 @@
     </property>
     <addaction name="actionKMeansForFlower"/>
     <addaction name="actionKMeansForTrajectories"/>
+    <addaction name="separator"/>
+    <addaction name="actionPropagateSegments"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuAlgorithms"/>
@@ -112,6 +114,11 @@
   <action name="actionKMeansForFlower">
    <property name="text">
     <string>K-Means For Flower</string>
+   </property>
+  </action>
+  <action name="actionPropagateSegments">
+   <property name="text">
+    <string>Propagate Segments</string>
    </property>
   </action>
  </widget>

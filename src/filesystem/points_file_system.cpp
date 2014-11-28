@@ -15,7 +15,8 @@
 
 PointsFileSystem::PointsFileSystem()
 	:start_frame_(-1),
-	end_frame_(-1)
+	end_frame_(-1),
+    segment_frame_(16)
 {
 	setNameFilterDisables(false);
 	QStringList allowed_file_extensions;
@@ -411,7 +412,7 @@ void PointsFileSystem::segmentPointCloud(int frame)
 
 void PointsFileSystem::segmentation()
 {
-    SegmentThread* seg_thread = new SegmentThread(this);
+    SegmentThread* seg_thread = new SegmentThread(this, segment_frame_);
     connect(seg_thread, SIGNAL(finished()), seg_thread, SLOT(quit()));
 
     seg_thread->start();

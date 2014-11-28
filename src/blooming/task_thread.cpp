@@ -188,10 +188,11 @@ void TrajClusteringThread::run()
     return;
 }
 
-SegmentThread::SegmentThread(PointsFileSystem* points_file_system)
+SegmentThread::SegmentThread(PointsFileSystem* points_file_system, int frame)
     :QThread()
 {
     points_file_system_ = points_file_system;
+    frame_ = frame;
 }
 
 SegmentThread::~SegmentThread()
@@ -201,10 +202,86 @@ void SegmentThread::run()
 {
     std::cout << "Start Segmentation..." << std::endl;
 
-    int frame = 30;
-    points_file_system_->segmentPointCloud(frame);
+    points_file_system_->segmentPointCloud(frame_);
 
     std::cout << "Segmentation Finished..." << std::endl;
+    return;
+}
+
+PropagateSegmentsThread::PropagateSegmentsThread(TrackingSystem* tracking_system)
+    :QThread()
+{
+    tracking_system_ = tracking_system;
+}
+
+PropagateSegmentsThread::~PropagateSegmentsThread()
+{}
+
+void PropagateSegmentsThread::run()
+{
+    std::cout << "Start Propagating Segments..." << std::endl;
+
+    int key_frame = tracking_system_->getKeyFrame();
+    PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
+    PointCloud* key_cloud = points_file_system->getPointCloud(key_frame);
+
+    std::cout << "forward propagation starts" << std::endl;
+    for (size_t i = key_frame, i_end = points_file_system->getEndFrame();
+        i < i_end; ++ i)
+    {
+        PointCloud* forward_cloud = points_file_system->getPointCloud(i + 1);
+
+        std::vector<int> src_idx, tar_idx;
+        for (size_t i = 0, i_end = forward_cloud->size(); i < i_end; ++ i)
+            src_idx.push_back(i);
+
+        tracking_system_->cpd_registration(*forward_cloud, *key_cloud, src_idx, tar_idx);
+        
+        for (size_t j = 0, j_end = src_idx.size(); j < j_end; ++ j)
+        {
+            std::vector<PointCloud::ClusterPoint>& cluster_points = forward_cloud->getClusterPoints();
+            
+            PointCloud::ClusterPoint key_cp = key_cloud->getClusterPoints()[tar_idx[j]];
+            PointCloud::ClusterPoint fw_cp;
+            fw_cp._pt = key_cp._pt;
+            fw_cp._label = key_cp._label;
+            cluster_points.push_back(fw_cp);
+        }
+
+        forward_cloud->expire();
+        key_cloud = forward_cloud;
+    }
+
+    std::cout << "backward propagation starts" << std::endl;
+    for (size_t i = key_frame, i_end = points_file_system->getStartFrame();
+        i > i_end; -- i)
+    {
+        PointCloud* backward_cloud = points_file_system->getPointCloud(i - 1);
+
+        std::vector<int> src_idx, tar_idx;
+        for (size_t i = 0, i_end = backward_cloud->size(); i < i_end; ++ i)
+            src_idx.push_back(i);
+
+        tracking_system_->cpd_registration(*backward_cloud, *key_cloud, src_idx, tar_idx);
+
+        for (size_t j = 0, j_end = src_idx.size(); j < j_end; ++ j)
+        {
+            std::vector<PointCloud::ClusterPoint>& cluster_points = backward_cloud->getClusterPoints();
+
+            PointCloud::ClusterPoint key_cp = key_cloud->getClusterPoints()[tar_idx[j]];
+            PointCloud::ClusterPoint bw_cp;
+            bw_cp._pt = key_cp._pt;
+            bw_cp._label = key_cp._label;
+            cluster_points.push_back(bw_cp);
+        }
+
+        backward_cloud->expire();
+        key_cloud = backward_cloud;
+    }
+
+
+
+    std::cout << "Propagating Segments Finished..." << std::endl;
     return;
 }
 

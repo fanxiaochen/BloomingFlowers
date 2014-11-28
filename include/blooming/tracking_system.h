@@ -23,12 +23,24 @@ public:
     inline MeshFileSystem* getMeshFileSystem(){ return mesh_file_system_; }
     inline Trajectories* getTrajectories(){ return trajectories_; }
 
+    inline void setStartFrame(int start_frame) { start_frame_ = start_frame; }
+    inline void setEndFrame(int end_frame) { end_frame_ = end_frame; }
+    inline void setKeyFrame(int key_frame) { key_frame_ = key_frame; }
+
+    inline int getStartFrame() { return start_frame_; }
+    inline int getEndFrame() { return end_frame_; }
+    inline int getKeyFrame() { return key_frame_; }
+
     public slots:
     void pointcloud_tracking();
     void mesh_tracking();
 
     void buildTrajectories();
     void clusterTrajectories();
+
+    void propagateSegments();
+
+
 
 public:
     void cpd_registration(const PointCloud& tracked_frame, PointCloud& tracking_template);
@@ -37,10 +49,14 @@ public:
         const std::vector<int>& src_idx, std::vector<int>& tar_idx);
 
 private:
-    PointsFileSystem*	points_file_system_;
-    MeshFileSystem*		mesh_file_system_;
+    PointsFileSystem*   points_file_system_;
+    MeshFileSystem*     mesh_file_system_;
 
     Trajectories*       trajectories_;
+
+    int                 start_frame_;
+    int                 end_frame_;
+    int                 key_frame_;
 };
 
 #endif
