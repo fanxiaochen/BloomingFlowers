@@ -13,8 +13,8 @@ PickHandler::~PickHandler(void)
 
 void PickHandler::getUsage(osg::ApplicationUsage &usage) const
 {
-    usage.addKeyboardMouseBinding("L-Click + ModKey", "Pick Renderable Object");
-    usage.addKeyboardMouseBinding("R-Click + ModKey", "Pick Individual Point");
+//    usage.addKeyboardMouseBinding("L-Click + ModKey", "Pick Renderable Object");
+//    usage.addKeyboardMouseBinding("R-Click + ModKey", "Pick Individual Point");
     return;
 }
 
@@ -34,11 +34,11 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapte
             osgUtil::LineSegmentIntersector::Intersection intersection;
             osg::NodePath node_path;
             Renderable* renderable = NULL;
-            if (ea.getButtonMask() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
-                renderable = computeIntersection<Renderable>(view, ea, intersection, node_path);
-            else if (ea.getButtonMask() == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON)
+//            if (ea.getButtonMask() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
+//                renderable = computeIntersection<Renderable>(view, ea, intersection, node_path);
+            if (ea.getButtonMask() == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON)
                 renderable = computePointIntersection<Renderable>(view, ea, intersection, node_path);
-            if (renderable == NULL)
+            else (renderable == NULL)
                 return false;
 
             renderable->pickEvent(ea.getModKeyMask(), intersection.getWorldIntersectPoint());

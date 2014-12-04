@@ -93,6 +93,7 @@ public:
 
   void petal_segmentation();
 
+  void patch_segmentation(std::vector<PointCloud>& patches);
 
 protected:
   virtual void clearData();
@@ -124,6 +125,9 @@ protected:
 
   std::vector<ClusterPoint>      cluster_centers_;
   std::vector<ClusterPoint>      cluster_points_;
+
+  bool                           activated_;
+  std::vector<PointCloud>        patches_;
 };
 
 #endif // POINTCLOUD_H

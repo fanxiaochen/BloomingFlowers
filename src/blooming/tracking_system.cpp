@@ -92,8 +92,8 @@ void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, PointClou
 	reg->setOutlierWeight(0.1);
 	reg->setFgtFlag(true);
     reg->setFgtEpsilon(1e-4);
-    reg->setLowRankFlag(true);
-    reg->setKLowRank(100);
+ //   reg->setLowRankFlag(true);
+ //   reg->setKLowRank(100);
 	reg->run();
 
 	MATRIX_TO_POINTCLOUD(reg->getModel(), tracking_template);
