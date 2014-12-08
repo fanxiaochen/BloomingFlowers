@@ -388,3 +388,33 @@ void PointCloud::estimateNormals()
     }
 
 }
+
+
+void PointCloud::patch_segmentation(std::vector<PointCloud>& patches)
+{
+    k_means();
+
+    int cluster_num = picked_indices_.size();
+
+    for (size_t i = 0; i < cluster_num; ++ i)
+    {
+        osg::ref_ptr<PointCloud> patch = new osg::ref_ptr<PointCloud>;
+        patches.push_back(*patch);
+    }
+
+    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+    {
+        ClusterPoint cp = cluster_points_.at(i);
+
+        for (size_t j = 0; j < cluster_num; ++ j)
+        {
+            if (cp._label == j)
+            {
+                patches[j].push_back(this->at(i));
+                patches[j].getClusterPoints().push_back(cp);
+            }
+        }
+    }
+
+    return;
+}
