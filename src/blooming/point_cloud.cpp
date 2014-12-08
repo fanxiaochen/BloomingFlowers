@@ -19,6 +19,7 @@
 #include "point_cloud.h"
 
 PointCloud::PointCloud(void)
+    :activated_(false)
 {
   
 }
@@ -173,6 +174,10 @@ void PointCloud::pickEvent(int pick_mode, osg::Vec3 position)
 
             expire();
 
+        }
+    case (osgGA::GUIEventAdapter::MODKEY_ALT):
+        {
+            activated_ = true;
         }
     default:
         break;
@@ -352,7 +357,6 @@ bool PointCloud::terminal(const std::vector<ClusterPoint>& cluster_centers, cons
 
 void PointCloud::estimateNormals()
 {
-    std::cout << "estimate normals started" << std::endl;
 
     PointCloud::Ptr point_cloud(new PointCloud);
     for (auto& it = this->begin(); it != this->end(); ++ it)
@@ -383,5 +387,4 @@ void PointCloud::estimateNormals()
         cluster_points_[i]._mv.z() = cloud_normals->at(i).normal_z;
     }
 
-    std::cout << "estimate normals finished" << std::endl;
 }

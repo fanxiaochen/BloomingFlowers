@@ -16,7 +16,7 @@
 PointsFileSystem::PointsFileSystem()
 	:start_frame_(-1),
 	end_frame_(-1),
-    segment_frame_(16)
+    segment_frame_(0)
 {
 	setNameFilterDisables(false);
 	QStringList allowed_file_extensions;

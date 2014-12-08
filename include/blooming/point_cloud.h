@@ -19,6 +19,8 @@ typedef	 pcl::PointCloud<Point>  PclPointCloud;
 
 class PointCloud : public QObject, public Renderable, public PclPointCloud
 {
+    Q_OBJECT
+
 public:
 
     struct ClusterPoint
@@ -93,7 +95,6 @@ public:
 
   void petal_segmentation();
 
-
 protected:
   virtual void clearData();
   virtual void updateImpl();
@@ -124,6 +125,8 @@ protected:
 
   std::vector<ClusterPoint>      cluster_centers_;
   std::vector<ClusterPoint>      cluster_points_;
+
+  bool                           activated_;
 };
 
 #endif // POINTCLOUD_H
