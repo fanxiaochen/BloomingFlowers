@@ -22,6 +22,7 @@ bool Parameters::load(const std::string& filename)
     }
     QDomElement root = doc.documentElement();
 
+
     // frame sequence information
     QDomElement sequenceElement = root.firstChildElement(QString("chosen_frame_sequence"));
     start_frame_ = sequenceElement.attribute("start_frame").toInt();
@@ -40,7 +41,7 @@ bool Parameters::save(const std::string& filename)
         return false;
     }
 
-    QDomDocument doc("blooming flowers");
+    QDomDocument doc("blooming_flowers");
     QDomProcessingInstruction xml_declaration = doc.createProcessingInstruction("xml", "version=\"1.0\"");
     doc.appendChild(xml_declaration);
 
@@ -49,9 +50,9 @@ bool Parameters::save(const std::string& filename)
 
     // frame sequence information
     QDomElement sequenceElement = doc.createElement(QString("chosen_frame_sequence"));
-    sequenceElement.setAttribute("start frame", start_frame_);
-    sequenceElement.setAttribute("end frame", end_frame_);
-    sequenceElement.setAttribute("key frame", key_frame_);
+    sequenceElement.setAttribute("start_frame", start_frame_);
+    sequenceElement.setAttribute("end_frame", end_frame_);
+    sequenceElement.setAttribute("key_frame", key_frame_);
     rootElement.appendChild(sequenceElement);
 
     QTextStream text_stream(&file);
