@@ -37,6 +37,8 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
+find_package(Qt5Xml REQUIRED)
+
 
 # Set Qt files and resources here
 set(uis       resource/main_window.ui)
@@ -78,6 +80,7 @@ set(lily_incs       ${lily_inc}/main_window.h
                     ${lily_inc}/color_map.h
                     ${lily_inc}/pick_handler.h
                     ${lily_inc}/point_intersector.h
+                    ${lily_inc}/parameters.h
             )
 
 set(lily_srcs       ${lily_src}/main.cpp
@@ -93,6 +96,7 @@ set(lily_srcs       ${lily_src}/main.cpp
                     ${lily_src}/color_map.cpp
                     ${lily_src}/pick_handler.cpp
                     ${lily_src}/point_intersector.cpp
+                    ${lily_src}/parameters.cpp
             )
             
 set(blooming_incs   ${blooming_inc}/point_cloud.h
@@ -162,7 +166,7 @@ ENDIF (${CMAKE_BUILD_TOOL} MATCHES "devenv")
 
 set(link_libraies	${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
   ${OPENSCENEGRAPH_LIBRARIES}
-  Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent
+  Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent Qt5::Xml
   ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_KDTREE_LIBRARIES}
   ${CGAL_LIBRARY}
   ${CPD_LIBRARY} ${ARAP_LIBRARY})
