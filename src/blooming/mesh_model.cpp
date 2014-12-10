@@ -2,7 +2,7 @@
 #include <boost/filesystem.hpp>
 #include <osgDB/WriteFile>
 
-#include <Deform.h>
+//#include <Deform.h>
 
 #include "tiny_obj_loader.h"
 
@@ -166,68 +166,68 @@ void MeshModel::buildDeformModel()
     return;
 }
 
-void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
-{
-    float* p;
-    int p_num = vertices_->size();
-    p = (float*)malloc(sizeof(float)*p_num*3);
-
-    for (size_t i = 0; i < p_num; i ++)
-    {
-        const osg::Vec3& point = vertices_->at(i);
-        p[3*i+0] = point.x();
-        p[3*i+1] = point.y();
-        p[3*i+2] = point.z();
-    }
-
-    Deform::FaceList face_list;
-    for (size_t i = 0, i_end = faces_.size(); i < i_end; i ++)
-    {
-        std::vector<int> face = faces_.at(i);
-        std::sort(face.begin(), face.end());
-
-        Eigen::Vector3i face_i;
-        face_i(0) = face.at(0);
-        face_i(1) = face.at(1);
-        face_i(2) = face.at(2);
-
-        face_list.push_back(face_i);
-    }
-
-    Deform::VectorF points_indicator;
-    Deform::VectorI points_index;
-
-    for (size_t i = 0, i_end = 1; i < i_end; i ++)
-    {
-        osg::Vec3 indicator = indicators.at(i);
-        /*points_indicator.push_back(indicator.x());
-        points_indicator.push_back(indicator.y());
-        points_indicator.push_back(indicator.z()); */
-        points_indicator.push_back(12);
-        points_indicator.push_back(6);
-        points_indicator.push_back(900); 
-    }
-
-    for (size_t i = 0, i_end = 1; i < i_end; i ++)
-    {
-        points_index.push_back(index.at(i));
-    }
-
-    Deform deform_model(p, p_num, adj_list_, face_list);
-    deform_model.do_Deform(points_indicator, points_index);
-    
-    float* new_p = deform_model.get_P_Prime();
-
-    for (size_t i = 0; i < p_num; i ++)
-    {
-        osg::Vec3& point = vertices_->at(i);
-        point.x() = new_p[3*i+0];
-        point.y() = new_p[3*i+1];
-        point.z() = new_p[3*i+2];
-    }
-
-    free(p);
-}
+//void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
+//{
+//    float* p;
+//    int p_num = vertices_->size();
+//    p = (float*)malloc(sizeof(float)*p_num*3);
+//
+//    for (size_t i = 0; i < p_num; i ++)
+//    {
+//        const osg::Vec3& point = vertices_->at(i);
+//        p[3*i+0] = point.x();
+//        p[3*i+1] = point.y();
+//        p[3*i+2] = point.z();
+//    }
+//
+//    Deform::FaceList face_list;
+//    for (size_t i = 0, i_end = faces_.size(); i < i_end; i ++)
+//    {
+//        std::vector<int> face = faces_.at(i);
+//        std::sort(face.begin(), face.end());
+//
+//        Eigen::Vector3i face_i;
+//        face_i(0) = face.at(0);
+//        face_i(1) = face.at(1);
+//        face_i(2) = face.at(2);
+//
+//        face_list.push_back(face_i);
+//    }
+//
+//    Deform::VectorF points_indicator;
+//    Deform::VectorI points_index;
+//
+//    for (size_t i = 0, i_end = 1; i < i_end; i ++)
+//    {
+//        osg::Vec3 indicator = indicators.at(i);
+//        /*points_indicator.push_back(indicator.x());
+//        points_indicator.push_back(indicator.y());
+//        points_indicator.push_back(indicator.z()); */
+//        points_indicator.push_back(12);
+//        points_indicator.push_back(6);
+//        points_indicator.push_back(900); 
+//    }
+//
+//    for (size_t i = 0, i_end = 1; i < i_end; i ++)
+//    {
+//        points_index.push_back(index.at(i));
+//    }
+//
+//    Deform deform_model(p, p_num, adj_list_, face_list);
+//    deform_model.do_Deform(points_indicator, points_index);
+//    
+//    float* new_p = deform_model.get_P_Prime();
+//
+//    for (size_t i = 0; i < p_num; i ++)
+//    {
+//        osg::Vec3& point = vertices_->at(i);
+//        point.x() = new_p[3*i+0];
+//        point.y() = new_p[3*i+1];
+//        point.z() = new_p[3*i+2];
+//    }
+//
+//    free(p);
+//}
 
 
 void MeshModel::deform(const osg::Vec3Array& indicators)

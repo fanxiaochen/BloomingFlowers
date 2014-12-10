@@ -1,9 +1,9 @@
-#ifndef PETAL_CLOUD_H
-#define PETAL_CLOUD_H
+#ifndef PETAL_H
+#define PETAL_H
 
 #include "point_cloud.h"
 
-class PetalCloud: public PointCloud
+class Petal: public PointCloud
 {
 public:
 

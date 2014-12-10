@@ -3,6 +3,7 @@
 
 #include "main_window.h"
 #include "point_cloud.h"
+#include "flower.h"
 #include "mesh_model.h"
 #include "points_file_system.h"
 #include "mesh_file_system.h"
@@ -86,8 +87,9 @@ void MeshTrackThread::run()
 
         tracking_system_->cpd_registration(*tracked_frame, *tracking_template);
 
-        tracking_template->deform(*tracking_template->getVertices(), deform_idx);
-      //  tracking_template->deform(*tracking_template->getVertices());
+        // unstable
+       // tracking_template->deform(*tracking_template->getVertices(), deform_idx);
+        tracking_template->deform(*tracking_template->getVertices());
 
         points_file_system->hidePointCloud(i - 1);
     }
@@ -239,10 +241,12 @@ void PropagateSegmentsThread::run()
         
         for (size_t j = 0, j_end = src_idx.size(); j < j_end; ++ j)
         {
-            std::vector<PointCloud::ClusterPoint>& cluster_points = forward_cloud->getClusterPoints();
+            std::vector<Flower::FlowerPoint>& cluster_points = dynamic_cast<Flower*>(
+                forward_cloud)->getFlowerPoints();
             
-            PointCloud::ClusterPoint key_cp = key_cloud->getClusterPoints()[tar_idx[j]];
-            PointCloud::ClusterPoint fw_cp;
+            Flower::FlowerPoint key_cp = dynamic_cast<Flower*>(
+                key_cloud)->getFlowerPoints()[tar_idx[j]];
+            Flower::FlowerPoint fw_cp;
             fw_cp._pt = key_cp._pt;
             fw_cp._label = key_cp._label;
             cluster_points.push_back(fw_cp);
@@ -266,10 +270,12 @@ void PropagateSegmentsThread::run()
 
         for (size_t j = 0, j_end = src_idx.size(); j < j_end; ++ j)
         {
-            std::vector<PointCloud::ClusterPoint>& cluster_points = backward_cloud->getClusterPoints();
+            std::vector<Flower::FlowerPoint>& cluster_points = dynamic_cast<Flower*>(
+                backward_cloud)->getFlowerPoints();
 
-            PointCloud::ClusterPoint key_cp = key_cloud->getClusterPoints()[tar_idx[j]];
-            PointCloud::ClusterPoint bw_cp;
+            Flower::FlowerPoint key_cp = dynamic_cast<Flower*>(
+                key_cloud)->getFlowerPoints()[tar_idx[j]];
+            Flower::FlowerPoint bw_cp;
             bw_cp._pt = key_cp._pt;
             bw_cp._label = key_cp._label;
             cluster_points.push_back(bw_cp);

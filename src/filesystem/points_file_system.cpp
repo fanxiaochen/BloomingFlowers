@@ -7,7 +7,7 @@
 
 
 #include "main_window.h"
-#include "point_cloud.h"
+#include "flower.h"
 #include "osg_viewer_widget.h"
 #include "points_file_system.h"
 #include "scene_widget.h"
@@ -170,7 +170,8 @@ osg::ref_ptr<PointCloud> PointsFileSystem::getPointCloud(const std::string& file
 	if (it != point_cloud_cache_map_.end())
 		return it->second.get();
 
-	osg::ref_ptr<PointCloud> point_cloud(new PointCloud());
+    // using Flower as basic point cloud type 
+	osg::ref_ptr<PointCloud> point_cloud = new Flower;
 	if (!point_cloud->open(filename))
 		return NULL;
 
@@ -404,8 +405,8 @@ void PointsFileSystem::navigateToNextFrame()
 
 void PointsFileSystem::segmentPointCloud(int frame)
 {
-    PointCloud* point_cloud = getPointCloud(frame);
-    point_cloud->petal_segmentation();
+    PointCloud* flower = getPointCloud(frame);
+    dynamic_cast<Flower*>(flower)->petal_segmentation();
 
     return;
 }
