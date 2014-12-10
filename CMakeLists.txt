@@ -107,6 +107,7 @@ set(blooming_incs   ${blooming_inc}/point_cloud.h
                     ${blooming_inc}/trajectory_model.h
                     ${blooming_inc}/petal.h
 					${blooming_inc}/flower.h
+					${blooming_inc}/mesh_simplify.h
                     )
 
 set(blooming_srcs	${blooming_src}/point_cloud.cpp

@@ -8,6 +8,7 @@
 #include "obj_writer.h"
 
 #include "mesh_model.h"
+#include "mesh_simplify.h"
 
 MeshModel::MeshModel()
 	:vertices_(new osg::Vec3Array),
@@ -44,7 +45,7 @@ void MeshModel::updateImpl(void)
     for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
     {
       size_t vertex_num = faces_[i].size();
-      osg::ref_ptr<osg::DrawElementsUInt> face = new osg::DrawElementsUInt(GL_TRIANGLES, vertex_num);
+      osg::ref_ptr<osg::DrawElementsUInt> face = new osg::DrawElementsUInt(GL_LINE_LOOP, vertex_num);
       for (size_t j = 0; j < vertex_num; ++ j)
         face->at(j) = faces_[i][j];
 
@@ -121,6 +122,52 @@ bool MeshModel::readObjFile(const std::string& filename)
     recoverAdjList();
 
     buildDeformModel();
+
+    for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
+    {
+        Simplify::Vertex v;
+        osg::Vec3& vertice = vertices_->at(i);
+        v.p.x = vertice.x();
+        v.p.y = vertice.y();
+        v.p.z = vertice.z();
+        Simplify::vertices.push_back(v);
+    }
+
+    for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
+    {
+        Simplify::Triangle t;
+        std::vector<int>& face = faces_.at(i);
+        t.v[0] = face[0];
+        t.v[1] = face[1];
+        t.v[2] = face[2];
+        Simplify::triangles.push_back(t);
+    }
+
+
+    Simplify::simplify_mesh(50);
+    vertices_->clear();
+    faces_.clear();
+
+    for (size_t i = 0, i_end = Simplify::vertices.size(); i < i_end; ++ i)
+    {
+        osg::Vec3 vertice;
+        Simplify::Vertex v = Simplify::vertices.at(i);
+        vertice.x() = v.p.x;
+        vertice.y() = v.p.y;
+        vertice.z() = v.p.z;
+        vertices_->push_back(vertice);
+    }
+
+    for (size_t i = 0, i_end = Simplify::triangles.size(); i < i_end; ++ i)
+    {
+        std::vector<int> face;
+        Simplify::Triangle t = Simplify::triangles.at(i);
+        face.push_back(t.v[0]);
+        face.push_back(t.v[1]);
+        face.push_back(t.v[2]);
+
+        faces_.push_back(face);
+    }
 
 	return true;
 }
