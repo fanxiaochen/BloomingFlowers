@@ -25,5 +25,6 @@
 #include "points_file_system.h"
 #include "mesh_file_system.h"
 #include "tiny_obj_loader.h"
+#include "obj_writer.h"
 
 #endif

@@ -5,6 +5,7 @@
 //#include <Deform.h>
 
 #include "tiny_obj_loader.h"
+#include "obj_writer.h"
 
 #include "mesh_model.h"
 
@@ -57,6 +58,11 @@ void MeshModel::updateImpl(void)
 	return;
 }
 
+bool MeshModel::save(const std::string& filename)
+{
+    ObjWriter obj_writer(this);
+    return obj_writer.save(filename);
+}
 
 bool MeshModel::load(const std::string& filename)
 {
@@ -162,7 +168,7 @@ void MeshModel::buildDeformModel()
 {
     Build_triangle<Polyhedron::HalfedgeDS> triangle(this);
     deform_model_.delegate(triangle);
-    CGAL_assertion( deform_model_.is_triangle(deform_model_.halfedges_begin()));
+//    CGAL_assertion( deform_model_.is_triangle(deform_model_.halfedges_begin()));
     return;
 }
 
