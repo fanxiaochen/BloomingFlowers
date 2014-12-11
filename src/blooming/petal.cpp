@@ -69,9 +69,8 @@ void Petal::searchNearestIdx(Petal& petal, std::vector<int>& idx)
     {
         osg::Vec3& point = this->getVertices()->at(i);
 
-        cloud->points[i].x = point.x();
-        cloud->points[i].y = point.y();
-        cloud->points[i].z = point.z();
+        pcl::PointXYZ pcl_point(point.x(), point.y(), point.z());
+        cloud->push_back(pcl_point);
     }
 
     pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
