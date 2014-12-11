@@ -170,8 +170,7 @@ osg::ref_ptr<PointCloud> PointsFileSystem::getPointCloud(const std::string& file
 	if (it != point_cloud_cache_map_.end())
 		return it->second.get();
 
-    // using Flower as basic point cloud type 
-	osg::ref_ptr<PointCloud> point_cloud = new Flower;
+	osg::ref_ptr<PointCloud> point_cloud = new PointCloud;
 	if (!point_cloud->open(filename))
 		return NULL;
 
@@ -405,8 +404,8 @@ void PointsFileSystem::navigateToNextFrame()
 
 void PointsFileSystem::segmentPointCloud(int frame)
 {
-    PointCloud* flower = getPointCloud(frame);
-    dynamic_cast<Flower*>(flower)->petal_segmentation();
+    PointCloud* point_cloud = getPointCloud(frame);
+    point_cloud->petal_segmentation();
 
     return;
 }
