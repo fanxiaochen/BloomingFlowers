@@ -18,8 +18,6 @@ typedef  pcl::PointCloud<Point>  PclPointCloud;
 
 class PointCloud : public QObject, virtual public Renderable, public PclPointCloud
 {
-    Q_OBJECT
-
 public:
     struct FlowerPoint
     {

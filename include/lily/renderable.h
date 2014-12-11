@@ -17,34 +17,34 @@ class UpdateCallback;
 class Renderable : public osg::MatrixTransform
 {
 public:
-	Renderable(void);
-	virtual ~Renderable(void);
+    Renderable(void);
+    virtual ~Renderable(void);
 
-	META_Renderable(Renderable);
+    META_Renderable(Renderable);
 
-	void expire(void);
+    void expire(void);
 
-	inline bool isHidden(void) const {return hidden_;}
-	virtual void toggleHidden(void);
+    inline bool isHidden(void) const {return hidden_;}
+    virtual void toggleHidden(void);
 
-	QReadWriteLock& getReadWriteLock(void) {return read_write_lock_;}
+    QReadWriteLock& getReadWriteLock(void) {return read_write_lock_;}
 
-	osg::BoundingBox getBoundingBox(void);
+    osg::BoundingBox getBoundingBox(void);
 
-	virtual void pickEvent(int pick_mode, osg::Vec3 position) {}
-
-protected:
-	friend class UpdateCallback;
-	void update(void);
-	virtual void updateImpl(void) = 0;
+    virtual void pickEvent(int pick_mode, osg::Vec3 position) {}
 
 protected:
-	mutable QReadWriteLock              read_write_lock_;
-	osg::ref_ptr<osg::MatrixTransform>  content_root_;
-	bool                                expired_;
-	bool                                hidden_;
+    friend class UpdateCallback;
+    void update(void);
+    virtual void updateImpl(void) = 0;
 
-	static QMutex						mutex_graphics_context_;
+protected:
+    mutable QReadWriteLock              read_write_lock_;
+    osg::ref_ptr<osg::MatrixTransform>  content_root_;
+    bool                                expired_;
+    bool                                hidden_;
+
+    static QMutex						mutex_graphics_context_;
 };
 
 #endif // RENDERABLE_H

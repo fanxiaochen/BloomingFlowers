@@ -1,15 +1,16 @@
 #ifndef FLOWER_H
 #define FLOWER_H
 
-#include "point_cloud.h"
-#include "mesh_model.h"
+#include "renderable.h"
 #include "petal.h"
 
-class Flower: public PointCloud, public MeshModel
+class Flower: public Renderable
 {
 public:
     Flower();
     virtual ~Flower();
+
+    inline Petals& getPetals(){ return petals_; }
 
 protected:
     virtual void clearData();
@@ -20,8 +21,11 @@ protected:
 
 private:
     Petals            petals_;
+
+    bool              show_points_;
+    bool              show_mesh_;
 };
 
-typedef std::vector<Flower> Flowers;
+typedef std::vector<osg::ref_ptr<Flower> > Flowers;
 
 #endif 

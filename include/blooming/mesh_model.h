@@ -37,6 +37,8 @@ public:
 
     inline osg::ref_ptr<osg::Vec3Array> getVertices(){ return vertices_; }
     inline std::vector<std::vector<int> >& getFaces(){ return faces_; }
+    inline std::vector<std::vector<int> >& getAdjList(){ return adj_list_; }
+    inline Polyhedron& getDeformModel(){ return deform_model_; }
 
 //    void deform(const osg::Vec3Array& indicators, const std::vector<int>& index);
     void deform(const osg::Vec3Array& indicators);

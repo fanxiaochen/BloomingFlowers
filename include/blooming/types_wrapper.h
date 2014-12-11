@@ -7,6 +7,7 @@
 
 #include "point_cloud.h"
 #include "mesh_model.h"
+#include "flower.h"
 
 typedef cpd::MatrixType<float, 3>::MatrixD PointMatrix;
 typedef cpd::MatrixType<float, 3>::Matrix CorresMatrix;
@@ -80,6 +81,71 @@ static PointMatrix MESHMODEL_TO_MATRIX(MeshModel& mesh_model)
 	}
 
 	return point_matrix;
+}
+
+static PointMatrix FLOWER_TO_MATRIX(Flower& flower)
+{
+    PointMatrix point_matrix;
+
+    Petals petals = flower.getPetals();
+
+    size_t point_size = 0;
+    for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
+    {
+        osg::ref_ptr<Petal> petal = petals[i];
+        osg::ref_ptr<osg::Vec3Array> vertices = petal->getVertices();
+        point_size += vertices->size();
+    }
+    
+    point_matrix.resize(point_size, 3);
+
+    int k = 0;
+    for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
+    {
+        osg::ref_ptr<Petal> petal = petals[i];
+        osg::ref_ptr<osg::Vec3Array> vertices = petal->getVertices();
+
+        for (size_t j = 0, j_end = vertices->size(); j < j_end; ++ j)
+        {
+            const osg::Vec3& point = vertices->at(j);
+
+            point_matrix(k, 0) = float(point.x());
+            point_matrix(k, 1) = float(point.y());
+            point_matrix(k, 2) = float(point.z());
+
+            k++;
+        }
+    }
+
+    return point_matrix;
+}
+
+static void MATRIX_TO_FLOWER(const PointMatrix& point_matrix, Flower& flower)
+{
+    QWriteLocker locker(&flower.getReadWriteLock());
+
+    size_t point_size = point_matrix.rows();
+
+    Petals petals = flower.getPetals();
+
+    int k = 0;
+    for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
+    {
+        osg::ref_ptr<Petal> petal = petals[i];
+        osg::ref_ptr<osg::Vec3Array> vertices = petal->getVertices();
+
+        for (size_t j = 0, j_end = vertices->size(); j < j_end; ++ j)
+        {
+            osg::Vec3& point = vertices->at(j);
+
+            point.x() = point_matrix(k,0);
+            point.y() = point_matrix(k,1);
+            point.z() = point_matrix(k,2);
+
+            k++;
+        }
+    }
+
 }
 
 #endif

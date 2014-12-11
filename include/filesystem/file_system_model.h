@@ -11,24 +11,24 @@ class FileSystemModel : public QFileSystemModel
 {
 
 public:
-	FileSystemModel();
-	virtual ~FileSystemModel();
+    FileSystemModel();
+    virtual ~FileSystemModel();
 
-	Qt::ItemFlags flags(const QModelIndex &index) const;
-	QVariant data(const QModelIndex &index, int role) const;
+    Qt::ItemFlags flags(const QModelIndex &index) const;
+    QVariant data(const QModelIndex &index, int role) const;
 
-	virtual QModelIndex setRootPath ( const QString & root_path );
-	virtual bool setData(const QModelIndex &index, const QVariant &value, int role);
+    virtual QModelIndex setRootPath ( const QString & root_path );
+    virtual bool setData(const QModelIndex &index, const QVariant &value, int role);
 
-	inline QSet<QPersistentModelIndex> getCheckedIndexes(){ return checked_indexes_; }
-
-protected:
-	Qt::CheckState computeCheckState(const QModelIndex &index) const;
-	bool recursiveCheck(const QModelIndex &index, const QVariant &value);	
+    inline QSet<QPersistentModelIndex> getCheckedIndexes(){ return checked_indexes_; }
 
 protected:
+    Qt::CheckState computeCheckState(const QModelIndex &index) const;
+    bool recursiveCheck(const QModelIndex &index, const QVariant &value);	
 
-  	QSet<QPersistentModelIndex>     checked_indexes_;
-	QMutex							mutex_;
+protected:
+
+    QSet<QPersistentModelIndex>     checked_indexes_;
+    QMutex							mutex_;
 };
 #endif // FILE_SYSTEM_MODEL_H

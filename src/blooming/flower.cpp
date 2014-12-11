@@ -6,6 +6,7 @@
 #include "flower.h"
 
 Flower::Flower()
+    :show_points_(false), show_mesh_(false)
 {
 }
 
@@ -14,7 +15,6 @@ Flower::~Flower()
 
 void Flower::clearData()
 {
-    PointCloud::clearData();
     petals_.clear();
 }
 

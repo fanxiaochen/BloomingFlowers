@@ -10,6 +10,9 @@ public:
     Petal(int id);
     virtual ~Petal();
 
+    void setMeshModel(MeshModel* mesh_model);
+    void setPointCloud(PointCloud* point_cloud);
+
     inline int getPetalId() { return petal_id_; }
 
 protected:
@@ -22,6 +25,6 @@ private:
     int     petal_id_;
 };
 
-typedef std::vector<Petal>  Petals;
+typedef std::vector<osg::ref_ptr<Petal> >  Petals;
 
 #endif

@@ -129,24 +129,24 @@ bool MeshModel::readObjFile(const std::string& filename)
 
     buildDeformModel();
 
-    for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
+    /*for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
     {
-        Simplify::Vertex v;
-        osg::Vec3& vertice = vertices_->at(i);
-        v.p.x = vertice.x();
-        v.p.y = vertice.y();
-        v.p.z = vertice.z();
-        Simplify::vertices.push_back(v);
+    Simplify::Vertex v;
+    osg::Vec3& vertice = vertices_->at(i);
+    v.p.x = vertice.x();
+    v.p.y = vertice.y();
+    v.p.z = vertice.z();
+    Simplify::vertices.push_back(v);
     }
 
     for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
     {
-        Simplify::Triangle t;
-        std::vector<int>& face = faces_.at(i);
-        t.v[0] = face[0];
-        t.v[1] = face[1];
-        t.v[2] = face[2];
-        Simplify::triangles.push_back(t);
+    Simplify::Triangle t;
+    std::vector<int>& face = faces_.at(i);
+    t.v[0] = face[0];
+    t.v[1] = face[1];
+    t.v[2] = face[2];
+    Simplify::triangles.push_back(t);
     }
 
 
@@ -156,24 +156,24 @@ bool MeshModel::readObjFile(const std::string& filename)
 
     for (size_t i = 0, i_end = Simplify::vertices.size(); i < i_end; ++ i)
     {
-        osg::Vec3 vertice;
-        Simplify::Vertex v = Simplify::vertices.at(i);
-        vertice.x() = v.p.x;
-        vertice.y() = v.p.y;
-        vertice.z() = v.p.z;
-        vertices_->push_back(vertice);
+    osg::Vec3 vertice;
+    Simplify::Vertex v = Simplify::vertices.at(i);
+    vertice.x() = v.p.x;
+    vertice.y() = v.p.y;
+    vertice.z() = v.p.z;
+    vertices_->push_back(vertice);
     }
 
     for (size_t i = 0, i_end = Simplify::triangles.size(); i < i_end; ++ i)
     {
-        std::vector<int> face;
-        Simplify::Triangle t = Simplify::triangles.at(i);
-        face.push_back(t.v[0]);
-        face.push_back(t.v[1]);
-        face.push_back(t.v[2]);
+    std::vector<int> face;
+    Simplify::Triangle t = Simplify::triangles.at(i);
+    face.push_back(t.v[0]);
+    face.push_back(t.v[1]);
+    face.push_back(t.v[2]);
 
-        faces_.push_back(face);
-    }
+    faces_.push_back(face);
+    }*/
 
 	return true;
 }

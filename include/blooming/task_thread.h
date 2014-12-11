@@ -35,6 +35,19 @@ protected:
     TrackingSystem*	tracking_system_;
 };
 
+class FlowerTrackThread: public QThread
+{
+public:
+    FlowerTrackThread(TrackingSystem* tracking_system);
+    virtual ~FlowerTrackThread();
+
+protected:
+    void run();
+
+protected:
+    TrackingSystem*	tracking_system_;
+};
+
 class TrajectoryTrackThread: public QThread
 {
 public:

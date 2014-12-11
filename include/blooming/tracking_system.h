@@ -4,6 +4,8 @@
 #include <QObject>
 #include <vector>
 
+#include "flower.h"
+
 class PointCloud;
 class MeshModel;
 class PointsFileSystem;
@@ -23,6 +25,8 @@ public:
     inline MeshFileSystem* getMeshFileSystem(){ return mesh_file_system_; }
     inline Trajectories* getTrajectories(){ return trajectories_; }
 
+    inline Flowers& getFlowers(){ return flowers_; }
+
     inline void setStartFrame(int start_frame) { start_frame_ = start_frame; }
     inline void setEndFrame(int end_frame) { end_frame_ = end_frame; }
     inline void setKeyFrame(int key_frame) { key_frame_ = key_frame; }
@@ -40,6 +44,8 @@ public:
 
     void propagateSegments();
 
+    void flower_tracking();
+
 
 
 public:
@@ -47,6 +53,8 @@ public:
     void cpd_registration(const PointCloud& tracked_frame, MeshModel& tracking_template);
     void cpd_registration(const PointCloud& source_frame, const PointCloud& target_frame, 
         const std::vector<int>& src_idx, std::vector<int>& tar_idx);
+    void cpd_registration(const PointCloud& tracked_frame, Flower& tracking_template);
+
 
 private:
     PointsFileSystem*   points_file_system_;
@@ -57,6 +65,8 @@ private:
     int                 start_frame_;
     int                 end_frame_;
     int                 key_frame_;
+
+    Flowers             flowers_;
 };
 
 #endif

@@ -105,8 +105,8 @@ void Trajectories::clustering()
 void Trajectories::setCeterTrajectories()
 {
     PointCloud* start_cloud = points_file_system_->getPointCloud(points_file_system_->getStartFrame());
-    const std::vector<int>& picked_points = dynamic_cast<Flower*>(
-        start_cloud)->getPickedIndices();
+    const std::vector<int>& picked_points =
+        start_cloud->getPickedIndices();
 
     for (size_t i = 0, i_end = picked_points.size(); i < i_end; ++ i)
     {
@@ -121,8 +121,8 @@ void Trajectories::setCeterTrajectories()
 void Trajectories::updateCenterTrajectories()
 {
     PointCloud* start_cloud = points_file_system_->getPointCloud(points_file_system_->getStartFrame());
-    std::vector<osg::Vec3>& picked_points = dynamic_cast<Flower*>(
-        start_cloud)->getPickedPoints();
+    std::vector<osg::Vec3>& picked_points =
+        start_cloud->getPickedPoints();
 
     for (size_t i = 0, i_end = picked_points.size(); i < i_end; ++ i)
     {

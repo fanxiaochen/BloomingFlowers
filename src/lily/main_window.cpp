@@ -148,6 +148,7 @@ void MainWindow::init(void)
     connect(ui_.actionPointCloudTracking, SIGNAL(triggered()), tracking_system_, SLOT(pointcloud_tracking()));
     connect(ui_.actionMeshTracking, SIGNAL(triggered()), tracking_system_, SLOT(mesh_tracking()));
     connect(ui_.actionTrajectoryTracking, SIGNAL(triggered()), tracking_system_, SLOT(buildTrajectories()));
+    connect(ui_.actionFlowerTracking, SIGNAL(triggered()), tracking_system_, SLOT(flower_tracking()));
 
     connect(ui_.actionKMeansForTrajectories, SIGNAL(triggered()), tracking_system_, SLOT(clusterTrajectories()));
     connect(ui_.actionKMeansForFlower, SIGNAL(triggered()), points_files_, SLOT(segmentation()));

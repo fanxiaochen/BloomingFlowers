@@ -4,12 +4,13 @@
 
 #include "point_cloud.h"
 #include "mesh_model.h"
+#include "flower.h"
 #include "task_thread.h"
 #include "trajectory_model.h"
 #include "tracking_system.h"
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system)
-    :trajectories_(new Trajectories(points_file_system)), key_frame_(16)
+    :trajectories_(new Trajectories(points_file_system)), key_frame_(-1)
 {
     points_file_system_ = points_file_system;
 
@@ -18,7 +19,7 @@ TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system)
 }
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system, MeshFileSystem* mesh_file_system)
-    :trajectories_(new Trajectories(points_file_system)), key_frame_(16)
+    :trajectories_(new Trajectories(points_file_system)), key_frame_(-1)
 {
 	points_file_system_ = points_file_system;
 	mesh_file_system_ = mesh_file_system;	
@@ -43,6 +44,15 @@ void TrackingSystem::pointcloud_tracking()
 void TrackingSystem::mesh_tracking()
 {
     MeshTrackThread* track_thread = new MeshTrackThread(this);
+    connect(track_thread, SIGNAL(finished()), track_thread, SLOT(quit()));
+
+    track_thread->start();
+    return;
+}
+
+void TrackingSystem::flower_tracking()
+{
+    FlowerTrackThread* track_thread = new FlowerTrackThread(this);
     connect(track_thread, SIGNAL(finished()), track_thread, SLOT(quit()));
 
     track_thread->start();
@@ -161,5 +171,27 @@ void TrackingSystem::cpd_registration(const PointCloud& source_frame, const Poin
 
     //    trajectories_->getPath(i)._trajectory.push_back(int(max_index));
     }    
+}
+
+void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, Flower& tracking_template)
+{	
+    PointMatrix tracked_pm = POINTCLOUD_TO_MATRIX(tracked_frame);
+    PointMatrix tracking_pm = FLOWER_TO_MATRIX(tracking_template);
+
+    cpd::CPDNRigid<float, 3>* reg = new cpd::CPDNRigid<float, 3>();
+
+    reg->setInputData(tracking_pm, tracked_pm);
+    reg->setVision(false);
+    reg->setIterativeNumber(50);
+    reg->setVarianceTolerance(1e-5);
+    reg->setEnergyTolerance(1e-3);
+    reg->setOutlierWeight(0.1);
+    reg->setFgtFlag(true);
+    reg->setFgtEpsilon(1e-3);
+//    reg->setLowRankFlag(true);
+//    reg->setKLowRank(40);
+    reg->run();
+
+    MATRIX_TO_FLOWER(reg->getModel(), tracking_template);
 }
 
