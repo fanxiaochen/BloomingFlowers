@@ -4,7 +4,7 @@
 #include "renderable.h"
 #include "petal.h"
 
-class Flower: public Renderable
+class Flower
 {
 public:
     Flower();
@@ -12,12 +12,8 @@ public:
 
     inline Petals& getPetals(){ return petals_; }
 
-protected:
-    virtual void clearData();
-    virtual void updateImpl();
-    virtual void visualizeFlower();
-
-    void pickEvent(int pick_mode, osg::Vec3 position){}
+    void show();
+    void update();
 
 private:
     Petals            petals_;
@@ -26,6 +22,6 @@ private:
     bool              show_mesh_;
 };
 
-typedef std::vector<osg::ref_ptr<Flower> > Flowers;
+typedef std::vector<Flower> Flowers;
 
 #endif 

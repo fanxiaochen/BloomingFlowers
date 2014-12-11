@@ -45,6 +45,7 @@ MainWindow::~MainWindow()
     delete mesh_widget_;
     delete scene_widget_;
     delete tracking_system_;
+    delete parameters_;
 
     return;
 }

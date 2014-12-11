@@ -36,5 +36,6 @@ void Petal::updateImpl()
 
 void Petal::visualizePetal()
 {
-
+    visualizeMesh();
+    return;
 }

@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "main_window.h"
+#include "parameters.h"
 #include "point_cloud.h"
 #include "flower.h"
 #include "petal.h"
@@ -90,7 +91,7 @@ void MeshTrackThread::run()
 
         // unstable
        // tracking_template->deform(*tracking_template->getVertices(), deform_idx);
-        tracking_template->deform(*tracking_template->getVertices());
+       // tracking_template->deform(*tracking_template->getVertices());
 
         points_file_system->hidePointCloud(i - 1);
     }
@@ -111,7 +112,7 @@ void FlowerTrackThread::run()
 {
     std::cout << "Flower Tracking Starts..." << std::endl;
 
-    int key_frame = tracking_system_->getKeyFrame();
+    int key_frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
     Flowers& flowers = tracking_system_->getFlowers();
 
     PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
@@ -130,17 +131,19 @@ void FlowerTrackThread::run()
         petal->setMeshModel(petal_template);
         flower.getPetals().push_back(petal);
     }
-    //flowers.push_back(flower);
+    flower.show();
+    flowers.push_back(flower);
 
 
     for (size_t i = key_frame, i_end = end_frame;
         i < i_end; ++ i)
     {
+        std::cout << "tracking [frame " << i << "]" << std::endl;
         PointCloud* forward_cloud = points_file_system->getPointCloud(i + 1);
 
         tracking_system_->cpd_registration(*forward_cloud, flower);
 
-        flower.expire();
+        flower.update();
     }
 
     /*std::vector<int> deform_idx;

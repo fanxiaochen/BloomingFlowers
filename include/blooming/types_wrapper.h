@@ -122,8 +122,6 @@ static PointMatrix FLOWER_TO_MATRIX(Flower& flower)
 
 static void MATRIX_TO_FLOWER(const PointMatrix& point_matrix, Flower& flower)
 {
-    QWriteLocker locker(&flower.getReadWriteLock());
-
     size_t point_size = point_matrix.rows();
 
     Petals petals = flower.getPetals();
