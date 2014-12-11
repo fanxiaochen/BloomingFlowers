@@ -24,7 +24,7 @@ typedef boost::graph_traits<Polyhedron>::vertex_iterator        vertex_iterator;
 typedef CGAL::Surface_mesh_deformation<Polyhedron> Surface_mesh_deformation;
 
 
-class MeshModel : public Renderable
+class MeshModel : virtual public Renderable
 {
 public:
 	MeshModel();
@@ -43,6 +43,7 @@ public:
 
 protected:
 	virtual void updateImpl(void);
+    virtual void visualizeMesh(void);
 
 private:
 	bool readObjFile(const std::string& filename);

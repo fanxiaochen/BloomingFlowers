@@ -22,7 +22,7 @@ MeshModel::~MeshModel(void)
 {
 }
 
-void MeshModel::updateImpl(void)
+void MeshModel::visualizeMesh(void)
 {
   osg::ref_ptr<osg::Geode> geode(new osg::Geode);
   osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry;
@@ -57,6 +57,12 @@ void MeshModel::updateImpl(void)
   content_root_->addChild(geode);
 
 	return;
+}
+
+void MeshModel::updateImpl()
+{
+    visualizeMesh();
+    return;
 }
 
 bool MeshModel::save(const std::string& filename)

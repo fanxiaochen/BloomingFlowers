@@ -17,7 +17,7 @@ typedef  pcl::PointXYZRGB  Point;
 typedef  pcl::PointCloud<Point>  PclPointCloud;
 
 
-class PointCloud : public QObject, public Renderable, public PclPointCloud
+class PointCloud : public QObject, virtual public Renderable, public PclPointCloud
 {
     Q_OBJECT
 
@@ -25,7 +25,7 @@ public:
   PointCloud(void);
   virtual ~PointCloud(void);
 
-  virtual const char* className() const {return "PointCloud";}
+ // virtual const char* className() const {return "PointCloud";}
 
   bool open(const std::string& filename);
   void reload(void);
@@ -38,7 +38,6 @@ public:
 protected:
   virtual void clearData();
   virtual void updateImpl();
-
   virtual void visualizePoints();
 
   PointCloud* getPrevFrame(void);

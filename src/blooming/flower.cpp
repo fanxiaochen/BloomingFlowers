@@ -20,7 +20,13 @@ void Flower::clearData()
     petals_.clear();
 }
 
-void Flower::visualizePoints()
+void Flower::updateImpl()
+{
+    visualizeFlower();
+    return;
+}
+
+void Flower::visualizeFlower()
 {
     osg::ref_ptr<osg::Vec3Array>  vertices = new osg::Vec3Array;
     osg::ref_ptr<osg::Vec4Array>  colors = new osg::Vec4Array;

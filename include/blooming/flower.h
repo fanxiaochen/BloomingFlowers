@@ -2,9 +2,10 @@
 #define FLOWER_H
 
 #include "point_cloud.h"
+#include "mesh_model.h"
 #include "petal.h"
 
-class Flower: public PointCloud
+class Flower: public PointCloud, public MeshModel
 {
 public:
     struct FlowerPoint
@@ -96,7 +97,8 @@ public:
 
 protected:
     virtual void clearData();
-    virtual void visualizePoints();
+    virtual void updateImpl();
+    virtual void visualizeFlower();
 
 private:
 
