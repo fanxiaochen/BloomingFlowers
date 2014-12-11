@@ -15,8 +15,12 @@ public:
     void show();
     void update();
 
-    Flower simplifyMesh(int delta);
+    void deform(const std::vector<osg::ref_ptr<osg::Vec3Array> >& pos, 
+        const std::vector<std::vector<int> > idx);
 
+    Flower simplifyMesh(int delta);
+    void searchNearestIdx(Flower& simplified_flower, 
+        std::vector<std::vector<int> >& knn_idx);
 
 private:
     Petals            petals_;

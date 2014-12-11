@@ -242,7 +242,7 @@ void MeshModel::buildDeformModel()
 //}
 
 
-void MeshModel::deform(const osg::Vec3Array& indicators)
+void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
 {
     // Init the indices of the halfedges and the vertices.
     set_halfedgeds_items_id(deform_model_);
@@ -254,29 +254,11 @@ void MeshModel::deform(const osg::Vec3Array& indicators)
     deform_mesh.insert_roi_vertices(vb, ve);
     // Select control vertices ...and insert them
     std::vector<vertex_descriptor> control_vertices;
-    //for (size_t i = 0, i_end = vertices_->size(); i < i_end; i ++)
-    //{
-    //    control_vertices.push_back(*CGAL::cpp11::next(vb, i));
-    //    deform_mesh.insert_control_vertex(control_vertices.at(i));
-    //}
-    //// The definition of the ROI and the control vertices is done, call preprocess
-    //bool is_matrix_factorization_OK = deform_mesh.preprocess();
-    //if(!is_matrix_factorization_OK){
-    //    std::cerr << "Error in preprocessing, check documentation of preprocess()" << std::endl;
-    //    return;
-    //}
-    //// Use set_target_position() to set the constained position
-    //for (size_t i = 0, i_end = indicators.size(); i < i_end; i ++)
-    //{
-    //    const osg::Vec3& indicator = indicators.at(i);
-    //    Surface_mesh_deformation::Point constrained_pos(12, 6, 900);
-    //    deform_mesh.set_target_position(control_vertices[i], constrained_pos);
-    //}
-
-    
-        control_vertices.push_back(*CGAL::cpp11::next(vb, 0));
-        deform_mesh.insert_control_vertex(control_vertices.at(0));
-  
+    for (size_t i = 0, i_end = index.size(); i < i_end; i ++)
+    {
+        control_vertices.push_back(*CGAL::cpp11::next(vb, index[i]));
+        deform_mesh.insert_control_vertex(control_vertices.at(i));
+    }
     // The definition of the ROI and the control vertices is done, call preprocess
     bool is_matrix_factorization_OK = deform_mesh.preprocess();
     if(!is_matrix_factorization_OK){
@@ -284,10 +266,12 @@ void MeshModel::deform(const osg::Vec3Array& indicators)
         return;
     }
     // Use set_target_position() to set the constained position
-    
-        const osg::Vec3& indicator = indicators.at(0);
-        Surface_mesh_deformation::Point constrained_pos(12, 6, 900);
-        deform_mesh.set_target_position(control_vertices[0], constrained_pos);
+    for (size_t i = 0, i_end = indicators.size(); i < i_end; i ++)
+    {
+        const osg::Vec3& indicator = indicators.at(i);
+        Surface_mesh_deformation::Point constrained_pos(indicator.x(), indicator.y(), indicator.z());
+        deform_mesh.set_target_position(control_vertices[i], constrained_pos);
+    }
     
     // Deform the mesh, the positions of vertices of 'mesh' are updated
     deform_mesh.deform();

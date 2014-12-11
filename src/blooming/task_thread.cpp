@@ -132,7 +132,6 @@ void FlowerTrackThread::run()
         flower.getPetals().push_back(petal);
     }
     
-    flower = flower.simplifyMesh(2);
     flower.show();
    // flowers.push_back(flower);
 
@@ -143,7 +142,20 @@ void FlowerTrackThread::run()
         std::cout << "tracking [frame " << i+1 << "]" << std::endl;
         PointCloud* forward_cloud = points_file_system->getPointCloud(i + 1);
 
-        tracking_system_->cpd_registration(*forward_cloud, flower);
+        std::vector<std::vector<int> > knn_idx; 
+        Flower simplified_flower = flower.simplifyMesh(2);
+        flower.searchNearestIdx(simplified_flower, knn_idx);
+
+        tracking_system_->cpd_registration(*forward_cloud, simplified_flower);
+
+        std::vector<osg::ref_ptr<osg::Vec3Array> > pos;
+        for (size_t j = 0, j_end = simplified_flower.getPetals().size(); j < j_end; ++ j)
+        {
+            Petals& petals = flower.getPetals();
+            pos.push_back(petals[j]->getVertices());
+        }
+
+        flower.deform(pos, knn_idx);
 
         flower.update();
     }

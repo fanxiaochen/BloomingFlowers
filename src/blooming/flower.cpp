@@ -1,5 +1,4 @@
 
-
 #include "flower.h"
 #include "main_window.h"
 #include "mesh_simplify.h"
@@ -94,4 +93,38 @@ Flower Flower::simplifyMesh(int delta)
     return simplified_flower;
 }
 
+void Flower::deform(const std::vector<osg::ref_ptr<osg::Vec3Array> >& pos, 
+            const std::vector<std::vector<int> > idx)
+{
+    if (pos.size() != idx.size())
+    {
+        std::cerr << "the number of position groups is not the same as indices' group number" << std::endl;
+        return;
+    }
 
+    if (pos.size() != petals_.size())
+    {
+        std::cerr << "the number of position groups is not the same as petals' number" << std::endl;
+        return;
+    }
+
+    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+    {
+        osg::ref_ptr<Petal> petal = petals_.at(i);
+        petal->deform(*pos[i], idx[i]);
+    }
+}
+
+void Flower::searchNearestIdx(Flower& simplified_flower, 
+                      std::vector<std::vector<int> >& knn_idx)
+{
+    Petals& petals = this->getPetals();
+    Petals& s_petals = simplified_flower.getPetals();
+
+    for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
+    {
+        std::vector<int> idx;
+        petals[i]->searchNearestIdx(*s_petals[i], idx);
+        knn_idx.push_back(idx);
+    }
+}

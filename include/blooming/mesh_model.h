@@ -40,8 +40,8 @@ public:
     inline std::vector<std::vector<int> >& getAdjList(){ return adj_list_; }
     inline Polyhedron& getDeformModel(){ return deform_model_; }
 
-//    void deform(const osg::Vec3Array& indicators, const std::vector<int>& index);
-    void deform(const osg::Vec3Array& indicators);
+    void deform(const osg::Vec3Array& indicators, const std::vector<int>& index);
+ //   void deform(const osg::Vec3Array& indicators);
 
 protected:
 	virtual void updateImpl(void);

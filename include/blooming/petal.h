@@ -16,6 +16,8 @@ public:
 
     inline int getPetalId() { return petal_id_; }
 
+    void searchNearestIdx(Petal& petal, std::vector<int>& idx);
+
 protected:
     virtual void updateImpl();
     virtual void visualizePetal();

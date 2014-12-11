@@ -1,4 +1,6 @@
 
+#include <pcl/kdtree/kdtree_flann.h>
+
 #include "petal.h"
 
 Petal::Petal(int id)
@@ -23,22 +25,6 @@ Petal::Petal(Petal& petal)
     {
         this->at(i) = petal.at(i);
     }
-
-    /*for (size_t i = 0, i_end = petal.getVertices()->size(); i < i_end; ++ i)
-    {
-    this->vertices_[i] = petal.getVertices()[i];
-    }
-
-    for (size_t i = 0, i_end = petal.getFaces().size(); i < i_end; ++ i)
-    {
-    this->faces_[i] = petal.getFaces()[i];
-    }
-
-    for (size_t i = 0, i_end = petal.getAdjList().size(); i < i_end; ++ i)
-    {
-    this->adj_list_[i] = petal.getAdjList()[i];
-    }
-    */
     
 }
 
@@ -73,4 +59,42 @@ void Petal::visualizePetal()
 {
     visualizeMesh();
     return;
+}
+
+void Petal::searchNearestIdx(Petal& petal, std::vector<int>& idx)
+{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+
+    for (size_t i = 0, i_end = this->getVertices()->size(); i < i_end; ++ i)
+    {
+        osg::Vec3& point = this->getVertices()->at(i);
+
+        cloud->points[i].x = point.x();
+        cloud->points[i].y = point.y();
+        cloud->points[i].z = point.z();
+    }
+
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+
+    kdtree.setInputCloud (cloud);
+
+    int K = 1;
+
+    // K nearest neighbor search
+
+    for (size_t i = 0, i_end = petal.getVertices()->size(); i < i_end; ++ i)
+    {
+        pcl::PointXYZ searchPoint;
+        std::vector<int> pointIdxNKNSearch(K);
+        std::vector<float> pointNKNSquaredDistance(K);
+
+        osg::Vec3& point = petal.getVertices()->at(i);
+
+        searchPoint.x = point.x();
+        searchPoint.y = point.y();
+        searchPoint.z = point.z();
+
+        if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+            idx.push_back(pointIdxNKNSearch[0]);
+    }
 }
