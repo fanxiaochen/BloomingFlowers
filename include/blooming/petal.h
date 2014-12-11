@@ -8,6 +8,7 @@ class Petal: public PointCloud, public MeshModel
 {
 public:
     Petal(int id);
+    Petal(Petal& petal);
     virtual ~Petal();
 
     void setMeshModel(MeshModel* mesh_model);

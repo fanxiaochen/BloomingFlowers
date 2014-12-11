@@ -15,6 +15,9 @@ public:
     void show();
     void update();
 
+    Flower simplifyMesh(int delta);
+
+
 private:
     Petals            petals_;
 

@@ -131,14 +131,16 @@ void FlowerTrackThread::run()
         petal->setMeshModel(petal_template);
         flower.getPetals().push_back(petal);
     }
+    
+    flower = flower.simplifyMesh(2);
     flower.show();
-    flowers.push_back(flower);
+   // flowers.push_back(flower);
 
 
     for (size_t i = key_frame, i_end = end_frame;
         i < i_end; ++ i)
     {
-        std::cout << "tracking [frame " << i << "]" << std::endl;
+        std::cout << "tracking [frame " << i+1 << "]" << std::endl;
         PointCloud* forward_cloud = points_file_system->getPointCloud(i + 1);
 
         tracking_system_->cpd_registration(*forward_cloud, flower);
