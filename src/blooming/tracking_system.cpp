@@ -182,7 +182,7 @@ void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, Flower& t
 
     reg->setInputData(tracking_pm, tracked_pm);
     reg->setVision(false);
-    reg->setIterativeNumber(50);
+    reg->setIterativeNumber(100);
     reg->setVarianceTolerance(1e-5);
     reg->setEnergyTolerance(1e-3);
     reg->setOutlierWeight(0.1);
