@@ -44,7 +44,7 @@ void MeshModel::visualizeMesh(void)
     for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
     {
       size_t vertex_num = faces_[i].size();
-      osg::ref_ptr<osg::DrawElementsUInt> face = new osg::DrawElementsUInt(GL_LINE_LOOP, vertex_num);
+      osg::ref_ptr<osg::DrawElementsUInt> face = new osg::DrawElementsUInt(GL_TRIANGLES, vertex_num);
       for (size_t j = 0; j < vertex_num; ++ j)
         face->at(j) = faces_[i][j];
 

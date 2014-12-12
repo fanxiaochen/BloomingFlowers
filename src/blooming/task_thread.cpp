@@ -151,7 +151,7 @@ void FlowerTrackThread::run()
         std::vector<osg::ref_ptr<osg::Vec3Array> > pos;
         for (size_t j = 0, j_end = simplified_flower.getPetals().size(); j < j_end; ++ j)
         {
-            Petals& petals = flower.getPetals();
+            Petals& petals = simplified_flower.getPetals();
             pos.push_back(petals[j]->getVertices());
         }
 

@@ -61,7 +61,7 @@ Flower Flower::simplifyMesh(int delta)
             Simplify::triangles.push_back(t);
         }
 
-        Simplify::simplify_mesh(simplified_petal->getVertices()->size() / delta);
+        Simplify::simplify_mesh(simplified_petal->getFaces().size() / delta);
 
         simplified_petal->getVertices()->clear();
         simplified_petal->getFaces().clear();
