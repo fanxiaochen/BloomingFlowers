@@ -47,20 +47,24 @@ public:
     // set lambda. Default is 5 and 5
     void set_lambda(float lambda_deform, float lambda_hard);
 
-    // initial guess of positions
+    // initial fixed positions
     void set_init_pos(const VectorF &T, const VectorI &idx_T);
 
 private:
     void set_linear_sys();
-    void build_laplacian_matrix(const float *P_data);
+    void build_laplacian_matrix();
     void update_Ri();
     float update_P_Prime();
     float compute_wij(const float *p1, const float *p2, const float *p3, const float *p4 = nullptr);
     void find_share_vertex(int i, int j, VectorI &share_Vertex);
 
 private:
+    const float* P_data;
     Eigen::Matrix3Xf P_Prime;
     Eigen::Matrix3Xf P;
+
+    VectorF fixed_pos;
+    VectorI fixed_idx;
 
     std::vector<Eigen::Matrix3f> R;
     AdjList adj_list;
@@ -71,6 +75,7 @@ private:
     Eigen::SimplicialCholesky<Eigen::SparseMatrix<float>> chol;
     Eigen::MatrixX3f d;
 
+    int lap_num;
     int P_Num;
     int max_iter;
     double min_delta;

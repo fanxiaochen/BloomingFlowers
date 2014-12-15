@@ -4,7 +4,8 @@ using namespace std;
 using namespace Eigen;
 
 Deform::Deform(const float *P_data, int P_Num, const AdjList &adj_list, const FaceList &face_list)
-    : P_Num(P_Num), 
+    :P_data(P_data), 
+    P_Num(P_Num), 
     max_iter(2000), 
     min_delta(1e-3), 
     lambda_deform(5), 
@@ -19,7 +20,7 @@ Deform::Deform(const float *P_data, int P_Num, const AdjList &adj_list, const Fa
     R = vector<Matrix3f>(P_Num, Matrix3f::Identity());
 
     // Weight, L
-    build_laplacian_matrix(P_data);
+  //  build_laplacian_matrix();
 }
 
 
@@ -31,6 +32,7 @@ float *Deform::do_Deform()
 
     do {
         update_Ri();
+        build_laplacian_matrix();
         set_linear_sys();
         delta = update_P_Prime();
 
@@ -49,6 +51,7 @@ float *Deform::get_P_Prime()
 float* Deform::do_Deform_Iter(float &delta)
 {
     update_Ri();
+    build_laplacian_matrix();
     set_linear_sys();
     delta = update_P_Prime();
     return P_Prime.data();
@@ -63,6 +66,11 @@ void Deform::set_init_pos(const VectorF &T, const VectorI &idx_T)
         int idx = idx_T[i];
         P_Prime.col(idx) << T[3*i], T[3*i+1], T[3*i+2];
     }
+
+    fixed_pos = T;
+    fixed_idx = idx_T;
+
+    lap_num = P_Num - fixed_idx.size();
 }
 
 void Deform::set_lambda(float lambda_deform, float lambda_hard)
@@ -71,7 +79,7 @@ void Deform::set_lambda(float lambda_deform, float lambda_hard)
     this->lambda_hard = lambda_hard;
 }
 
-void Deform::build_laplacian_matrix(const float* P_data)
+void Deform::build_laplacian_matrix()
 {
     vector<Triplet<float> > weight_list;
     weight_list.reserve(3*7*P_Num); // each vertex may have about 7 vertices connected
@@ -80,11 +88,27 @@ void Deform::build_laplacian_matrix(const float* P_data)
 
     for (int i = 0; i != P_Num; ++i) {
         float wi = 0;
+
+        int k = 0, k_end = fixed_idx.size();
+        while (k < k_end)
+        {
+            if (i == fixed_idx[k])
+            {
+                wi = 1;
+                weight_sum.push_back(Triplet<float>(i, i, wi));
+                weight_sum.push_back(Triplet<float>(i+P_Num, i+P_Num, wi));
+                weight_sum.push_back(Triplet<float>(i+2*P_Num, i+2*P_Num, wi));
+                break;
+            }
+        }
+
+        if (k != k_end)
+            continue;
+
         for (decltype(adj_list[i].size()) j = 0; j != adj_list[i].size(); ++j) {
             int id_j = adj_list[i][j];
 
             vector<int> share_vertex;
-
             find_share_vertex(i, id_j, share_vertex);
             float wij = 0;
             if (share_vertex.size()==2) wij = compute_wij(&P_data[3*i], &P_data[3*id_j], 
@@ -193,8 +217,22 @@ void Deform::set_linear_sys()
     chol.analyzePattern(L);
     chol.factorize(L);
 
-    d = MatrixX3f::Zero(P_Num, 3);
+    d = MatrixX3f::Zero(lap_num, 3);
     for (int i = 0; i != P_Num; ++i) {
+
+        int k = 0, k_end = fixed_idx.size();
+        while (k < k_end)
+        {
+            if (i == fixed_idx[k])
+            {
+                d.row(i) << fixed_pos[3*k], fixed_pos[3*k+1], fixed_pos[3*k+2];
+                break;
+            }
+        }
+
+        if (k != k_end)
+            continue;
+
         // if there is not any single unconnected point this for loop can have a more efficient representation
         for (decltype(adj_list[i].size()) j = 0; j != adj_list[i].size(); ++j) {
             d.row(i) += ((Weight.coeffRef(i, adj_list[i][j])/2)*(R[i]+R[adj_list[i][j]])*(P.col(i) - P.col(adj_list[i][j]))).transpose();
