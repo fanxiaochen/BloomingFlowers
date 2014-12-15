@@ -3,69 +3,41 @@
 using namespace std;
 using namespace Eigen;
 
-Deform::Deform(float *P_data, int P_Num, AdjList &adj_list, FaceList &face_list)
-    : adj_list(adj_list), max_iter(2000), min_delta(1e-3), lamd_deform(5), lamd_hard(5)
+Deform::Deform(const float *P_data, int P_Num, const AdjList &adj_list, const FaceList &face_list)
+    : P_Num(P_Num), 
+    max_iter(2000), 
+    min_delta(1e-3), 
+    lambda_deform(5), 
+    lambda_hard(5),
+    adj_list(adj_list),
+    face_list(face_list)
 {
+
     P.resize(3, P_Num);
     for (int i = 0; i != P_Num; ++i) {P.col(i) << P_data[3*i], P_data[3*i+1], P_data[3*i+2];}
     P_Prime = P;
     R = vector<Matrix3f>(P_Num, Matrix3f::Identity());
 
-    vector<Triplet<float> > weight_list;
-    weight_list.reserve(3*7*P_Num); // each vertex may have about 7 vertices connected
-    vector<Triplet<float> > weight_sum;
-    weight_sum.reserve(3*P_Num);
-    for (decltype(adj_list.size()) i = 0; i != adj_list.size(); ++i) {
-        float wi = 0;
-        for (decltype(adj_list[i].size()) j = 0; j != adj_list[i].size(); ++j) {
-            int id_j = adj_list[i][j];
-            //if (i < id_j) {
-            vector<int> share_Vertex;
-            
-            find_share_Vertex(i, id_j, adj_list, face_list, share_Vertex);
-            float wij = 0;
-            if (share_Vertex.size()==2) wij = compute_wij(&P_data[3*i], &P_data[3*id_j], &P_data[3*share_Vertex[0]], &P_data[3*share_Vertex[1]]);
-            else wij = compute_wij(&P_data[3*i], &P_data[3*id_j], &P_data[3*share_Vertex[0]]);
-
-            //set_intersection(adj_list[i].begin(), adj_list[i].end(), adj_list[id_j].begin(), adj_list[id_j].end(), back_inserter(share_Vertex));
-   //         float wij = 0;
-   //         if (share_Vertex.size()==2) wij = compute_wij(&P_data[3*i], &P_data[3*id_j], &P_data[3*share_Vertex[0]], &P_data[3*share_Vertex[1]]);
-   //         else if (share_Vertex.size()==1) wij = compute_wij(&P_data[3*i], &P_data[3*id_j], &P_data[3*share_Vertex[0]]);
-   //         else cout << "Error: shared vertices can only be 1 or 2." << endl;
-
-            wi += wij;
-            weight_list.push_back(Triplet<float>(i, id_j, wij));
-            weight_list.push_back(Triplet<float>(i+P_Num, id_j+P_Num, wij));
-            weight_list.push_back(Triplet<float>(i+2*P_Num, id_j+2*P_Num, wij));
-                //weight_list.push_back(Triplet<float>(id_j, i, wij));
-            //}
-        }
-        if (wi < 0.1) cout << "Edge Weight Sum Warning: " << wi << endl;
-        weight_sum.push_back(Triplet<float>(i, i, wi));
-        weight_sum.push_back(Triplet<float>(i+P_Num, i+P_Num, wi));
-        weight_sum.push_back(Triplet<float>(i+2*P_Num, i+2*P_Num, wi));
-        //cout << R[i] << endl;
-    }
-
-    SparseMatrix<float> Weight_sum(3*P_Num, 3*P_Num);
-    Weight_sum.setFromTriplets(weight_sum.begin(), weight_sum.end());
-    Weight.resize(3*P_Num, 3*P_Num);
-    Weight.setFromTriplets(weight_list.begin(), weight_list.end());
-    L =  Weight_sum - Weight;
-    chol.analyzePattern(L);
+    // Weight, L
+    build_laplacian_matrix(P_data);
 }
 
-float *Deform::do_Deform(VectorF &T, VectorI &idx_T)
+
+
+float *Deform::do_Deform()
 {
     int iter = 0;
     double delta = 0;
-    set_linear_sys(T, idx_T);
+
     do {
         update_Ri();
-        ++iter;
+        set_linear_sys();
         delta = update_P_Prime();
-        cout << "iter: " << iter << "\tdelta: " << delta << endl;
+
+        cout << "iter: " << ++ iter << "\tdelta: " << delta << endl;
+
     }while(delta > min_delta && iter <= max_iter);
+
     return P_Prime.data();
 }
 
@@ -77,8 +49,65 @@ float *Deform::get_P_Prime()
 float* Deform::do_Deform_Iter(float &delta)
 {
     update_Ri();
+    set_linear_sys();
     delta = update_P_Prime();
     return P_Prime.data();
+}
+
+void Deform::set_init_pos(const VectorF &T, const VectorI &idx_T)
+{
+    assert(T.size()/3 == idx_T.size());
+
+    for (int i = 0, i_end = idx_T.size(); i < i_end; ++ i)
+    {
+        int idx = idx_T[i];
+        P_Prime.col(idx) << T[3*i], T[3*i+1], T[3*i+2];
+    }
+}
+
+void Deform::set_lambda(float lambda_deform, float lambda_hard)
+{
+    this->lambda_deform = lambda_deform;
+    this->lambda_hard = lambda_hard;
+}
+
+void Deform::build_laplacian_matrix(const float* P_data)
+{
+    vector<Triplet<float> > weight_list;
+    weight_list.reserve(3*7*P_Num); // each vertex may have about 7 vertices connected
+    vector<Triplet<float> > weight_sum;
+    weight_sum.reserve(3*P_Num);
+
+    for (int i = 0; i != P_Num; ++i) {
+        float wi = 0;
+        for (decltype(adj_list[i].size()) j = 0; j != adj_list[i].size(); ++j) {
+            int id_j = adj_list[i][j];
+
+            vector<int> share_vertex;
+
+            find_share_vertex(i, id_j, share_vertex);
+            float wij = 0;
+            if (share_vertex.size()==2) wij = compute_wij(&P_data[3*i], &P_data[3*id_j], 
+                &P_data[3*share_vertex[0]], &P_data[3*share_vertex[1]]);
+            else wij = compute_wij(&P_data[3*i], &P_data[3*id_j], &P_data[3*share_vertex[0]]);
+
+            wi += wij;
+            weight_list.push_back(Triplet<float>(i, id_j, wij));
+            weight_list.push_back(Triplet<float>(i+P_Num, id_j+P_Num, wij));
+            weight_list.push_back(Triplet<float>(i+2*P_Num, id_j+2*P_Num, wij));
+        }
+
+        if (wi < 0.1) cout << "Edge Weight Sum Warning: " << wi << endl;
+        weight_sum.push_back(Triplet<float>(i, i, wi));
+        weight_sum.push_back(Triplet<float>(i+P_Num, i+P_Num, wi));
+        weight_sum.push_back(Triplet<float>(i+2*P_Num, i+2*P_Num, wi));
+    }
+
+    SparseMatrix<float> Weight_sum(3*P_Num, 3*P_Num);
+    Weight_sum.setFromTriplets(weight_sum.begin(), weight_sum.end());
+    Weight.resize(3*P_Num, 3*P_Num);
+    Weight.setFromTriplets(weight_list.begin(), weight_list.end());
+    L =  Weight_sum - Weight;
 }
 
 void Deform::update_Ri()
@@ -87,7 +116,7 @@ void Deform::update_Ri()
     MatrixXf Di;
     Matrix3Xf Pi_Prime;
     Matrix3Xf Pi;
-    for (decltype(adj_list.size()) i = 0; i != adj_list.size(); ++i) {
+    for (int i = 0; i != P_Num; ++i) {
         Di = MatrixXf::Zero(adj_list[i].size(), adj_list[i].size());
         Pi_Prime.resize(3, adj_list[i].size());
         Pi.resize(3, adj_list[i].size());
@@ -103,31 +132,26 @@ void Deform::update_Ri()
         Matrix3f Vi;
         wunderSVD3x3(Si, Ui, Wi, Vi);
         R[i] = Vi * Ui.transpose();
+
+        if (R[i].determinant() < 0)
+            std::cout << "determinant is negative!" << std::endl;
     }
 }
 
 float Deform::update_P_Prime()
 {
-    decltype(adj_list.size()) P_Num = adj_list.size();
-    MatrixX3f d_cur = d;
-    for (decltype(P_Num) i = 0; i != P_Num; ++i) {
-        // if there is not any single unconnected point this for loop can have a more efficient representation
-        for (decltype(adj_list[i].size()) j = 0; j != adj_list[i].size(); ++j) {
-            d_cur.row(i) += ((Weight.coeffRef(i, adj_list[i][j])/2)*(R[i]+R[adj_list[i][j]])*(P.col(i) - P.col(adj_list[i][j]))).transpose();
-        }
-    }
 
-    VectorXf d_vec(VectorXf::Map(d_cur.data(), d_cur.cols()*d_cur.rows()));
-    Matrix3Xf P_Prime_last = P_Prime;
+    VectorXf d_vec(VectorXf::Map(d.data(), d.cols()*d.rows()));
+    P = P_Prime;
     VectorXf P_Prime_vec = chol.solve(d_vec);
     P_Prime.row(0) = P_Prime_vec.segment(0, P_Num);
     P_Prime.row(1) = P_Prime_vec.segment(0+P_Num, P_Num);
     P_Prime.row(2) = P_Prime_vec.segment(0+2*P_Num, P_Num);
 
-    return (P_Prime - P_Prime_last).norm();
+    return (P_Prime - P).norm();
 }
 
-float Deform::compute_wij(float *p1, float *p2, float *p3, float *p4)
+float Deform::compute_wij(const float *p1, const float *p2, const float *p3, const float *p4)
 {
     float e1 = sqrt((p1[0]-p2[0])*(p1[0]-p2[0])+(p1[1]-p2[1])*(p1[1]-p2[1])+(p1[2]-p2[2])*(p1[2]-p2[2]));
     float e2 = sqrt((p1[0]-p3[0])*(p1[0]-p3[0])+(p1[1]-p3[1])*(p1[1]-p3[1])+(p1[2]-p3[2])*(p1[2]-p3[2]));
@@ -142,7 +166,7 @@ float Deform::compute_wij(float *p1, float *p2, float *p3, float *p4)
     return ((alpha_cos/sqrt(1-alpha_cos*alpha_cos))+(beta_cos/sqrt(1-beta_cos*beta_cos)))/2;
 }
 
-void Deform::find_share_Vertex(int pi, int pj, AdjList &adj_list, FaceList &face_list, VectorI &share_Vertex)
+void Deform::find_share_vertex(int pi, int pj, VectorI &share_vertex)
 {
     vector<int> vertices;
     set_intersection(adj_list[pi].begin(), adj_list[pi].end(), adj_list[pj].begin(), adj_list[pj].end(), back_inserter(vertices));
@@ -154,61 +178,77 @@ void Deform::find_share_Vertex(int pi, int pj, AdjList &adj_list, FaceList &face
         sort(f.begin(), f.end());
         vector<Vector3i>::iterator it = find(face_list.begin(), face_list.end(), Map<Vector3i>(&f[0]));
         if (it != face_list.end()) {
-            if ((*it)(0) != pi && (*it)(0) != pj) share_Vertex.push_back((*it)(0));
-            else if ((*it)(1) != pi && (*it)(1) != pj) share_Vertex.push_back((*it)(1));
-            else share_Vertex.push_back((*it)(2));
+            if ((*it)(0) != pi && (*it)(0) != pj) share_vertex.push_back((*it)(0));
+            else if ((*it)(1) != pi && (*it)(1) != pj) share_vertex.push_back((*it)(1));
+            else share_vertex.push_back((*it)(2));
         }
     }
-    if (share_Vertex.size() > 2) {
-        cout << "share vertices number warning: " << share_Vertex.size() << endl;
+    if (share_vertex.size() > 2) {
+        cout << "share vertices number warning: " << share_vertex.size() << endl;
     }
 }
 
-void Deform::set_linear_sys(VectorF &T, VectorI &idx_T)
+void Deform::set_linear_sys()
 {
-    decltype(adj_list.size()) P_Num = adj_list.size();
+    chol.analyzePattern(L);
+    chol.factorize(L);
+
     d = MatrixX3f::Zero(P_Num, 3);
-    SparseMatrix<float> L_cur = L;
-    
-    
-    for (decltype(idx_T.size()) i = 0; i != idx_T.size(); ++i) {
-        d.row(idx_T[i]) += (lamd_deform/2)*RowVector3f(T[3*i], T[3*i+1], T[3*i+2]);
-        L_cur.coeffRef(idx_T[i], idx_T[i]) += lamd_deform/2;
-        L_cur.coeffRef(idx_T[i]+P_Num, idx_T[i]+P_Num) += lamd_deform/2;
-        L_cur.coeffRef(idx_T[i]+2*P_Num, idx_T[i]+2*P_Num) += lamd_deform/2;
+    for (int i = 0; i != P_Num; ++i) {
+        // if there is not any single unconnected point this for loop can have a more efficient representation
+        for (decltype(adj_list[i].size()) j = 0; j != adj_list[i].size(); ++j) {
+            d.row(i) += ((Weight.coeffRef(i, adj_list[i][j])/2)*(R[i]+R[adj_list[i][j]])*(P.col(i) - P.col(adj_list[i][j]))).transpose();
+        }
     }
-
-    chol.factorize(L_cur);
-
-
 }
 
-void Deform::set_linear_sys(VectorF &T, VectorI &idx_T, VectorF &F, VectorI &idx_F)
-{
-    decltype(adj_list.size()) P_Num = adj_list.size();
-    d = MatrixX3f::Zero(P_Num, 3);
-    SparseMatrix<float> L_cur = L;
-    
-    
-    for (decltype(idx_T.size()) i = 0; i != idx_T.size(); ++i) {
-        d.row(idx_T[i]) += (lamd_deform/2)*RowVector3f(T[3*i], T[3*i+1], T[3*i+2]);
-        L_cur.coeffRef(idx_T[i], idx_T[i]) += lamd_deform/2;
-        L_cur.coeffRef(idx_T[i]+P_Num, idx_T[i]+P_Num) += lamd_deform/2;
-        L_cur.coeffRef(idx_T[i]+2*P_Num, idx_T[i]+2*P_Num) += lamd_deform/2;
-    }
-    
-    for (decltype(idx_F.size()) i = 0; i != idx_F.size(); ++i) {
-        d.row(idx_F[i]) += (lamd_hard/2)*RowVector3f(F[3*i], F[3*i+1], F[3*i+2]);
-        L_cur.coeffRef(idx_F[i], idx_F[i]) += lamd_hard/2;
-        L_cur.coeffRef(idx_F[i]+P_Num, idx_F[i]+P_Num) += lamd_hard/2;
-        L_cur.coeffRef(idx_F[i]+2*P_Num, idx_F[i]+2*P_Num) += lamd_hard/2;
-    }
-
-    chol.factorize(L_cur);
-}
-
-void Deform::set_lamd(float lamd_deform, float lamd_hard)
-{
-    this->lamd_deform = lamd_deform;
-    this->lamd_hard = lamd_hard;
-}
+//void Deform::set_linear_sys(VectorF &T, VectorI &idx_T)
+//{
+//    decltype(adj_list.size()) P_Num = adj_list.size();
+//    d = MatrixX3f::Zero(P_Num, 3);
+//    SparseMatrix<float> L_cur = L;
+//    
+//    for (decltype(P_Num) i = 0; i != P_Num; ++i) {
+//        // if there is not any single unconnected point this for loop can have a more efficient representation
+//        for (decltype(adj_list[i].size()) j = 0; j != adj_list[i].size(); ++j) {
+//            d.row(i) += ((Weight.coeffRef(i, adj_list[i][j])/2)*(R[i]+R[adj_list[i][j]])*(P.col(i) - P.col(adj_list[i][j]))).transpose();
+//        }
+//    }
+//    
+//    for (decltype(idx_T.size()) i = 0; i != idx_T.size(); ++i) {
+//        d.row(idx_T[i]) += (lamd_deform/2)*RowVector3f(T[3*i], T[3*i+1], T[3*i+2]);
+//        L_cur.coeffRef(idx_T[i], idx_T[i]) += lamd_deform/2;
+//        L_cur.coeffRef(idx_T[i]+P_Num, idx_T[i]+P_Num) += lamd_deform/2;
+//        L_cur.coeffRef(idx_T[i]+2*P_Num, idx_T[i]+2*P_Num) += lamd_deform/2;
+//    }
+//
+//    chol.factorize(L_cur);
+//
+//    
+//
+//}
+//
+//void Deform::set_linear_sys(VectorF &T, VectorI &idx_T, VectorF &F, VectorI &idx_F)
+//{
+//    decltype(adj_list.size()) P_Num = adj_list.size();
+//    d = MatrixX3f::Zero(P_Num, 3);
+//    SparseMatrix<float> L_cur = L;
+//    
+//    
+//    for (decltype(idx_T.size()) i = 0; i != idx_T.size(); ++i) {
+//        d.row(idx_T[i]) += (lamd_deform/2)*RowVector3f(T[3*i], T[3*i+1], T[3*i+2]);
+//        L_cur.coeffRef(idx_T[i], idx_T[i]) += lamd_deform/2;
+//        L_cur.coeffRef(idx_T[i]+P_Num, idx_T[i]+P_Num) += lamd_deform/2;
+//        L_cur.coeffRef(idx_T[i]+2*P_Num, idx_T[i]+2*P_Num) += lamd_deform/2;
+//    }
+//    
+//    for (decltype(idx_F.size()) i = 0; i != idx_F.size(); ++i) {
+//        d.row(idx_F[i]) += (lamd_hard/2)*RowVector3f(F[3*i], F[3*i+1], F[3*i+2]);
+//        L_cur.coeffRef(idx_F[i], idx_F[i]) += lamd_hard/2;
+//        L_cur.coeffRef(idx_F[i]+P_Num, idx_F[i]+P_Num) += lamd_hard/2;
+//        L_cur.coeffRef(idx_F[i]+2*P_Num, idx_F[i]+2*P_Num) += lamd_hard/2;
+//    }
+//
+//    chol.factorize(L_cur);
+//}
+//
