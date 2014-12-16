@@ -30,12 +30,12 @@ int main(int argc, char *argv[])
 //typedef CGAL::Polyhedron_3<Kernel, CGAL::Polyhedron_items_with_id_3> Polyhedron;
 //typedef boost::graph_traits<Polyhedron>::vertex_descriptor    vertex_descriptor;
 //typedef boost::graph_traits<Polyhedron>::vertex_iterator        vertex_iterator;
-//typedef CGAL::Surface_mesh_deformation<Polyhedron> Surface_mesh_deformation;
+//typedef CGAL::Surface_mesh_deformation<Polyhedron, CGAL::Default, CGAL::Default, CGAL::ORIGINAL_ARAP> Surface_mesh_deformation;
 //
 //int main()
 //{
 //    Polyhedron mesh;
-//    std::ifstream input("plane.off");
+//    std::ifstream input("small-plane.off");
 //    if ( !input || !(input >> mesh) || mesh.empty() ) {
 //        std::cerr<< "Cannot open  plane.off" << std::endl;
 //        return 1;
@@ -50,12 +50,15 @@ int main(int argc, char *argv[])
 //    vertex_iterator vi = CGAL::cpp11::next(vb, 220);
 //    deform_mesh.insert_roi_vertices(vb, ve);
 //    // Select two control vertices ...
-//    vertex_descriptor control_1 = *CGAL::cpp11::next(vb, 5);
-//    vertex_descriptor control_2 = *CGAL::cpp11::next(vb, 17);
+// //   vertex_descriptor control_1 = *CGAL::cpp11::next(vb, 5);
+// //   vertex_descriptor control_2 = *CGAL::cpp11::next(vb, 17);
 ////    vertex_descriptor control_3 = *CGAL::cpp11::next(vb, 17);
+////    vertex_descriptor control_1 = *CGAL::cpp11::next(vb, 84);
+////    vertex_descriptor control_2 = *CGAL::cpp11::next(vb, 336);
+//    vertex_descriptor control_1 = *CGAL::cpp11::next(vb, 2);
 //    // ... and insert them
 //    deform_mesh.insert_control_vertex(control_1);
-//    deform_mesh.insert_control_vertex(control_2);
+// //   deform_mesh.insert_control_vertex(control_2);
 ////    deform_mesh.insert_control_vertex(control_3);
 //
 //    // The definition of the ROI and the control vertices is done, call preprocess
@@ -64,13 +67,23 @@ int main(int argc, char *argv[])
 //        std::cerr << "Error in preprocessing, check documentation of preprocess()" << std::endl;
 //        return 1;
 //    }
-//    // Use set_target_position() to set the constained position
-//    // of control_1. control_2 remains at the last assigned positions
-//    Surface_mesh_deformation::Point constrained_pos_1(0.2, 0.5, 0.4);
+//
+//    Surface_mesh_deformation::Point constrained_pos_1(0.05, 0.05, 0.05);
 //    deform_mesh.set_target_position(control_1, constrained_pos_1);
 //
-//    Surface_mesh_deformation::Point constrained_pos_2(0.8, 0.5, 0.4);
-//    deform_mesh.set_target_position(control_2, constrained_pos_2);
+//    /*Surface_mesh_deformation::Point constrained_pos_2(0.3, 0.4, -0.3);
+//    deform_mesh.set_target_position(control_2, constrained_pos_2);*/
+//    //for (int k = 0; k < 10; k ++)
+//    //{
+//    //    // Use set_target_position() to set the constained position
+//    //    // of control_1. control_2 remains at the last assigned positions
+//    //    Surface_mesh_deformation::Point constrained_pos_1(0.2+0.05*k, 0.4, 0.3);
+//    //    deform_mesh.set_target_position(control_1, constrained_pos_1);
+//
+//    //    Surface_mesh_deformation::Point constrained_pos_2(0.8-0.05*k, 0.4, -0.3);
+//    //    deform_mesh.set_target_position(control_2, constrained_pos_2);
+//    //}
+//    
 //
 //    /*Surface_mesh_deformation::Point constrained_pos_3(0.8, 0, 0.2);
 //    deform_mesh.set_target_position(control_3, constrained_pos_3);*/

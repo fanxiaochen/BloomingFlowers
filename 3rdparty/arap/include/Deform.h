@@ -73,8 +73,8 @@ private:
 
     Eigen::SparseMatrix<float> Weight;
     Eigen::SparseMatrix<float> L;
-//    Eigen::SparseLU<Eigen::SparseMatrix<float>> chol;
-    Eigen::SimplicialCholesky<Eigen::SparseMatrix<float>> chol;
+    Eigen::SparseLU<Eigen::SparseMatrix<float>> chol;
+//    Eigen::SimplicialCholesky<Eigen::SparseMatrix<float>> chol;
     Eigen::MatrixX3f d;
 
     int P_Num;

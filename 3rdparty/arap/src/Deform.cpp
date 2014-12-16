@@ -6,7 +6,7 @@ using namespace Eigen;
 Deform::Deform(const float *P_data, int P_Num, const AdjList &adj_list, const FaceList &face_list)
     :P_data(P_data), 
     P_Num(P_Num), 
-    max_iter(200), 
+    max_iter(5), 
     min_delta(1e-3), 
     lambda_deform(5), 
     lambda_hard(5),
@@ -31,13 +31,12 @@ float *Deform::do_Deform()
     double delta = 0;
 
     do {
-        update_Ri();
         set_linear_sys();
         delta = update_P_Prime();
-
+        update_Ri();
         cout << "iter: " << ++ iter << "\tdelta: " << delta << endl;
 
-    }while(delta > min_delta && iter <= max_iter);
+    }while(/*delta > min_delta &&*/ iter <= max_iter);
 
     return P_Prime.data();
 }
@@ -49,9 +48,9 @@ float *Deform::get_P_Prime()
 
 float* Deform::do_Deform_Iter(float &delta)
 {
-    update_Ri();
     set_linear_sys();
     delta = update_P_Prime();
+    update_Ri();
     return P_Prime.data();
 }
 
@@ -121,11 +120,11 @@ void Deform::build_laplacian_matrix()
                 for (int j = 0; j != P_Num; ++ j)
                 {
                     weight.coeffRef(i, j) = 0;
-                    weight.coeffRef(j, i) = 0;
+//                    weight.coeffRef(j, i) = 0;
                     weight.coeffRef(i+P_Num, j+P_Num) = 0;
-                    weight.coeffRef(j+P_Num, i+P_Num) = 0;
+//                    weight.coeffRef(j+P_Num, i+P_Num) = 0;
                     weight.coeffRef(i+2*P_Num, j+2*P_Num) = 0;
-                    weight.coeffRef(j+2*P_Num, i+2*P_Num) = 0;
+//                    weight.coeffRef(j+2*P_Num, i+2*P_Num) = 0;
                 }
 
                 wi = 1;
@@ -265,11 +264,11 @@ void Deform::set_linear_sys()
             d.row(i) += ((Weight.coeffRef(i, adj_list[i][j])/2)*(R[i]+R[adj_list[i][j]])*(P.col(i) - P.col(adj_list[i][j]))).transpose();
         }
         
-        for (int k = 0, k_end = fixed_idx.size(); k < k_end; ++ k)
+        /*for (int k = 0, k_end = fixed_idx.size(); k < k_end; ++ k)
         {
-            d.row(i) += Weight.coeffRef(i, fixed_idx[k])*
-                RowVector3f(fixed_pos[3*k], fixed_pos[3*k+1], fixed_pos[3*k+2]);
-        }
+        d.row(i) += Weight.coeffRef(i, fixed_idx[k])*
+        RowVector3f(fixed_pos[3*k], fixed_pos[3*k+1], fixed_pos[3*k+2]);
+        }*/
     }
 }
 
