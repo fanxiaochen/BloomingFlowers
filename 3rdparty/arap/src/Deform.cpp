@@ -31,8 +31,8 @@ float *Deform::do_Deform()
     double delta = 0;
 
     do {
-        update_Ri();
         build_laplacian_matrix();
+        update_Ri();
         set_linear_sys();
         delta = update_P_Prime();
 
@@ -50,8 +50,8 @@ float *Deform::get_P_Prime()
 
 float* Deform::do_Deform_Iter(float &delta)
 {
-    update_Ri();
     build_laplacian_matrix();
+    update_Ri();
     set_linear_sys();
     delta = update_P_Prime();
     return P_Prime.data();
@@ -100,6 +100,7 @@ void Deform::build_laplacian_matrix()
                 weight_sum.push_back(Triplet<float>(i+2*P_Num, i+2*P_Num, wi));
                 break;
             }
+            k++;
         }
 
         if (k != k_end)
@@ -217,7 +218,7 @@ void Deform::set_linear_sys()
     chol.analyzePattern(L);
     chol.factorize(L);
 
-    d = MatrixX3f::Zero(lap_num, 3);
+    d = MatrixX3f::Zero(P_Num, 3);
     for (int i = 0; i != P_Num; ++i) {
 
         int k = 0, k_end = fixed_idx.size();
@@ -228,6 +229,7 @@ void Deform::set_linear_sys()
                 d.row(i) << fixed_pos[3*k], fixed_pos[3*k+1], fixed_pos[3*k+2];
                 break;
             }
+            k++;
         }
 
         if (k != k_end)
