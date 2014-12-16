@@ -178,7 +178,7 @@ void FlowerTrackThread::run()
     flower.show();
    // flowers.push_back(flower);
 
-    Flower simplified_flower = flower.simplifyMesh(10);
+    Flower simplified_flower = flower.simplifyMesh(4);
     std::vector<std::vector<int> > knn_idx; 
     flower.searchNearestIdx(simplified_flower, knn_idx);
 
