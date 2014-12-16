@@ -51,11 +51,11 @@ int main(int argc, char *argv[])
 //    deform_mesh.insert_roi_vertices(vb, ve);
 //    // Select two control vertices ...
 //    vertex_descriptor control_1 = *CGAL::cpp11::next(vb, 5);
-////    vertex_descriptor control_2 = *CGAL::cpp11::next(vb, 17);
+//    vertex_descriptor control_2 = *CGAL::cpp11::next(vb, 17);
 ////    vertex_descriptor control_3 = *CGAL::cpp11::next(vb, 17);
 //    // ... and insert them
 //    deform_mesh.insert_control_vertex(control_1);
-////    deform_mesh.insert_control_vertex(control_2);
+//    deform_mesh.insert_control_vertex(control_2);
 ////    deform_mesh.insert_control_vertex(control_3);
 //
 //    // The definition of the ROI and the control vertices is done, call preprocess
@@ -66,18 +66,18 @@ int main(int argc, char *argv[])
 //    }
 //    // Use set_target_position() to set the constained position
 //    // of control_1. control_2 remains at the last assigned positions
-//    Surface_mesh_deformation::Point constrained_pos_1(0.25, -1.0, 0.2);
+//    Surface_mesh_deformation::Point constrained_pos_1(0.2, 0.5, 0.4);
 //    deform_mesh.set_target_position(control_1, constrained_pos_1);
 //
-////    Surface_mesh_deformation::Point constrained_pos_2(0.8, 0.3, 0.2);
-////    deform_mesh.set_target_position(control_2, constrained_pos_2);
+//    Surface_mesh_deformation::Point constrained_pos_2(0.8, 0.5, 0.4);
+//    deform_mesh.set_target_position(control_2, constrained_pos_2);
 //
 //    /*Surface_mesh_deformation::Point constrained_pos_3(0.8, 0, 0.2);
 //    deform_mesh.set_target_position(control_3, constrained_pos_3);*/
 //    // Deform the mesh, the positions of vertices of 'mesh' are updated
-//    deform_mesh.deform();
+//    deform_mesh.deform(1,0);
 //    // The function deform() can be called several times if the convergence has not been reached yet
-//    deform_mesh.deform();
+////    deform_mesh.deform();
 //    // Set the constained position of control_2
 //    //Surface_mesh_deformation::Point constrained_pos_2(0.55, -0.30, 0.70);
 //    //deform_mesh.set_target_position(control_2, constrained_pos_2);

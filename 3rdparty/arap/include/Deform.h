@@ -51,8 +51,9 @@ public:
     void set_init_pos(const VectorF &T, const VectorI &idx_T);
 
 private:
-    void set_linear_sys();
+    void build_weight_matrix();
     void build_laplacian_matrix();
+    void set_linear_sys();
     void update_Ri();
     float update_P_Prime();
     float compute_wij(const float *p1, const float *p2, const float *p3, const float *p4 = nullptr);
@@ -72,11 +73,10 @@ private:
 
     Eigen::SparseMatrix<float> Weight;
     Eigen::SparseMatrix<float> L;
-    Eigen::SparseLU<Eigen::SparseMatrix<float>> chol;
-//    Eigen::SimplicialCholesky<Eigen::SparseMatrix<float>> chol;
+//    Eigen::SparseLU<Eigen::SparseMatrix<float>> chol;
+    Eigen::SimplicialCholesky<Eigen::SparseMatrix<float>> chol;
     Eigen::MatrixX3f d;
 
-    int lap_num;
     int P_Num;
     int max_iter;
     double min_delta;

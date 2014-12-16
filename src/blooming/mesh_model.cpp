@@ -209,18 +209,18 @@ void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>&
     Deform::VectorF points_indicator;
     Deform::VectorI points_index;
 
-    for (size_t i = 0, i_end = 1; i < i_end; i ++)
+    for (size_t i = 0, i_end = indicators.size(); i < i_end; i ++)
     {
         osg::Vec3 indicator = indicators.at(i);
-        /*points_indicator.push_back(indicator.x());
+        points_indicator.push_back(indicator.x());
         points_indicator.push_back(indicator.y());
-        points_indicator.push_back(indicator.z()); */
-        points_indicator.push_back(12);
+        points_indicator.push_back(indicator.z()); 
+        /*points_indicator.push_back(12);
         points_indicator.push_back(6);
-        points_indicator.push_back(900); 
+        points_indicator.push_back(900); */
     }
 
-    for (size_t i = 0, i_end = 1; i < i_end; i ++)
+    for (size_t i = 0, i_end = index.size(); i < i_end; i ++)
     {
         points_index.push_back(index.at(i));
     }
