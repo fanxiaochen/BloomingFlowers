@@ -86,14 +86,6 @@ public:
 
     // arap type
     void set_arap_type(ArapType at);
-
-    //// set linear system. T is the target point, idx_T is the corresponding
-    //// indices of these points to model. You can tune lamd_deform for them
-    //void set_linear_sys(const VectorF &T, const VectorI &idx_T);
-    //
-    //// set linear system. F is another set of target point working 
-    //// similarly to T. You can tune lamd_hard for them
-    //void set_linear_sys(const VectorF &T, const VectorI &idx_T, const VectorF &F, const VectorI &idx_F);
     
 private:
     // pre-build weight matrix

@@ -250,6 +250,73 @@ void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>&
     free(p);
 }
 
+void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx)
+{
+    float* p;
+    int p_num = vertices_->size();
+    p = (float*)malloc(sizeof(float)*p_num*3);
+
+    for (size_t i = 0; i < p_num; i ++)
+    {
+        const osg::Vec3& point = vertices_->at(i);
+        p[3*i+0] = point.x();
+        p[3*i+1] = point.y();
+        p[3*i+2] = point.z();
+    }
+
+    float delta;
+    Deform deform_model(p, p_num, adj_list_, faces_);
+    deform_model.set_hard_ctrs(hard_ctrs, hard_idx);
+    deform_model.do_Deform(6);
+
+    float* new_p = deform_model.get_P_Prime();
+
+    for (size_t i = 0; i < p_num; i ++)
+    {
+        osg::Vec3& point = vertices_->at(i);
+        point.x() = new_p[3*i+0];
+        point.y() = new_p[3*i+1];
+        point.z() = new_p[3*i+2];
+    }
+
+    free(p);
+}
+
+void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx,
+            const std::vector<float>& soft_ctrs, const std::vector<int>& soft_idx)
+{
+    float* p;
+    int p_num = vertices_->size();
+    p = (float*)malloc(sizeof(float)*p_num*3);
+
+    for (size_t i = 0; i < p_num; i ++)
+    {
+        const osg::Vec3& point = vertices_->at(i);
+        p[3*i+0] = point.x();
+        p[3*i+1] = point.y();
+        p[3*i+2] = point.z();
+    }
+
+    float delta;
+    Deform deform_model(p, p_num, adj_list_, faces_);
+    deform_model.set_arap_type(Deform::HARD_SOFT);
+    deform_model.set_hard_ctrs(hard_ctrs, hard_idx);
+    deform_model.set_soft_ctrs(soft_ctrs, soft_idx);
+    deform_model.do_Deform(6);
+
+    float* new_p = deform_model.get_P_Prime();
+
+    for (size_t i = 0; i < p_num; i ++)
+    {
+        osg::Vec3& point = vertices_->at(i);
+        point.x() = new_p[3*i+0];
+        point.y() = new_p[3*i+1];
+        point.z() = new_p[3*i+2];
+    }
+
+    free(p);
+}
+
 
 //void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
 //{

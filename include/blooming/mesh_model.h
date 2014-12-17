@@ -41,7 +41,10 @@ public:
     inline Polyhedron& getDeformModel(){ return deform_model_; }
 
     void deform(const osg::Vec3Array& indicators, const std::vector<int>& index);
- //   void deform(const osg::Vec3Array& indicators);
+
+    void deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx);
+    void deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx,
+        const std::vector<float>& soft_ctrs, const std::vector<int>& soft_idx);
 
 protected:
 	virtual void updateImpl(void);

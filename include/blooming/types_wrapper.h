@@ -5,12 +5,17 @@
 
 #include <base/matrix.hpp>
 
+#include <Deform.h>
+
 #include "point_cloud.h"
 #include "mesh_model.h"
 #include "flower.h"
 
 typedef cpd::MatrixType<float, 3>::MatrixD PointMatrix;
 typedef cpd::MatrixType<float, 3>::Matrix CorresMatrix;
+
+typedef Deform::VectorF VectorFArray;
+typedef Deform::VectorI VectorIArray;
 
 static void MATRIX_TO_POINTCLOUD(const PointMatrix& point_matrix, PointCloud& point_cloud)
 {
@@ -144,6 +149,23 @@ static void MATRIX_TO_FLOWER(const PointMatrix& point_matrix, Flower& flower)
         }
     }
 
+}
+
+static void MESHMODEL_TO_VECTORARRAY(MeshModel& mesh_model, VectorFArray& vectorf_array, VectorIArray& vectori_array)
+{
+    osg::ref_ptr<osg::Vec3Array> points = mesh_model.getVertices();
+    size_t point_size = points->size();
+
+    for (size_t i = 0; i < point_size; i ++)
+    {
+        const osg::Vec3& point = points->at(i);
+
+        vectorf_array.push_back(point.x());
+        vectorf_array.push_back(point.y());
+        vectorf_array.push_back(point.z());
+
+        vectori_array.push_back(i);
+    }
 }
 
 #endif
