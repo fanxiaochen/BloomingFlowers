@@ -26,9 +26,9 @@ public:
 
     struct Constraint
     {
-        Constraint(Eigen::Vector3i _ctr, int _cid){ ctr = _ctr; cid = _cid; }
+        Constraint(Eigen::Vector3f _ctr, int _cid){ ctr = _ctr; cid = _cid; }
 
-        Eigen::Vector3i ctr;
+        Eigen::Vector3f ctr;
         int cid;
     };
 
@@ -86,6 +86,9 @@ public:
     void set_linear_sys(const VectorF &T, const VectorI &idx_T, const VectorF &F, const VectorI &idx_F);
     
 private:
+    // pre-build weight matrix
+    void build_weight_matrix();
+
     // pre-build laplacian matrix
     void build_laplacian_matrix();
 
@@ -107,8 +110,8 @@ private:
     // find share vertex of an edge
     void find_share_vertex(int i, int j, VectorI &share_vertex);
 
-    // is a hard constraint
-    bool is_hard_ctrs(int id);
+    // hard constraint or not
+    int is_hard_ctrs(int id);
 
 private:
     const float* P_data;
@@ -117,8 +120,8 @@ private:
     AdjList adj_list;
     FaceList face_list;
 
-    ConstraintSets hard_ctrs;
-    ConstraintSets soft_ctrs;
+    ConstraintSet hard_ctrs;
+    ConstraintSet soft_ctrs;
 
     std::vector<Eigen::Matrix3f> R;
 

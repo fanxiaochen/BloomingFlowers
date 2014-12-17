@@ -90,7 +90,7 @@ void MeshTrackThread::run()
         tracking_system_->cpd_registration(*tracked_frame, *tracking_template);
 
         // unstable
-        //tracking_template->deform(*tracking_template->getVertices(), deform_idx);
+        tracking_template->deform(*tracking_template->getVertices(), deform_idx);
 
         points_file_system->hidePointCloud(i - 1);
     }
@@ -111,10 +111,10 @@ void MeshTrackThread::run()
 //    tracking_template->expire();*/
 //
 //    //////for (size_t i = 0, i_end = 1; i < i_end; i ++)
-//    deform_idx.push_back(0);
+////    deform_idx.push_back(0);
 //    deform_idx.push_back(440);
 //
-//    indicators->push_back(osg::Vec3(0.0, 0.0, 0.0));
+////    indicators->push_back(osg::Vec3(0.0, 0.0, 0.0));
 //    indicators->push_back(osg::Vec3(1.0, 0.8, 0.5));
 //
 //    //////for (size_t i = 0, i_end = 1; i < i_end; i ++)

@@ -192,19 +192,19 @@ void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>&
         p[3*i+2] = point.z();
     }
 
-    Deform::FaceList face_list;
-    for (size_t i = 0, i_end = faces_.size(); i < i_end; i ++)
-    {
-        std::vector<int> face = faces_.at(i);
-        std::sort(face.begin(), face.end());
+    ////Deform::FaceList face_list;
+    //for (size_t i = 0, i_end = faces_.size(); i < i_end; i ++)
+    //{
+    //    std::vector<int> face = faces_.at(i);
+    //    std::sort(face.begin(), face.end());
 
-        Eigen::Vector3i face_i;
-        face_i(0) = face.at(0);
-        face_i(1) = face.at(1);
-        face_i(2) = face.at(2);
+    //    /*Eigen::Vector3i face_i;
+    //    face_i(0) = face.at(0);
+    //    face_i(1) = face.at(1);
+    //    face_i(2) = face.at(2);
 
-        face_list.push_back(face_i);
-    }
+    //    face_list.push_back(face_i);*/
+    //}
 
     Deform::VectorF points_indicator;
     Deform::VectorI points_index;
@@ -226,9 +226,9 @@ void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>&
     }
 
     float delta;
-    Deform deform_model(p, p_num, adj_list_, face_list);
+    Deform deform_model(p, p_num, adj_list_, faces_);
     deform_model.set_hard_ctrs(points_indicator, points_index);
-    deform_model.do_Deform();
+    deform_model.do_Deform(6);
 //    deform_model.do_Deform_Iter(delta);
     /*expire();
     deform_model.do_Deform_Iter(delta);
