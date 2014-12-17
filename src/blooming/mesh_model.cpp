@@ -227,7 +227,7 @@ void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>&
 
     float delta;
     Deform deform_model(p, p_num, adj_list_, face_list);
-    deform_model.set_init_pos(points_indicator, points_index);
+    deform_model.set_hard_ctrs(points_indicator, points_index);
     deform_model.do_Deform();
 //    deform_model.do_Deform_Iter(delta);
     /*expire();

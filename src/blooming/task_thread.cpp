@@ -64,91 +64,93 @@ MeshTrackThread::~MeshTrackThread()
 
 void MeshTrackThread::run()
 {
-    //std::cout << "Mesh Tracking Starts..." << std::endl;
+    std::cout << "Mesh Tracking Starts..." << std::endl;
 
-    //PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
-    //MeshFileSystem* mesh_file_system = tracking_system_->getMeshFileSystem();
-
-    //int start_frame = points_file_system->getStartFrame();
-    //int end_frame = points_file_system->getEndFrame();
-
-    //QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
-    //MeshModel* tracking_template = mesh_file_system->getMeshModel(mesh_indexes.values().at(0));
-
-    //std::vector<int> deform_idx;
-    //for (size_t i = 0, i_end = tracking_template->getVertices()->size(); i < i_end; i ++)
-    //    deform_idx.push_back(i);
-
-    //for (int i = start_frame + 1; i <= end_frame; i ++)
-    //{
-    //    std::cout << "tracking [frame " << i << "]" << std::endl;
-
-    //    PointCloud* tracked_frame = points_file_system->getPointCloud(i);	
-    //    points_file_system->showPointCloud(i - 1);
-    //    tracking_template->expire();
-
-    //    tracking_system_->cpd_registration(*tracked_frame, *tracking_template);
-
-    //    // unstable
-    //    tracking_template->deform(*tracking_template->getVertices(), deform_idx);
-
-    //    points_file_system->hidePointCloud(i - 1);
-    //}
-
-    //std::cout << "Mesh Tracking Finished!" << std::endl;
-
+    PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
     MeshFileSystem* mesh_file_system = tracking_system_->getMeshFileSystem();
+
+    int start_frame = points_file_system->getStartFrame();
+    int end_frame = points_file_system->getEndFrame();
+
     QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
     MeshModel* tracking_template = mesh_file_system->getMeshModel(mesh_indexes.values().at(0));
-    osg::Vec3Array* indicators = new osg::Vec3Array;
+
     std::vector<int> deform_idx;
+    for (size_t i = 0, i_end = tracking_template->getVertices()->size(); i < i_end; i ++)
+        deform_idx.push_back(i);
 
-    /*indicators->push_back(osg::Vec3(0.05, 0.05, 0.1));
-    deform_idx.push_back(2);
-    tracking_template->deform(*indicators, deform_idx);
-    tracking_template->expire();*/
+    for (int i = start_frame + 1; i <= end_frame; i ++)
+    {
+        std::cout << "tracking [frame " << i << "]" << std::endl;
 
-    //////for (size_t i = 0, i_end = 1; i < i_end; i ++)
-    deform_idx.push_back(0);
-    deform_idx.push_back(440);
+        PointCloud* tracked_frame = points_file_system->getPointCloud(i);	
+        points_file_system->showPointCloud(i - 1);
+        tracking_template->expire();
 
-    indicators->push_back(osg::Vec3(0.0, 0.0, 0.0));
-    indicators->push_back(osg::Vec3(1.0, 0.8, 0.5));
+        tracking_system_->cpd_registration(*tracked_frame, *tracking_template);
 
-    //////for (size_t i = 0, i_end = 1; i < i_end; i ++)
-    //deform_idx.push_back(84);
-    //deform_idx.push_back(336);
+        // unstable
+        //tracking_template->deform(*tracking_template->getVertices(), deform_idx);
 
-//    indicators->push_back(osg::Vec3(0.05, 0.05, 0.1));
-//    indicators->push_back(osg::Vec3(0.1, 0.0, 0.1));
+        points_file_system->hidePointCloud(i - 1);
+    }
 
-    //for (size_t i = 0, i_end = 1; i < i_end; i ++)
-//    deform_idx.push_back(2);
-//    deform_idx.push_back(2);
-
-    tracking_template->deform(*indicators, deform_idx);
     tracking_template->expire();
 
+    std::cout << "Mesh Tracking Finished!" << std::endl;
 
-    //for (int k = 0; k < 10; k ++)
-    //{
-    //    indicators->clear();
-    //    deform_idx.clear();
-
-    //    indicators->push_back(osg::Vec3(0.2+0.05*k, 0.4, 0.3));
-    //    indicators->push_back(osg::Vec3(0.8-0.05*k, 0.4, -0.3));
-
-    //    //for (size_t i = 0, i_end = 1; i < i_end; i ++)
-    //    deform_idx.push_back(84);
-    //    deform_idx.push_back(336);
-
-    //    tracking_template->deform(*indicators, deform_idx);
-    //    tracking_template->expire();
-    //}
-     
-
-    std::string file = MainWindow::getInstance()->getWorkspace() + "/deformed_mesh.obj";
-    tracking_template->save(file);
+//    MeshFileSystem* mesh_file_system = tracking_system_->getMeshFileSystem();
+//    QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
+//    MeshModel* tracking_template = mesh_file_system->getMeshModel(mesh_indexes.values().at(0));
+//    osg::Vec3Array* indicators = new osg::Vec3Array;
+//    std::vector<int> deform_idx;
+//
+//    /*indicators->push_back(osg::Vec3(0.05, 0.05, 0.1));
+//    deform_idx.push_back(2);
+//    tracking_template->deform(*indicators, deform_idx);
+//    tracking_template->expire();*/
+//
+//    //////for (size_t i = 0, i_end = 1; i < i_end; i ++)
+//    deform_idx.push_back(0);
+//    deform_idx.push_back(440);
+//
+//    indicators->push_back(osg::Vec3(0.0, 0.0, 0.0));
+//    indicators->push_back(osg::Vec3(1.0, 0.8, 0.5));
+//
+//    //////for (size_t i = 0, i_end = 1; i < i_end; i ++)
+//    //deform_idx.push_back(84);
+//    //deform_idx.push_back(336);
+//
+////    indicators->push_back(osg::Vec3(0.05, 0.05, 0.1));
+////    indicators->push_back(osg::Vec3(0.1, 0.0, 0.1));
+//
+//    //for (size_t i = 0, i_end = 1; i < i_end; i ++)
+////    deform_idx.push_back(2);
+////    deform_idx.push_back(2);
+//
+//    tracking_template->deform(*indicators, deform_idx);
+//    tracking_template->expire();
+//
+//
+//    //for (int k = 0; k < 10; k ++)
+//    //{
+//    //    indicators->clear();
+//    //    deform_idx.clear();
+//
+//    //    indicators->push_back(osg::Vec3(0.2+0.05*k, 0.4, 0.3));
+//    //    indicators->push_back(osg::Vec3(0.8-0.05*k, 0.4, -0.3));
+//
+//    //    //for (size_t i = 0, i_end = 1; i < i_end; i ++)
+//    //    deform_idx.push_back(84);
+//    //    deform_idx.push_back(336);
+//
+//    //    tracking_template->deform(*indicators, deform_idx);
+//    //    tracking_template->expire();
+//    //}
+//     
+//
+//    std::string file = MainWindow::getInstance()->getWorkspace() + "/deformed_mesh.obj";
+//    tracking_template->save(file);
 }
 
 FlowerTrackThread::FlowerTrackThread(TrackingSystem* tracking_system)
