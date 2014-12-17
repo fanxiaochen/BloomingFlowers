@@ -173,7 +173,7 @@ void MeshModel::recoverAdjList()
 void MeshModel::buildDeformModel()
 {
     Build_triangle<Polyhedron::HalfedgeDS> triangle(this);
-    deform_model_.delegate(triangle);
+//    deform_model_.delegate(triangle);
 //    CGAL_assertion( deform_model_.is_triangle(deform_model_.halfedges_begin()));
     return;
 }
@@ -228,8 +228,14 @@ void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>&
     float delta;
     Deform deform_model(p, p_num, adj_list_, face_list);
     deform_model.set_init_pos(points_indicator, points_index);
-//    deform_model.do_Deform();
+    deform_model.do_Deform();
+//    deform_model.do_Deform_Iter(delta);
+    /*expire();
     deform_model.do_Deform_Iter(delta);
+    expire();
+    deform_model.do_Deform_Iter(delta);
+    expire();
+    deform_model.do_Deform_Iter(delta);*/
 
     float* new_p = deform_model.get_P_Prime();
 

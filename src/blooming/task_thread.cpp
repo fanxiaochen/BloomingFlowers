@@ -103,8 +103,17 @@ void MeshTrackThread::run()
     osg::Vec3Array* indicators = new osg::Vec3Array;
     std::vector<int> deform_idx;
 
-    //indicators->push_back(osg::Vec3(0.7, 0.4, 0.3));
-    //indicators->push_back(osg::Vec3(0.3, 0.4, -0.3));
+    /*indicators->push_back(osg::Vec3(0.05, 0.05, 0.1));
+    deform_idx.push_back(2);
+    tracking_template->deform(*indicators, deform_idx);
+    tracking_template->expire();*/
+
+    //////for (size_t i = 0, i_end = 1; i < i_end; i ++)
+    deform_idx.push_back(0);
+    deform_idx.push_back(440);
+
+    indicators->push_back(osg::Vec3(0.0, 0.0, 0.0));
+    indicators->push_back(osg::Vec3(1.0, 0.8, 0.5));
 
     //////for (size_t i = 0, i_end = 1; i < i_end; i ++)
     //deform_idx.push_back(84);
@@ -117,25 +126,25 @@ void MeshTrackThread::run()
 //    deform_idx.push_back(2);
 //    deform_idx.push_back(2);
 
-    /*tracking_template->deform(*indicators, deform_idx);
-    tracking_template->expire();*/
+    tracking_template->deform(*indicators, deform_idx);
+    tracking_template->expire();
 
 
-    for (int k = 0; k < 10; k ++)
-    {
-        indicators->clear();
-        deform_idx.clear();
+    //for (int k = 0; k < 10; k ++)
+    //{
+    //    indicators->clear();
+    //    deform_idx.clear();
 
-        indicators->push_back(osg::Vec3(0.2+0.05*k, 0.4, 0.3));
-        indicators->push_back(osg::Vec3(0.8-0.05*k, 0.4, -0.3));
+    //    indicators->push_back(osg::Vec3(0.2+0.05*k, 0.4, 0.3));
+    //    indicators->push_back(osg::Vec3(0.8-0.05*k, 0.4, -0.3));
 
-        //for (size_t i = 0, i_end = 1; i < i_end; i ++)
-        deform_idx.push_back(84);
-        deform_idx.push_back(336);
+    //    //for (size_t i = 0, i_end = 1; i < i_end; i ++)
+    //    deform_idx.push_back(84);
+    //    deform_idx.push_back(336);
 
-        tracking_template->deform(*indicators, deform_idx);
-        tracking_template->expire();
-    }
+    //    tracking_template->deform(*indicators, deform_idx);
+    //    tracking_template->expire();
+    //}
      
 
     std::string file = MainWindow::getInstance()->getWorkspace() + "/deformed_mesh.obj";

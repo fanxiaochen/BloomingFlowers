@@ -7,7 +7,7 @@ Deform::Deform(const float *P_data, int P_Num, const AdjList &adj_list, const Fa
     :P_data(P_data), 
     P_Num(P_Num), 
     max_iter(5), 
-    min_delta(1e-3), 
+    min_delta(1e-2), 
     lambda_deform(5), 
     lambda_hard(5),
     adj_list(adj_list),
@@ -36,7 +36,7 @@ float *Deform::do_Deform()
         update_Ri();
         cout << "iter: " << ++ iter << "\tdelta: " << delta << endl;
 
-    }while(/*delta > min_delta &&*/ iter <= max_iter);
+    }while(delta > min_delta && iter <= max_iter);
 
     return P_Prime.data();
 }
@@ -159,6 +159,9 @@ void Deform::build_laplacian_matrix()
 
 void Deform::update_Ri()
 {
+    std::cout << "P_Prime: " << std::endl << P_Prime << std::endl;
+    std::cout << "P: " << std::endl << P << std::endl;
+
     Matrix3f Si;
     MatrixXf Di;
     Matrix3Xf Pi_Prime;
@@ -182,6 +185,8 @@ void Deform::update_Ri()
 
         if (R[i].determinant() < 0)
             std::cout << "determinant is negative!" << std::endl;
+
+ //       std::cout << "i: " << i << std::endl << R[i] << std::endl;
     }
 }
 
@@ -189,7 +194,7 @@ float Deform::update_P_Prime()
 {
 
     VectorXf d_vec(VectorXf::Map(d.data(), d.cols()*d.rows()));
-    P = P_Prime;
+//    P = P_Prime;
     VectorXf P_Prime_vec = chol.solve(d_vec);
     P_Prime.row(0) = P_Prime_vec.segment(0, P_Num);
     P_Prime.row(1) = P_Prime_vec.segment(0+P_Num, P_Num);
