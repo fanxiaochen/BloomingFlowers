@@ -4,7 +4,8 @@ using namespace std;
 using namespace Eigen;
 
 Deform::Deform(const float *P_data, int P_Num, const AdjList &adj_list, const TriangleList &triangle_list)
-    :P_data(P_data), 
+    :at(ORIGIN_HARD),
+    P_data(P_data), 
     P_Num(P_Num), 
     max_iter(10), 
     min_tol(1e-3), 
@@ -34,12 +35,12 @@ float *Deform::do_Deform()
     int iter = 0;
     double delta = 0;
 
-    build_laplacian_matrix();
+    set_linear_sys();
 
     do {
-        set_linear_sys();
         delta = update_P_Prime();
         update_Ri();
+        build_rh_d();
         cout << "iter: " << ++ iter << "\tdelta: " << delta << endl;
 
     }while(delta > min_tol && iter < max_iter);
@@ -52,12 +53,12 @@ float *Deform::do_Deform(int iter_num)
     int iter = 0;
     double delta = 0;
 
-    build_laplacian_matrix();
+    set_linear_sys();
 
     do {
-        set_linear_sys();
         delta = update_P_Prime();
         update_Ri();
+        build_rh_d();
         cout << "iter: " << ++ iter << "\tdelta: " << delta << endl;
 
     }while(iter < iter_num);
@@ -72,11 +73,14 @@ float *Deform::get_P_Prime()
 
 float* Deform::do_Deform_Iter(float &delta)
 {
-    build_laplacian_matrix();
     set_linear_sys();
     delta = update_P_Prime();
-    update_Ri();
     return P_Prime.data();
+}
+
+void Deform::set_arap_type(ArapType at)
+{
+    this->at = at;
 }
 
 void Deform::set_tolerance(float tol)
@@ -107,7 +111,7 @@ void Deform::set_hard_ctrs(const VectorF &T, const VectorI &idx_T)
     for (int i = 0, i_end = idx_T.size(); i < i_end; ++ i)
     {
         int cid = idx_T[i];
-//        P_Prime.col(idx) << T[3*i], T[3*i+1], T[3*i+2];
+
         Eigen::Vector3f ctr; 
         ctr << T[3*i], T[3*i+1], T[3*i+2];
 
@@ -123,14 +127,8 @@ void Deform::set_soft_ctrs(const VectorF &T, const VectorI &idx_T)
 
     for (int i = 0, i_end = idx_T.size(); i < i_end; ++ i)
     {
-        int idx = idx_T[i];
-        P_Prime.col(idx) << T[3*i], T[3*i+1], T[3*i+2];
-    }
-
-    for (int i = 0, i_end = idx_T.size(); i < i_end; ++ i)
-    {
         int cid = idx_T[i];
-        //        P_Prime.col(idx) << T[3*i], T[3*i+1], T[3*i+2];
+
         Eigen::Vector3f ctr; 
         ctr << T[3*i], T[3*i+1], T[3*i+2];
 
@@ -184,7 +182,6 @@ void Deform::build_laplacian_matrix()
 
     for (int i = 0; i != P_Num; ++i) 
     {
-
         float wi = 0;
 
         for (decltype(adj_list[i].size()) j = 0; j != adj_list[i].size(); ++j)
@@ -203,6 +200,9 @@ void Deform::build_laplacian_matrix()
             }
         }
 
+        if (is_soft_ctrs(i) != -1 && at == HARD_SOFT)
+            wi += lambda / 2;
+
         weight_sum.push_back(Triplet<float>(i, i, wi));
         weight_sum.push_back(Triplet<float>(i+P_Num, i+P_Num, wi));
         weight_sum.push_back(Triplet<float>(i+2*P_Num, i+2*P_Num, wi));
@@ -212,12 +212,18 @@ void Deform::build_laplacian_matrix()
     Weight_sum.setFromTriplets(weight_sum.begin(), weight_sum.end());
 
     L =  Weight_sum - weight;
+
+    chol.analyzePattern(L);
+    chol.factorize(L);
 }
 
 int Deform::is_hard_ctrs(int id)
 {
     // binary search
     int k = 0, k_end = hard_ctrs.size();
+
+    if (k_end == 0)
+        return -1;
 
     while (k <= k_end)
     {
@@ -232,21 +238,29 @@ int Deform::is_hard_ctrs(int id)
     }
 
     return -1;
+}
 
-    /*int k = 0, k_end = hard_ctrs.size();
-    while (k < k_end)
+int Deform::is_soft_ctrs(int id)
+{
+    // binary search
+    int k = 0, k_end = soft_ctrs.size();
+
+    if (k_end == 0)
+        return -1;
+
+    while (k <= k_end)
     {
-        if (id == hard_ctrs[k].cid)
-            break;
-        k++;
+        int m = (k + k_end) / 2;
+
+        if (id == soft_ctrs[m].cid)
+            return m;
+        else if (id < soft_ctrs[m].cid)
+            k_end = m - 1;
+        else 
+            k = m + 1;
     }
 
-    if (k != k_end)
-        return k;
-    else
-    {
-        return -1;
-    }*/
+    return -1;
 }
 
 void Deform::build_rh_d()
@@ -254,9 +268,9 @@ void Deform::build_rh_d()
     d = MatrixX3f::Zero(P_Num, 3);
     for (int i = 0; i != P_Num; ++i) {
 
-        int ctr_idx = is_hard_ctrs(i);
-        if (ctr_idx != -1)
-            d.row(i) = hard_ctrs[ctr_idx].ctr;
+        int hctr_idx = is_hard_ctrs(i);
+        if (hctr_idx != -1)
+            d.row(i) = hard_ctrs[hctr_idx].ctr;
         else
         {
             // if there is not any single unconnected point this for loop can have a more efficient representation
@@ -264,6 +278,10 @@ void Deform::build_rh_d()
                 d.row(i) += ((Weight.coeffRef(i, adj_list[i][j])/2)*(R[i]+R[adj_list[i][j]])*(P.col(i) - P.col(adj_list[i][j]))).transpose();
             }
         }
+
+        int sctr_idx = is_soft_ctrs(i);
+        if (sctr_idx != -1)
+            d.row(i) += (lambda / 2) * soft_ctrs[sctr_idx].ctr;
     }
 }
 
@@ -344,12 +362,9 @@ float Deform::update_P_Prime()
 }
 
 
-
 void Deform::set_linear_sys()
 {
-    chol.analyzePattern(L);
-    chol.factorize(L);
-
+    build_laplacian_matrix();
     build_rh_d();
 }
 

@@ -17,6 +17,13 @@
 class ARAP_DLL_API Deform
 {
 public:
+
+    enum ArapType
+    {
+        ORIGIN_HARD,
+        HARD_SOFT
+    };
+
     typedef std::vector< std::vector<int> > AdjList;
     typedef std::vector< std::vector<int> > TriangleList;
     typedef std::vector< float > VectorF;
@@ -77,13 +84,16 @@ public:
     // initial soft constraints
     void set_soft_ctrs(const VectorF &T, const VectorI &idx_T);
 
-    // set linear system. T is the target point, idx_T is the corresponding
-    // indices of these points to model. You can tune lamd_deform for them
-    void set_linear_sys(const VectorF &T, const VectorI &idx_T);
-    
-    // set linear system. F is another set of target point working 
-    // similarly to T. You can tune lamd_hard for them
-    void set_linear_sys(const VectorF &T, const VectorI &idx_T, const VectorF &F, const VectorI &idx_F);
+    // arap type
+    void set_arap_type(ArapType at);
+
+    //// set linear system. T is the target point, idx_T is the corresponding
+    //// indices of these points to model. You can tune lamd_deform for them
+    //void set_linear_sys(const VectorF &T, const VectorI &idx_T);
+    //
+    //// set linear system. F is another set of target point working 
+    //// similarly to T. You can tune lamd_hard for them
+    //void set_linear_sys(const VectorF &T, const VectorI &idx_T, const VectorF &F, const VectorI &idx_F);
     
 private:
     // pre-build weight matrix
@@ -113,7 +123,12 @@ private:
     // hard constraint or not
     int is_hard_ctrs(int id);
 
+    // soft constraint or not
+    int is_soft_ctrs(int id);
+
 private:
+    ArapType at;
+
     const float* P_data;
     Eigen::Matrix3Xf P_Prime;
     Eigen::Matrix3Xf P;
