@@ -85,21 +85,26 @@ void MeshTrackThread::run()
 
         PointCloud* tracked_frame = points_file_system->getPointCloud(i);	
         points_file_system->showPointCloud(i - 1);
-        tracking_template->expire();
 
         tracking_system_->cpd_registration(*tracked_frame, *tracking_template);
 
-        VectorFArray vfa;
-        VectorIArray via;
-        MESHMODEL_TO_VECTORARRAY(*tracking_template, vfa, via);
+        VectorFArray m_vfa;
+        VectorIArray m_via;
+        MESHMODEL_TO_VECTORARRAY(*tracking_template, m_vfa, m_via);
+
+        VectorFArray p_vfa;
+        VectorIArray p_via;
+        osg::ref_ptr<PointCloud> cloud = new PointCloud;
+        tracking_template->searchNearestIdx(tracked_frame, p_via);
+        tracked_frame->reordering(cloud, p_via);
+        POINTCLOUD_TO_VECTORARRAY(*cloud, p_vfa, p_via);
 
         // stable now!
-        tracking_template->deform(*tracking_template->getVertices(), deform_idx);
+        tracking_template->deform(m_vfa, m_via, p_vfa, p_via);
 
+        tracking_template->expire();
         points_file_system->hidePointCloud(i - 1);
     }
-
-    tracking_template->expire();
 
     std::cout << "Mesh Tracking Finished!" << std::endl;
 

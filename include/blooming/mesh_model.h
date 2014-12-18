@@ -46,6 +46,8 @@ public:
     void deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx,
         const std::vector<float>& soft_ctrs, const std::vector<int>& soft_idx);
 
+    void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
+
 protected:
 	virtual void updateImpl(void);
     virtual void visualizeMesh(void);

@@ -153,6 +153,9 @@ static void MATRIX_TO_FLOWER(const PointMatrix& point_matrix, Flower& flower)
 
 static void MESHMODEL_TO_VECTORARRAY(MeshModel& mesh_model, VectorFArray& vectorf_array, VectorIArray& vectori_array)
 {
+    vectori_array.clear();
+    vectorf_array.clear();
+
     osg::ref_ptr<osg::Vec3Array> points = mesh_model.getVertices();
     size_t point_size = points->size();
 
@@ -167,5 +170,25 @@ static void MESHMODEL_TO_VECTORARRAY(MeshModel& mesh_model, VectorFArray& vector
         vectori_array.push_back(i);
     }
 }
+
+static void POINTCLOUD_TO_VECTORARRAY(PointCloud& point_cloud, VectorFArray& vectorf_array, VectorIArray& vectori_array)
+{
+    vectori_array.clear();
+    vectorf_array.clear();
+
+    size_t point_size = point_cloud.size();
+
+    for (size_t i = 0; i < point_size; i ++)
+    {
+        const Point& point = point_cloud.at(i);
+
+        vectorf_array.push_back(point.x);
+        vectorf_array.push_back(point.y);
+        vectorf_array.push_back(point.z);
+
+        vectori_array.push_back(i);
+    }
+}
+
 
 #endif

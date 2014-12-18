@@ -2,17 +2,21 @@
 #include <boost/filesystem.hpp>
 #include <osgDB/WriteFile>
 
+#include <pcl/kdtree/kdtree_flann.h>
+
 #include <Deform.h>
 
 #include "tiny_obj_loader.h"
 #include "obj_writer.h"
 
+#include "point_cloud.h"
 #include "mesh_model.h"
 
+
 MeshModel::MeshModel()
-	:vertices_(new osg::Vec3Array),
-	colors_(new osg::Vec4Array),
-	face_normals_(new osg::Vec3Array),
+    :vertices_(new osg::Vec3Array),
+    colors_(new osg::Vec4Array),
+    face_normals_(new osg::Vec3Array),
     smoothing_visitor_(new osgUtil::SmoothingVisitor)
 {
 }
@@ -55,7 +59,7 @@ void MeshModel::visualizeMesh(void)
   geode->addDrawable(geometry);
   content_root_->addChild(geode);
 
-	return;
+    return;
 }
 
 void MeshModel::updateImpl()
@@ -72,63 +76,63 @@ bool MeshModel::save(const std::string& filename)
 
 bool MeshModel::load(const std::string& filename)
 {
-	if (!boost::filesystem::exists(filename))
-		return false;
+    if (!boost::filesystem::exists(filename))
+        return false;
 
-	std::string extension = boost::filesystem::path(filename).extension().string();
-	if (extension != ".obj")
-		return false;
+    std::string extension = boost::filesystem::path(filename).extension().string();
+    if (extension != ".obj")
+        return false;
 
-	return readObjFile(filename);
+    return readObjFile(filename);
 }
 
 bool MeshModel::readObjFile(const std::string& filename)
 {
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
 
-	std::string err = tinyobj::LoadObj(shapes, materials, filename.c_str());
+    std::string err = tinyobj::LoadObj(shapes, materials, filename.c_str());
 
-	if (!err.empty()) {
-	  std::cerr << err << std::endl;
-	  return false;
-	}
+    if (!err.empty()) {
+      std::cerr << err << std::endl;
+      return false;
+    }
 
-	// only one shape needed
-	if (shapes.size() == 0 || shapes.size() > 1)
-		return false;
+    // only one shape needed
+    if (shapes.size() == 0 || shapes.size() > 1)
+        return false;
 
-	tinyobj::shape_t mesh_shape = shapes.at(0);
-	tinyobj::mesh_t mesh_model = mesh_shape.mesh;
+    tinyobj::shape_t mesh_shape = shapes.at(0);
+    tinyobj::mesh_t mesh_model = mesh_shape.mesh;
 
-	size_t pos_size = mesh_model.positions.size();
-	size_t face_size = mesh_model.indices.size();
-	assert(pos_size % 3 == 0);
-	assert(face_size % 3 == 0);
+    size_t pos_size = mesh_model.positions.size();
+    size_t face_size = mesh_model.indices.size();
+    assert(pos_size % 3 == 0);
+    assert(face_size % 3 == 0);
 
-	pos_size = pos_size / 3;
-	face_size = face_size / 3;
+    pos_size = pos_size / 3;
+    face_size = face_size / 3;
 
-	for (size_t i = 0; i < pos_size; i ++)
-	{
-		vertices_->push_back(osg::Vec3(mesh_model.positions[i*3], 
-			mesh_model.positions[i*3+1], mesh_model.positions[i*3+2]));
-	}
+    for (size_t i = 0; i < pos_size; i ++)
+    {
+        vertices_->push_back(osg::Vec3(mesh_model.positions[i*3], 
+            mesh_model.positions[i*3+1], mesh_model.positions[i*3+2]));
+    }
 
-	for (size_t i = 0; i < face_size; i ++)
-	{
-		std::vector<int> face;
-		face.push_back(mesh_model.indices[i*3]);
-		face.push_back(mesh_model.indices[i*3+1]);
-		face.push_back(mesh_model.indices[i*3+2]);
-		faces_.push_back(face);
-	}
+    for (size_t i = 0; i < face_size; i ++)
+    {
+        std::vector<int> face;
+        face.push_back(mesh_model.indices[i*3]);
+        face.push_back(mesh_model.indices[i*3+1]);
+        face.push_back(mesh_model.indices[i*3+2]);
+        faces_.push_back(face);
+    }
 
     recoverAdjList();
 
     buildDeformModel();
 
-	return true;
+    return true;
 }
 
 void MeshModel::recoverAdjList()
@@ -302,6 +306,7 @@ void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<in
     deform_model.set_arap_type(Deform::HARD_SOFT);
     deform_model.set_hard_ctrs(hard_ctrs, hard_idx);
     deform_model.set_soft_ctrs(soft_ctrs, soft_idx);
+    deform_model.set_lambda(1);
     deform_model.do_Deform(6);
 
     float* new_p = deform_model.get_P_Prime();
@@ -317,6 +322,42 @@ void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<in
     free(p);
 }
 
+void MeshModel::searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx)
+{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+
+    for (size_t i = 0, i_end = point_cloud->size(); i < i_end; ++ i)
+    {
+        const Point& point = point_cloud->at(i);
+
+        pcl::PointXYZ pcl_point(point.x, point.y, point.z);
+        cloud->push_back(pcl_point);
+    }
+
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+
+    kdtree.setInputCloud (cloud);
+
+    int K = 1;
+
+    // K nearest neighbor search
+
+    for (size_t i = 0, i_end = this->getVertices()->size(); i < i_end; ++ i)
+    {
+        pcl::PointXYZ searchPoint;
+        std::vector<int> pointIdxNKNSearch(K);
+        std::vector<float> pointNKNSquaredDistance(K);
+
+        osg::Vec3& point = this->getVertices()->at(i);
+
+        searchPoint.x = point.x();
+        searchPoint.y = point.y();
+        searchPoint.z = point.z();
+
+        if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+            knn_idx.push_back(pointIdxNKNSearch[0]);
+    }
+}
 
 //void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
 //{

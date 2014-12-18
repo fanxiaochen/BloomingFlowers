@@ -138,6 +138,8 @@ public:
   int getFrame(void) const;
   bool isShown(void) const;
 
+  void reordering(osg::ref_ptr<PointCloud> point_cloud, const std::vector<int>& idx);
+
 protected:
   virtual void clearData();
   virtual void updateImpl();

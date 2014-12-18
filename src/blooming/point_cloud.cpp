@@ -340,3 +340,12 @@ bool PointCloud::terminal(const std::vector<FlowerPoint>& cluster_centers, const
 
     return true;
 }
+
+
+void PointCloud::reordering(osg::ref_ptr<PointCloud> point_cloud, const std::vector<int>& idx)
+{    
+    for (size_t i = 0, i_end = idx.size(); i < i_end; ++ i)
+    {
+        point_cloud->push_back(this->at(idx[i]));
+    }
+}
