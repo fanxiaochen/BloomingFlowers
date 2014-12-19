@@ -196,20 +196,6 @@ void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>&
         p[3*i+2] = point.z();
     }
 
-    ////Deform::FaceList face_list;
-    //for (size_t i = 0, i_end = faces_.size(); i < i_end; i ++)
-    //{
-    //    std::vector<int> face = faces_.at(i);
-    //    std::sort(face.begin(), face.end());
-
-    //    /*Eigen::Vector3i face_i;
-    //    face_i(0) = face.at(0);
-    //    face_i(1) = face.at(1);
-    //    face_i(2) = face.at(2);
-
-    //    face_list.push_back(face_i);*/
-    //}
-
     Deform::VectorF points_indicator;
     Deform::VectorI points_index;
 
@@ -219,9 +205,6 @@ void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>&
         points_indicator.push_back(indicator.x());
         points_indicator.push_back(indicator.y());
         points_indicator.push_back(indicator.z()); 
-        /*points_indicator.push_back(12);
-        points_indicator.push_back(6);
-        points_indicator.push_back(900); */
     }
 
     for (size_t i = 0, i_end = index.size(); i < i_end; i ++)
@@ -232,14 +215,8 @@ void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>&
     float delta;
     Deform deform_model(p, p_num, adj_list_, faces_);
     deform_model.set_hard_ctrs(points_indicator, points_index);
-    deform_model.do_Deform(6);
-//    deform_model.do_Deform_Iter(delta);
-    /*expire();
-    deform_model.do_Deform_Iter(delta);
-    expire();
-    deform_model.do_Deform_Iter(delta);
-    expire();
-    deform_model.do_Deform_Iter(delta);*/
+    deform_model.do_Deform(1);
+
 
     float* new_p = deform_model.get_P_Prime();
 
@@ -253,6 +230,77 @@ void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>&
 
     free(p);
 }
+
+void MeshModel::deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx,
+            const osg::Vec3Array& soft_ctrs, const std::vector<int>& soft_idx)
+{
+    float* p;
+    int p_num = vertices_->size();
+    p = (float*)malloc(sizeof(float)*p_num*3);
+
+    for (size_t i = 0; i < p_num; i ++)
+    {
+        const osg::Vec3& point = vertices_->at(i);
+        p[3*i+0] = point.x();
+        p[3*i+1] = point.y();
+        p[3*i+2] = point.z();
+    }
+
+    Deform::VectorF vf_hard_ctrs;
+    Deform::VectorI vi_hard_idx;
+
+    Deform::VectorF vf_soft_ctrs;
+    Deform::VectorI vi_soft_idx;
+
+
+    for (size_t i = 0, i_end = hard_ctrs.size(); i < i_end; i ++)
+    {
+        osg::Vec3 hard_ctr = hard_ctrs.at(i);
+        vf_hard_ctrs.push_back(hard_ctr.x());
+        vf_hard_ctrs.push_back(hard_ctr.y());
+        vf_hard_ctrs.push_back(hard_ctr.z()); 
+    }
+
+    for (size_t i = 0, i_end = hard_idx.size(); i < i_end; i ++)
+    {
+        vi_hard_idx.push_back(hard_idx.at(i));
+    }
+
+    for (size_t i = 0, i_end = soft_ctrs.size(); i < i_end; i ++)
+    {
+        osg::Vec3 soft_ctr = soft_ctrs.at(i);
+        vf_soft_ctrs.push_back(soft_ctr.x());
+        vf_soft_ctrs.push_back(soft_ctr.y());
+        vf_soft_ctrs.push_back(soft_ctr.z()); 
+    }
+
+    for (size_t i = 0, i_end = soft_idx.size(); i < i_end; i ++)
+    {
+        vi_soft_idx.push_back(soft_idx.at(i));
+    }
+
+    float delta;
+    Deform deform_model(p, p_num, adj_list_, faces_);
+    deform_model.set_hard_ctrs(vf_hard_ctrs, vi_hard_idx);
+    deform_model.set_soft_ctrs(vf_soft_ctrs, vi_soft_idx);
+    deform_model.set_arap_type(Deform::HARD_SOFT);
+    deform_model.set_lambda(2);
+    deform_model.do_Deform(1);
+
+
+    float* new_p = deform_model.get_P_Prime();
+
+    for (size_t i = 0; i < p_num; i ++)
+    {
+        osg::Vec3& point = vertices_->at(i);
+        point.x() = new_p[3*i+0];
+        point.y() = new_p[3*i+1];
+        point.z() = new_p[3*i+2];
+    }
+
+    free(p);
+}
+
 
 void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx)
 {
@@ -271,7 +319,7 @@ void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<in
     float delta;
     Deform deform_model(p, p_num, adj_list_, faces_);
     deform_model.set_hard_ctrs(hard_ctrs, hard_idx);
-    deform_model.do_Deform(6);
+    deform_model.do_Deform(1);
 
     float* new_p = deform_model.get_P_Prime();
 
@@ -306,7 +354,7 @@ void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<in
     deform_model.set_arap_type(Deform::HARD_SOFT);
     deform_model.set_hard_ctrs(hard_ctrs, hard_idx);
     deform_model.set_soft_ctrs(soft_ctrs, soft_idx);
-    deform_model.set_lambda(1);
+    deform_model.set_lambda(0);
     deform_model.do_Deform(6);
 
     float* new_p = deform_model.get_P_Prime();

@@ -88,19 +88,19 @@ void MeshTrackThread::run()
 
         tracking_system_->cpd_registration(*tracked_frame, *tracking_template);
 
-        VectorFArray m_vfa;
-        VectorIArray m_via;
-        MESHMODEL_TO_VECTORARRAY(*tracking_template, m_vfa, m_via);
+        //VectorFArray m_vfa;
+        //VectorIArray m_via;
+        //MESHMODEL_TO_VECTORARRAY(*tracking_template, m_vfa, m_via);
 
-        VectorFArray p_vfa;
-        VectorIArray p_via;
-        osg::ref_ptr<PointCloud> cloud = new PointCloud;
-        tracking_template->searchNearestIdx(tracked_frame, p_via);
-        tracked_frame->reordering(cloud, p_via);
-        POINTCLOUD_TO_VECTORARRAY(*cloud, p_vfa, p_via);
+        //VectorFArray p_vfa;
+        //VectorIArray p_via;
+        //osg::ref_ptr<PointCloud> cloud = new PointCloud;
+        //tracking_template->searchNearestIdx(tracked_frame, p_via);
+        //tracked_frame->reordering(cloud, p_via);
+        //POINTCLOUD_TO_VECTORARRAY(*cloud, p_vfa, p_via);
 
-        // stable now!
-        tracking_template->deform(m_vfa, m_via, p_vfa, p_via);
+        //// stable now!
+        //tracking_template->deform(m_vfa, m_via, p_vfa, p_via);
 
         tracking_template->expire();
         points_file_system->hidePointCloud(i - 1);
@@ -198,11 +198,12 @@ void FlowerTrackThread::run()
     flower.show();
    // flowers.push_back(flower);
 
-    Flower simplified_flower = flower.simplifyMesh(4);
-    std::vector<std::vector<int> > knn_idx; 
-    flower.searchNearestIdx(simplified_flower, knn_idx);
+    Flower simplified_flower = flower.simplifyMesh(25);
+    std::vector<std::vector<int> > hard_knn_idx; 
+    flower.searchNearestIdx(simplified_flower, hard_knn_idx);
 
-    flower.show();
+
+  //  simplified_flower.show();
 
     for (size_t i = key_frame, i_end = end_frame;
         i < i_end; ++ i)
@@ -211,16 +212,49 @@ void FlowerTrackThread::run()
         points_file_system->showPointCloud(i);
 
         PointCloud* forward_cloud = points_file_system->getPointCloud(i + 1);
+        QString large_file = QString(forward_cloud->getFilename().c_str());
+        QString old_str("small"), new_str("large");
+        large_file.replace(large_file.indexOf(old_str), old_str.size(), new_str);
+        PointCloud* large_forward_cloud = points_file_system->getPointCloud(large_file.toStdString());
+
         tracking_system_->cpd_registration(*forward_cloud, simplified_flower);
 
-        std::vector<osg::ref_ptr<osg::Vec3Array> > pos;
+        std::vector<osg::ref_ptr<osg::Vec3Array> > hard_ctrs;
         for (size_t j = 0, j_end = simplified_flower.getPetals().size(); j < j_end; ++ j)
         {
             Petals& petals = simplified_flower.getPetals();
-            pos.push_back(petals[j]->getVertices());
+            hard_ctrs.push_back(petals[j]->getVertices());
         }
 
-        flower.deform(pos, knn_idx);
+        flower.deform(hard_ctrs, hard_knn_idx);
+
+        /*std::vector<osg::ref_ptr<osg::Vec3Array> > soft_ctrs;
+        std::vector<std::vector<int> > soft_knn_idx;
+
+        flower.searchNearestIdx(*large_forward_cloud, soft_ctrs);
+
+        for (size_t j = 0, j_end = flower.getPetals().size(); j < j_end; ++ j)
+        {
+        Petals& petals = flower.getPetals();
+        std::vector<int> soft_idx;
+        for (size_t k = 0, k_end = petals[j]->getVertices()->size(); k < k_end; ++ k)
+        soft_idx.push_back(k);
+        soft_knn_idx.push_back(soft_idx);
+        }
+
+        for (size_t j = 0, j_end = hard_knn_idx.size(); j < j_end; ++ j)
+        {
+        osg::Vec3Array* hard_ctr = hard_ctrs.at(j);
+        osg::Vec3Array* soft_ctr = soft_ctrs.at(j);
+        std::vector<int>& hard_idx = hard_knn_idx.at(j);
+        for (size_t k = 0, k_end = hard_idx.size(); k < k_end; ++ k)
+        {
+        soft_ctr->at(hard_idx[k]) = hard_ctr->at(k);
+        }
+        }
+
+        flower.deform(hard_ctrs, hard_knn_idx, soft_ctrs, soft_knn_idx);*/
+
         flower.update();
 
         points_file_system->hidePointCloud(i);

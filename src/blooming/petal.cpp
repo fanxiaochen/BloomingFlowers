@@ -97,3 +97,43 @@ void Petal::searchNearestIdx(Petal& petal, std::vector<int>& idx)
             idx.push_back(pointIdxNKNSearch[0]);
     }
 }
+
+void Petal::searchNearestIdx(PointCloud& point_cloud, osg::Vec3Array& knn_pos)
+{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+
+    for (size_t i = 0, i_end = point_cloud.size(); i < i_end; ++ i)
+    {
+        const Point& point = point_cloud.at(i);
+
+        pcl::PointXYZ pcl_point(point.x, point.y, point.z);
+        cloud->push_back(pcl_point);
+    }
+
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+
+    kdtree.setInputCloud (cloud);
+
+    int K = 1;
+
+    // K nearest neighbor search
+
+    for (size_t i = 0, i_end = this->getVertices()->size(); i < i_end; ++ i)
+    {
+        pcl::PointXYZ searchPoint;
+        std::vector<int> pointIdxNKNSearch(K);
+        std::vector<float> pointNKNSquaredDistance(K);
+
+        osg::Vec3& point = this->getVertices()->at(i);
+
+        searchPoint.x = point.x();
+        searchPoint.y = point.y();
+        searchPoint.z = point.z();
+
+        if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+        {
+            osg::Vec3 pos(cloud->at(pointIdxNKNSearch[0]).x, cloud->at(pointIdxNKNSearch[0]).y, cloud->at(pointIdxNKNSearch[0]).z);
+            knn_pos.push_back(pos);
+        }
+    }
+}

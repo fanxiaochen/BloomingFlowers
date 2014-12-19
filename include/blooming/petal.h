@@ -17,6 +17,8 @@ public:
     inline int getPetalId() { return petal_id_; }
 
     void searchNearestIdx(Petal& petal, std::vector<int>& idx);
+    void searchNearestIdx(PointCloud& point_cloud, osg::Vec3Array& knn_pos);
+
 
 protected:
     virtual void updateImpl();
