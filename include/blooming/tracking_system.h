@@ -25,7 +25,7 @@ public:
     inline MeshFileSystem* getMeshFileSystem(){ return mesh_file_system_; }
     inline Trajectories* getTrajectories(){ return trajectories_; }
 
-    inline Flowers& getFlowers(){ return flowers_; }
+    inline Flowers* getFlowers(){ return flowers_; }
 
     inline void setStartFrame(int start_frame) { start_frame_ = start_frame; }
     inline void setEndFrame(int end_frame) { end_frame_ = end_frame; }
@@ -66,7 +66,7 @@ private:
     int                 end_frame_;
     int                 key_frame_;
 
-    Flowers             flowers_;
+    Flowers*             flowers_;
 };
 
 #endif

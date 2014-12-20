@@ -7,7 +7,7 @@
 
 
 #include "main_window.h"
-#include "flower.h"
+#include "point_cloud.h"
 #include "osg_viewer_widget.h"
 #include "points_file_system.h"
 #include "scene_widget.h"

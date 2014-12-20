@@ -10,7 +10,7 @@
 #include "tracking_system.h"
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system)
-    :trajectories_(new Trajectories(points_file_system)), key_frame_(-1)
+    :trajectories_(new Trajectories(points_file_system)), key_frame_(-1), flowers_(new Flowers)
 {
     points_file_system_ = points_file_system;
 
@@ -19,7 +19,7 @@ TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system)
 }
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system, MeshFileSystem* mesh_file_system)
-    :trajectories_(new Trajectories(points_file_system)), key_frame_(-1)
+    :trajectories_(new Trajectories(points_file_system)), key_frame_(-1), flowers_(new Flowers)
 {
 	points_file_system_ = points_file_system;
 	mesh_file_system_ = mesh_file_system;	
@@ -124,8 +124,8 @@ void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, MeshModel
 	reg->setOutlierWeight(0.1);
     reg->setFgtFlag(true);
     reg->setFgtEpsilon(1e-3);
-    reg->setLowRankFlag(true);
-    reg->setKLowRank(40);
+//    reg->setLowRankFlag(true);
+//    reg->setKLowRank(40);
     reg->run();
 
 	MATRIX_TO_MESHMODEL(reg->getModel(), tracking_template);

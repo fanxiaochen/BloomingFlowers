@@ -16,7 +16,7 @@ typedef  pcl::PointXYZRGB  Point;
 typedef  pcl::PointCloud<Point>  PclPointCloud;
 
 
-class PointCloud : public QObject, virtual public Renderable, public PclPointCloud
+class PointCloud : public QObject, public Renderable, public PclPointCloud
 {
 public:
     struct FlowerPoint
@@ -137,7 +137,8 @@ public:
   
   int getFrame(void) const;
   bool isShown(void) const;
-
+  
+  // using idx vector of this point cloud to build a new cloud
   void reordering(osg::ref_ptr<PointCloud> point_cloud, const std::vector<int>& idx);
 
 protected:

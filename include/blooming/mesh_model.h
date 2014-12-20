@@ -23,11 +23,13 @@ typedef boost::graph_traits<Polyhedron>::vertex_descriptor    vertex_descriptor;
 typedef boost::graph_traits<Polyhedron>::vertex_iterator        vertex_iterator;
 typedef CGAL::Surface_mesh_deformation<Polyhedron> Surface_mesh_deformation;
 
+class PointCloud;
 
-class MeshModel : virtual public Renderable
+class MeshModel : public Renderable
 {
 public:
 	MeshModel();
+    MeshModel(const MeshModel& mesh_model);  // deep copy
 	virtual ~MeshModel(void);
 
 	bool load(const std::string& filename);
@@ -35,12 +37,18 @@ public:
   
 	bool empty(void) const {return vertices_->empty();}
 
-    inline osg::ref_ptr<osg::Vec3Array> getVertices(){ return vertices_; }
-    inline std::vector<std::vector<int> >& getFaces(){ return faces_; }
-    inline std::vector<std::vector<int> >& getAdjList(){ return adj_list_; }
-    inline Polyhedron& getDeformModel(){ return deform_model_; }
+    // for deep copy
+    inline const osg::ref_ptr<osg::Vec3Array> getVertices() const { return vertices_; }
+    inline const std::vector<std::vector<int> >& getFaces() const { return faces_; }
+    inline const std::vector<std::vector<int> >& getAdjList() const { return adj_list_; }
+    inline const Polyhedron& getDeformModel() const { return deform_model_; }
 
-    void deform(const osg::Vec3Array& indicators, const std::vector<int>& index);
+    inline osg::ref_ptr<osg::Vec3Array> getVertices() { return vertices_; }
+    inline std::vector<std::vector<int> >& getFaces() { return faces_; }
+    inline std::vector<std::vector<int> >& getAdjList() { return adj_list_; }
+    inline Polyhedron& getDeformModel() { return deform_model_; }
+
+    void deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx);
     void deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx,
         const osg::Vec3Array& soft_ctrs, const std::vector<int>& soft_idx);
 
@@ -48,6 +56,10 @@ public:
     void deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx,
         const std::vector<float>& soft_ctrs, const std::vector<int>& soft_idx);
 
+    // source is the source_mesh, target is this mesh, knn_idx is based on source_mesh
+    void searchNearestIdx(const MeshModel& source_mesh, std::vector<int>& knn_idx);
+
+    // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
     void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
 
 protected:

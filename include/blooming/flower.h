@@ -2,7 +2,10 @@
 #define FLOWER_H
 
 #include "renderable.h"
-#include "petal.h"
+#include "mesh_model.h"
+
+typedef MeshModel   Petal;
+typedef std::vector<Petal>  Petals;
 
 class Flower
 {
@@ -34,8 +37,6 @@ public:
 private:
     Petals            petals_;
 
-    bool              show_points_;
-    bool              show_mesh_;
 };
 
 typedef std::vector<Flower> Flowers;

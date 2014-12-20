@@ -21,6 +21,18 @@ MeshModel::MeshModel()
 {
 }
 
+MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
+    :vertices_(new osg::Vec3Array),
+    colors_(new osg::Vec4Array),
+    face_normals_(new osg::Vec3Array),
+    smoothing_visitor_(new osgUtil::SmoothingVisitor)
+{
+    *(this->getVertices()) = *(mesh_model.getVertices());
+    this->getFaces() = mesh_model.getFaces();
+    this->getAdjList() = mesh_model.getAdjList();
+    this->getDeformModel() = mesh_model.getDeformModel();
+}
+
 MeshModel::~MeshModel(void)
 {
 }
@@ -182,7 +194,7 @@ void MeshModel::buildDeformModel()
     return;
 }
 
-void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
+void MeshModel::deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx)
 {
     float* p;
     int p_num = vertices_->size();
@@ -199,20 +211,19 @@ void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>&
     Deform::VectorF points_indicator;
     Deform::VectorI points_index;
 
-    for (size_t i = 0, i_end = indicators.size(); i < i_end; i ++)
+    for (size_t i = 0, i_end = hard_ctrs.size(); i < i_end; i ++)
     {
-        osg::Vec3 indicator = indicators.at(i);
+        osg::Vec3 indicator = hard_ctrs.at(i);
         points_indicator.push_back(indicator.x());
         points_indicator.push_back(indicator.y());
         points_indicator.push_back(indicator.z()); 
     }
 
-    for (size_t i = 0, i_end = index.size(); i < i_end; i ++)
+    for (size_t i = 0, i_end = hard_idx.size(); i < i_end; i ++)
     {
-        points_index.push_back(index.at(i));
+        points_index.push_back(hard_idx.at(i));
     }
 
-    float delta;
     Deform deform_model(p, p_num, adj_list_, faces_);
     deform_model.set_hard_ctrs(points_indicator, points_index);
     deform_model.do_Deform(1);
@@ -316,7 +327,6 @@ void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<in
         p[3*i+2] = point.z();
     }
 
-    float delta;
     Deform deform_model(p, p_num, adj_list_, faces_);
     deform_model.set_hard_ctrs(hard_ctrs, hard_idx);
     deform_model.do_Deform(1);
@@ -404,6 +414,42 @@ void MeshModel::searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_
 
         if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
             knn_idx.push_back(pointIdxNKNSearch[0]);
+    }
+}
+
+void MeshModel::searchNearestIdx(const MeshModel& source_mesh, std::vector<int>& idx)
+{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+
+    for (size_t i = 0, i_end = this->getVertices()->size(); i < i_end; ++ i)
+    {
+        const osg::Vec3& point = this->getVertices()->at(i);
+
+        pcl::PointXYZ pcl_point(point.x(), point.y(), point.z());
+        cloud->push_back(pcl_point);
+    }
+
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+
+    kdtree.setInputCloud (cloud);
+
+    int K = 1;
+
+    // K nearest neighbor search
+
+    for (size_t i = 0, i_end = source_mesh.getVertices()->size(); i < i_end; ++ i)
+    {
+        pcl::PointXYZ searchPoint;
+        std::vector<int> pointIdxNKNSearch(K);
+        std::vector<float> pointNKNSquaredDistance(K);
+
+        osg::Vec3& point = source_mesh.getVertices()->at(i);
+        searchPoint.x = point.x();
+        searchPoint.y = point.y();
+        searchPoint.z = point.z();
+
+        if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+            idx.push_back(pointIdxNKNSearch[0]);
     }
 }
 

@@ -5,7 +5,6 @@
 #include "parameters.h"
 #include "point_cloud.h"
 #include "flower.h"
-#include "petal.h"
 #include "mesh_model.h"
 #include "points_file_system.h"
 #include "mesh_file_system.h"
@@ -75,9 +74,9 @@ void MeshTrackThread::run()
     QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
     MeshModel* tracking_template = mesh_file_system->getMeshModel(mesh_indexes.values().at(0));
 
-    std::vector<int> deform_idx;
+    /*std::vector<int> deform_idx;
     for (size_t i = 0, i_end = tracking_template->getVertices()->size(); i < i_end; i ++)
-        deform_idx.push_back(i);
+    deform_idx.push_back(i);*/
 
     for (int i = start_frame + 1; i <= end_frame; i ++)
     {
@@ -176,7 +175,7 @@ void FlowerTrackThread::run()
     std::cout << "Flower Tracking Starts..." << std::endl;
 
     int key_frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
-    Flowers& flowers = tracking_system_->getFlowers();
+    Flowers* flowers = tracking_system_->getFlowers();
 
     PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
     MeshFileSystem* mesh_file_system = tracking_system_->getMeshFileSystem();
@@ -186,24 +185,20 @@ void FlowerTrackThread::run()
 
     QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
     
-    Flower flower;
+    // build flower structure, memory leak...
+    Flower* flower = new Flower;
     for (size_t i = 0, i_end = mesh_indexes.size(); i < i_end; ++ i)
     {
-        MeshModel* petal_template = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
-        osg::ref_ptr<Petal> petal(new Petal(i));
-        petal->setMeshModel(petal_template);
-        flower.getPetals().push_back(petal);
+        osg::ref_ptr<Petal> petal_template = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
+        flower->getPetals().push_back(*petal_template); // deep copy
+        mesh_file_system->hideMeshModel(mesh_indexes.values().at(i));
     }
     
-    flower.show();
-   // flowers.push_back(flower);
+    flower->show();
 
-    Flower simplified_flower = flower.simplifyMesh(25);
+    Flower simplified_flower = flower->simplifyMesh(25);
     std::vector<std::vector<int> > hard_knn_idx; 
-    flower.searchNearestIdx(simplified_flower, hard_knn_idx);
-
-
-  //  simplified_flower.show();
+    flower->searchNearestIdx(simplified_flower, hard_knn_idx);
 
     for (size_t i = key_frame, i_end = end_frame;
         i < i_end; ++ i)
@@ -212,10 +207,10 @@ void FlowerTrackThread::run()
         points_file_system->showPointCloud(i);
 
         PointCloud* forward_cloud = points_file_system->getPointCloud(i + 1);
-        QString large_file = QString(forward_cloud->getFilename().c_str());
+        /*QString large_file = QString(forward_cloud->getFilename().c_str());
         QString old_str("small"), new_str("large");
         large_file.replace(large_file.indexOf(old_str), old_str.size(), new_str);
-        PointCloud* large_forward_cloud = points_file_system->getPointCloud(large_file.toStdString());
+        PointCloud* large_forward_cloud = points_file_system->getPointCloud(large_file.toStdString());*/
 
         tracking_system_->cpd_registration(*forward_cloud, simplified_flower);
 
@@ -223,10 +218,10 @@ void FlowerTrackThread::run()
         for (size_t j = 0, j_end = simplified_flower.getPetals().size(); j < j_end; ++ j)
         {
             Petals& petals = simplified_flower.getPetals();
-            hard_ctrs.push_back(petals[j]->getVertices());
+            hard_ctrs.push_back(petals[j].getVertices());
         }
 
-        flower.deform(hard_ctrs, hard_knn_idx);
+        flower->deform(hard_ctrs, hard_knn_idx);
 
         /*std::vector<osg::ref_ptr<osg::Vec3Array> > soft_ctrs;
         std::vector<std::vector<int> > soft_knn_idx;
@@ -255,7 +250,8 @@ void FlowerTrackThread::run()
 
         flower.deform(hard_ctrs, hard_knn_idx, soft_ctrs, soft_knn_idx);*/
 
-        flower.update();
+        flower->update();
+        flowers->push_back(*flower);
 
         points_file_system->hidePointCloud(i);
     }
