@@ -15,6 +15,8 @@ public:
 
     inline Petals& getPetals(){ return petals_; }
 
+    void save(const std::string& flower_path);
+
     void show();
     void update();
 

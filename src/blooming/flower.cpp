@@ -9,6 +9,16 @@ Flower::Flower()
 Flower::~Flower()
 {}
 
+void Flower::save(const std::string& flower_path)
+{
+    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+    {
+        std::string& petal_file = flower_path + QString("/petal-%1.obj").arg(i).toStdString();
+        Petal& petal = petals_[i];
+        petal.save(petal_file);
+    }
+}
+
 void Flower::show()
 {
     for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
