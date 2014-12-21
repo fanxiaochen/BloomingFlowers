@@ -210,11 +210,11 @@ void MeshModel::extractEdgeVertices()
         for (size_t j = 0, j_end = list_i.size(); j < j_end; ++ j)
         {
             std::vector<int> shared_vertices;
-            findSharedVertices(i, j, shared_vertices);
+            findSharedVertices(i, list_i[j], shared_vertices);
             if (shared_vertices.size() == 1)
             {
                 edge_idx.insert(i);
-                edge_idx.insert(j);
+                edge_idx.insert(list_i[j]);
             }
         }
     }
@@ -227,7 +227,7 @@ void MeshModel::findSharedVertices(int pi, int pj, std::vector<int>& shared_vert
 {
     std::vector<int> vertices;
     set_intersection(adj_list_[pi].begin(), adj_list_[pi].end(), adj_list_[pj].begin(), adj_list_[pj].end(), back_inserter(vertices));
-    for (auto &i : vertices) 
+    for (size_t i = 0, i_end = vertices.size(); i < i_end; ++ i) 
     {
         if (vertices[i] != pi && vertices[i] != pj)
             shared_vertices.push_back(vertices[i]);
