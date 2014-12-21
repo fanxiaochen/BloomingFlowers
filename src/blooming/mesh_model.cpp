@@ -8,6 +8,7 @@
 
 #include "tiny_obj_loader.h"
 #include "obj_writer.h"
+#include "mesh_simplify.h"
 
 #include "point_cloud.h"
 #include "mesh_model.h"
@@ -17,7 +18,8 @@ MeshModel::MeshModel()
     :vertices_(new osg::Vec3Array),
     colors_(new osg::Vec4Array),
     face_normals_(new osg::Vec3Array),
-    smoothing_visitor_(new osgUtil::SmoothingVisitor)
+    smoothing_visitor_(new osgUtil::SmoothingVisitor),
+    hard_ctrs_(new osg::Vec3Array)
 {
 }
 
@@ -25,12 +27,15 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     :vertices_(new osg::Vec3Array),
     colors_(new osg::Vec4Array),
     face_normals_(new osg::Vec3Array),
-    smoothing_visitor_(new osgUtil::SmoothingVisitor)
+    smoothing_visitor_(new osgUtil::SmoothingVisitor),
+    hard_ctrs_(new osg::Vec3Array)
 {
     *(this->getVertices()) = *(mesh_model.getVertices());
     this->getFaces() = mesh_model.getFaces();
     this->getAdjList() = mesh_model.getAdjList();
     this->getDeformModel() = mesh_model.getDeformModel();
+    this->getEdgeIndex() = mesh_model.getEdgeIndex();
+    this->getHardCtrsIndex() = mesh_model.getHardCtrsIndex();
 }
 
 MeshModel::~MeshModel(void)
@@ -141,6 +146,7 @@ bool MeshModel::readObjFile(const std::string& filename)
     }
 
     recoverAdjList();
+    extractEdgeVertices();
 
     buildDeformModel();
 
@@ -181,9 +187,9 @@ void MeshModel::recoverAdjList()
     {
         std::set<int> index_i = index_list.at(i);
         std::vector<int> adj_list(index_i.begin(), index_i.end());
+        std::sort(adj_list.begin(), adj_list.end());
         adj_list_.push_back(adj_list);
     }
-
 }
 
 void MeshModel::buildDeformModel()
@@ -192,6 +198,117 @@ void MeshModel::buildDeformModel()
     deform_model_.delegate(triangle);
 //    CGAL_assertion( deform_model_.is_triangle(deform_model_.halfedges_begin()));
     return;
+}
+
+void MeshModel::extractEdgeVertices()
+{
+    std::set<int> edge_idx;
+
+    for (size_t i = 0, i_end = adj_list_.size(); i < i_end; ++ i)
+    {
+        std::vector<int> list_i = adj_list_.at(i);
+        for (size_t j = 0, j_end = list_i.size(); j < j_end; ++ j)
+        {
+            std::vector<int> shared_vertices;
+            findSharedVertices(i, j, shared_vertices);
+            if (shared_vertices.size() == 1)
+            {
+                edge_idx.insert(i);
+                edge_idx.insert(j);
+            }
+        }
+    }
+
+    for (std::set<int>::iterator itr = edge_idx.begin(); itr != edge_idx.end(); ++ itr)
+        edge_index_.push_back(*itr);
+}
+
+void MeshModel::findSharedVertices(int pi, int pj, std::vector<int>& shared_vertices)
+{
+    std::vector<int> vertices;
+    set_intersection(adj_list_[pi].begin(), adj_list_[pi].end(), adj_list_[pj].begin(), adj_list_[pj].end(), back_inserter(vertices));
+    for (auto &i : vertices) 
+    {
+        if (vertices[i] != pi && vertices[i] != pj)
+            shared_vertices.push_back(vertices[i]);
+    }
+
+    if (shared_vertices.size() > 2) {
+        std::cout << "share vertices number warning: " << shared_vertices.size() << std::endl;
+    }
+}
+
+MeshModel MeshModel::simplify(int scale)
+{
+    MeshModel sim_mesh(*this);
+
+    Simplify::vertices.clear();
+    Simplify::triangles.clear();
+
+    for (size_t i = 0, i_end = sim_mesh.getVertices()->size(); i < i_end; ++ i)
+    {
+        Simplify::Vertex v;
+        const osg::Vec3& vertice = sim_mesh.getVertices()->at(i);
+        v.p.x = vertice.x();
+        v.p.y = vertice.y();
+        v.p.z = vertice.z();
+        Simplify::vertices.push_back(v);
+    }
+
+    for (size_t i = 0, i_end = sim_mesh.getFaces().size(); i < i_end; ++ i)
+    {
+        Simplify::Triangle t;
+        const std::vector<int>& face = sim_mesh.getFaces().at(i);
+        t.v[0] = face[0];
+        t.v[1] = face[1];
+        t.v[2] = face[2];
+        Simplify::triangles.push_back(t);
+    }
+
+    Simplify::simplify_mesh(sim_mesh.getFaces().size() / scale);
+
+    sim_mesh.getVertices()->clear();
+    sim_mesh.getFaces().clear();
+
+    for (size_t i = 0, i_end = Simplify::vertices.size(); i < i_end; ++ i)
+    {
+        osg::Vec3 vertice;
+        const Simplify::Vertex& v = Simplify::vertices.at(i);
+        vertice.x() = v.p.x;
+        vertice.y() = v.p.y;
+        vertice.z() = v.p.z;
+        sim_mesh.getVertices()->push_back(vertice);
+    }
+
+    for (size_t i = 0, i_end = Simplify::triangles.size(); i < i_end; ++ i)
+    {
+        std::vector<int> face;
+        const Simplify::Triangle& t = Simplify::triangles.at(i);
+        face.push_back(t.v[0]);
+        face.push_back(t.v[1]);
+        face.push_back(t.v[2]);
+
+        sim_mesh.getFaces().push_back(face);
+    }
+
+    return sim_mesh;
+}
+
+void MeshModel::buildHardCtrsIdx(int scale)
+{
+    std::vector<int> hard_idx_vec;
+    std::set<int> hard_idx_set; // for unique index 
+
+    MeshModel sim_mesh = simplify(scale);
+    searchNearestIdx(sim_mesh, hard_idx_vec);
+
+    for (size_t i = 0, i_end = hard_idx_vec.size(); i < i_end; ++ i)
+        hard_idx_set.insert(hard_idx_vec[i]);
+
+    for (size_t i = 0, i_end = edge_index_.size(); i < i_end; ++ i)
+        hard_idx_set.insert(edge_index_[i]);
+
+    std::copy(hard_idx_set.begin(), hard_idx_set.end(), back_inserter(hard_index_));
 }
 
 //void MeshModel::deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx)

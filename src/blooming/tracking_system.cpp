@@ -194,4 +194,3 @@ void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, Flower& t
 
     MATRIX_TO_FLOWER(reg->getModel(), tracking_template);
 }
-

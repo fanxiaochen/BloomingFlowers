@@ -32,6 +32,7 @@ static void MATRIX_TO_POINTCLOUD(const PointMatrix& point_matrix, PointCloud& po
 		//point_cloud.push_back(Point(point_matrix(i,0), point_matrix(i,1), point_matrix(i,2)));
 	}
 }
+
 static PointMatrix POINTCLOUD_TO_MATRIX(const PointCloud& point_cloud)
 {
 	PointMatrix point_matrix;
@@ -98,8 +99,8 @@ static PointMatrix FLOWER_TO_MATRIX(Flower& flower)
     for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
     {
         Petal& petal = petals[i];
-        osg::ref_ptr<osg::Vec3Array> vertices = petal.getVertices();
-        point_size += vertices->size();
+        std::vector<int> hard_idx = petal.getHardCtrsIndex();
+        point_size += hard_idx.size();
     }
     
     point_matrix.resize(point_size, 3);
@@ -108,11 +109,12 @@ static PointMatrix FLOWER_TO_MATRIX(Flower& flower)
     for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
     {
         Petal& petal = petals[i];
+        std::vector<int> hard_idx = petal.getHardCtrsIndex();
         osg::ref_ptr<osg::Vec3Array> vertices = petal.getVertices();
 
-        for (size_t j = 0, j_end = vertices->size(); j < j_end; ++ j)
+        for (size_t j = 0, j_end = hard_idx.size(); j < j_end; ++ j)
         {
-            const osg::Vec3& point = vertices->at(j);
+            const osg::Vec3& point = vertices->at(hard_idx[j]);
 
             point_matrix(k, 0) = point.x();
             point_matrix(k, 1) = point.y();
@@ -135,15 +137,18 @@ static void MATRIX_TO_FLOWER(const PointMatrix& point_matrix, Flower& flower)
     for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
     {
         Petal& petal = petals[i];
-        osg::ref_ptr<osg::Vec3Array> vertices = petal.getVertices();
+        osg::ref_ptr<osg::Vec3Array>& hard_ctrs = petal.getHardCtrs();
+        std::vector<int> hard_idx = petal.getHardCtrsIndex();
+        hard_ctrs->clear();
 
-        for (size_t j = 0, j_end = vertices->size(); j < j_end; ++ j)
+        for (size_t j = 0, j_end = hard_idx.size(); j < j_end; ++ j)
         {
-            osg::Vec3& point = vertices->at(j);
-
+            osg::Vec3 point;
             point.x() = point_matrix(k,0);
             point.y() = point_matrix(k,1);
             point.z() = point_matrix(k,2);
+
+            petal.getHardCtrs()->push_back(point);
 
             k++;
         }

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "flower.h"
+#include "types_wrapper.h"
 
 class PointCloud;
 class MeshModel;
@@ -54,7 +55,6 @@ public:
     void cpd_registration(const PointCloud& source_frame, const PointCloud& target_frame, 
         const std::vector<int>& src_idx, std::vector<int>& tar_idx);
     void cpd_registration(const PointCloud& tracked_frame, Flower& tracking_template);
-
 
 private:
     PointsFileSystem*   points_file_system_;

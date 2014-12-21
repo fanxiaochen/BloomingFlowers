@@ -1,7 +1,6 @@
 
 #include "flower.h"
 #include "main_window.h"
-#include "mesh_simplify.h"
 
 Flower::Flower()
 {
@@ -28,68 +27,27 @@ void Flower::update()
     }
 }
 
-Flower Flower::simplifyMesh(int delta)
+Flower Flower::simplifyMesh(int scale)
 {
     Flower simplified_flower;
 
     for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
     {
-        Simplify::vertices.clear();
-        Simplify::triangles.clear();
-
         Petal& petal = petals_[i];
-        Petal simplified_petal(petal);  // deep copy
-
-        for (size_t i = 0, i_end = simplified_petal.getVertices()->size(); i < i_end; ++ i)
-        {
-            Simplify::Vertex v;
-            const osg::Vec3& vertice = simplified_petal.getVertices()->at(i);
-            v.p.x = vertice.x();
-            v.p.y = vertice.y();
-            v.p.z = vertice.z();
-            Simplify::vertices.push_back(v);
-        }
-
-        for (size_t i = 0, i_end = simplified_petal.getFaces().size(); i < i_end; ++ i)
-        {
-            Simplify::Triangle t;
-            const std::vector<int>& face = simplified_petal.getFaces().at(i);
-            t.v[0] = face[0];
-            t.v[1] = face[1];
-            t.v[2] = face[2];
-            Simplify::triangles.push_back(t);
-        }
-
-        Simplify::simplify_mesh(simplified_petal.getFaces().size() / delta);
-
-        simplified_petal.getVertices()->clear();
-        simplified_petal.getFaces().clear();
-
-        for (size_t i = 0, i_end = Simplify::vertices.size(); i < i_end; ++ i)
-        {
-            osg::Vec3 vertice;
-            const Simplify::Vertex& v = Simplify::vertices.at(i);
-            vertice.x() = v.p.x;
-            vertice.y() = v.p.y;
-            vertice.z() = v.p.z;
-            simplified_petal.getVertices()->push_back(vertice);
-        }
-
-        for (size_t i = 0, i_end = Simplify::triangles.size(); i < i_end; ++ i)
-        {
-            std::vector<int> face;
-            const Simplify::Triangle& t = Simplify::triangles.at(i);
-            face.push_back(t.v[0]);
-            face.push_back(t.v[1]);
-            face.push_back(t.v[2]);
-
-            simplified_petal.getFaces().push_back(face);
-        }
-
+        Petal simplified_petal = petal.simplify(scale);
         simplified_flower.getPetals().push_back(simplified_petal);
     }
 
     return simplified_flower;
+}
+
+void Flower::buildHardCtrs(int scale)
+{
+    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+    {
+        Petal& petal = petals_[i];
+        petal.buildHardCtrsIdx(scale);
+    }
 }
 
 void Flower::deform(const std::vector<osg::ref_ptr<osg::Vec3Array> >& pos, 
@@ -143,19 +101,19 @@ void Flower::deform(const std::vector<osg::ref_ptr<osg::Vec3Array> >& hard_ctrs,
 }
 
 
-void Flower::searchNearestIdx(Flower& simplified_flower, 
-                      std::vector<std::vector<int> >& knn_idx)
-{
-    Petals& petals = this->getPetals();
-    Petals& s_petals = simplified_flower.getPetals();
-
-    for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
-    {
-        std::vector<int> idx;
-        petals[i].searchNearestIdx(s_petals[i], idx);
-        knn_idx.push_back(idx);
-    }
-}
+//void Flower::searchNearestIdx(Flower& simplified_flower, 
+//                      std::vector<std::vector<int> >& knn_idx)
+//{
+//    Petals& petals = this->getPetals();
+//    Petals& s_petals = simplified_flower.getPetals();
+//
+//    for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
+//    {
+//        std::vector<int> idx;
+//        petals[i].searchNearestIdx(s_petals[i], idx);
+//        knn_idx.push_back(idx);
+//    }
+//}
 
 void Flower::searchNearestIdx(PointCloud& point_cloud, 
                               std::vector<osg::ref_ptr<osg::Vec3Array> >& knn_pos)

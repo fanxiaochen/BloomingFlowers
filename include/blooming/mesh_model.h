@@ -42,11 +42,21 @@ public:
     inline const std::vector<std::vector<int> >& getFaces() const { return faces_; }
     inline const std::vector<std::vector<int> >& getAdjList() const { return adj_list_; }
     inline const Polyhedron& getDeformModel() const { return deform_model_; }
+    inline const std::vector<int>& getEdgeIndex() const { return edge_index_; }
+    inline const std::vector<int>& getHardCtrsIndex() const { return hard_index_; }
 
     inline osg::ref_ptr<osg::Vec3Array> getVertices() { return vertices_; }
     inline std::vector<std::vector<int> >& getFaces() { return faces_; }
     inline std::vector<std::vector<int> >& getAdjList() { return adj_list_; }
     inline Polyhedron& getDeformModel() { return deform_model_; }
+    inline std::vector<int>& getEdgeIndex() { return edge_index_; }
+    inline std::vector<int>& getHardCtrsIndex(){ return hard_index_; }
+
+    inline osg::ref_ptr<osg::Vec3Array>& getHardCtrs() { return hard_ctrs_; }
+
+    MeshModel simplify(int scale);
+
+    void buildHardCtrsIdx(int scale);
 
     void deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx);
     void deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx,
@@ -55,9 +65,6 @@ public:
     void deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx);
     void deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx,
         const std::vector<float>& soft_ctrs, const std::vector<int>& soft_idx);
-
-    // source is the source_mesh, target is this mesh, knn_idx is based on source_mesh
-    void searchNearestIdx(const MeshModel& source_mesh, std::vector<int>& knn_idx);
 
     // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
     void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
@@ -69,8 +76,14 @@ protected:
 private:
 	bool readObjFile(const std::string& filename);
     void recoverAdjList();
-    void extractEdgeVertices();
     void buildDeformModel();
+
+    void findSharedVertices(int pi, int pj, std::vector<int>& shared_vertices);
+    void extractEdgeVertices();
+
+    // source is the source_mesh, target is this mesh, knn_idx is based on this mesh
+    void searchNearestIdx(const MeshModel& source_mesh, std::vector<int>& knn_idx);
+
 
 protected:
 	osg::ref_ptr<osg::Vec3Array>        vertices_;
@@ -83,7 +96,10 @@ protected:
 
     Polyhedron                          deform_model_;
 
-    
+    std::vector<int>                    edge_index_;
+
+    osg::ref_ptr<osg::Vec3Array>        hard_ctrs_;
+    std::vector<int>                    hard_index_; // hard constraints 
 };
 
 // A modifier creating a triangle with the incremental builder.

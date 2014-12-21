@@ -196,10 +196,10 @@ void FlowerTrackThread::run()
     
     flower->show();
 
-    Flower simplified_flower = flower->simplifyMesh(5);
+    /*Flower simplified_flower = flower->simplifyMesh(5);
     std::vector<std::vector<int> > hard_knn_idx; 
-    flower->searchNearestIdx(simplified_flower, hard_knn_idx);
-
+    flower->searchNearestIdx(simplified_flower, hard_knn_idx);*/
+    flower->buildHardCtrs(25);
 
     for (size_t i = key_frame, i_end = end_frame;
         i < i_end; ++ i)
@@ -213,16 +213,18 @@ void FlowerTrackThread::run()
         large_file.replace(large_file.indexOf(old_str), old_str.size(), new_str);
         PointCloud* large_forward_cloud = points_file_system->getPointCloud(large_file.toStdString());*/
 
-        tracking_system_->cpd_registration(*forward_cloud, simplified_flower);
+        tracking_system_->cpd_registration(*forward_cloud, *flower);
 
         std::vector<osg::ref_ptr<osg::Vec3Array> > hard_ctrs;
-        for (size_t j = 0, j_end = simplified_flower.getPetals().size(); j < j_end; ++ j)
+        std::vector<std::vector<int> > hard_idx;
+        for (size_t j = 0, j_end = flower->getPetals().size(); j < j_end; ++ j)
         {
-            Petals& petals = simplified_flower.getPetals();
-            hard_ctrs.push_back(petals[j].getVertices());
+            Petals& petals = flower->getPetals();
+            hard_ctrs.push_back(petals[j].getHardCtrs());
+            hard_idx.push_back(petals[j].getHardCtrsIndex());
         }
 
-        flower->deform(hard_ctrs, hard_knn_idx);
+        flower->deform(hard_ctrs, hard_idx);
 
         /*std::vector<osg::ref_ptr<osg::Vec3Array> > soft_ctrs;
         std::vector<std::vector<int> > soft_knn_idx;
