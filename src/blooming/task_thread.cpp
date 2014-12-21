@@ -196,9 +196,10 @@ void FlowerTrackThread::run()
     
     flower->show();
 
-    Flower simplified_flower = flower->simplifyMesh(25);
+    Flower simplified_flower = flower->simplifyMesh(5);
     std::vector<std::vector<int> > hard_knn_idx; 
     flower->searchNearestIdx(simplified_flower, hard_knn_idx);
+
 
     for (size_t i = key_frame, i_end = end_frame;
         i < i_end; ++ i)

@@ -69,6 +69,7 @@ protected:
 private:
 	bool readObjFile(const std::string& filename);
     void recoverAdjList();
+    void extractEdgeVertices();
     void buildDeformModel();
 
 protected:
@@ -81,6 +82,8 @@ protected:
     osg::ref_ptr<osgUtil::SmoothingVisitor>     smoothing_visitor_;
 
     Polyhedron                          deform_model_;
+
+    
 };
 
 // A modifier creating a triangle with the incremental builder.

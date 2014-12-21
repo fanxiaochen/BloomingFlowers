@@ -189,58 +189,58 @@ void MeshModel::recoverAdjList()
 void MeshModel::buildDeformModel()
 {
     Build_triangle<Polyhedron::HalfedgeDS> triangle(this);
-//    deform_model_.delegate(triangle);
+    deform_model_.delegate(triangle);
 //    CGAL_assertion( deform_model_.is_triangle(deform_model_.halfedges_begin()));
     return;
 }
 
-void MeshModel::deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx)
-{
-    float* p;
-    int p_num = vertices_->size();
-    p = (float*)malloc(sizeof(float)*p_num*3);
-
-    for (size_t i = 0; i < p_num; i ++)
-    {
-        const osg::Vec3& point = vertices_->at(i);
-        p[3*i+0] = point.x();
-        p[3*i+1] = point.y();
-        p[3*i+2] = point.z();
-    }
-
-    Deform::VectorF points_indicator;
-    Deform::VectorI points_index;
-
-    for (size_t i = 0, i_end = hard_ctrs.size(); i < i_end; i ++)
-    {
-        osg::Vec3 indicator = hard_ctrs.at(i);
-        points_indicator.push_back(indicator.x());
-        points_indicator.push_back(indicator.y());
-        points_indicator.push_back(indicator.z()); 
-    }
-
-    for (size_t i = 0, i_end = hard_idx.size(); i < i_end; i ++)
-    {
-        points_index.push_back(hard_idx.at(i));
-    }
-
-    Deform deform_model(p, p_num, adj_list_, faces_);
-    deform_model.set_hard_ctrs(points_indicator, points_index);
-    deform_model.do_Deform(1);
-
-
-    float* new_p = deform_model.get_P_Prime();
-
-    for (size_t i = 0; i < p_num; i ++)
-    {
-        osg::Vec3& point = vertices_->at(i);
-        point.x() = new_p[3*i+0];
-        point.y() = new_p[3*i+1];
-        point.z() = new_p[3*i+2];
-    }
-
-    free(p);
-}
+//void MeshModel::deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx)
+//{
+//    float* p;
+//    int p_num = vertices_->size();
+//    p = (float*)malloc(sizeof(float)*p_num*3);
+//
+//    for (size_t i = 0; i < p_num; i ++)
+//    {
+//        const osg::Vec3& point = vertices_->at(i);
+//        p[3*i+0] = point.x();
+//        p[3*i+1] = point.y();
+//        p[3*i+2] = point.z();
+//    }
+//
+//    Deform::VectorF points_indicator;
+//    Deform::VectorI points_index;
+//
+//    for (size_t i = 0, i_end = hard_ctrs.size(); i < i_end; i ++)
+//    {
+//        osg::Vec3 indicator = hard_ctrs.at(i);
+//        points_indicator.push_back(indicator.x());
+//        points_indicator.push_back(indicator.y());
+//        points_indicator.push_back(indicator.z()); 
+//    }
+//
+//    for (size_t i = 0, i_end = hard_idx.size(); i < i_end; i ++)
+//    {
+//        points_index.push_back(hard_idx.at(i));
+//    }
+//
+//    Deform deform_model(p, p_num, adj_list_, faces_);
+//    deform_model.set_hard_ctrs(points_indicator, points_index);
+//    deform_model.do_Deform(1);
+//
+//
+//    float* new_p = deform_model.get_P_Prime();
+//
+//    for (size_t i = 0; i < p_num; i ++)
+//    {
+//        osg::Vec3& point = vertices_->at(i);
+//        point.x() = new_p[3*i+0];
+//        point.y() = new_p[3*i+1];
+//        point.z() = new_p[3*i+2];
+//    }
+//
+//    free(p);
+//}
 
 void MeshModel::deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx,
             const osg::Vec3Array& soft_ctrs, const std::vector<int>& soft_idx)
@@ -365,7 +365,7 @@ void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<in
     deform_model.set_hard_ctrs(hard_ctrs, hard_idx);
     deform_model.set_soft_ctrs(soft_ctrs, soft_idx);
     deform_model.set_lambda(0);
-    deform_model.do_Deform(6);
+    deform_model.do_Deform(1);
 
     float* new_p = deform_model.get_P_Prime();
 
@@ -453,49 +453,49 @@ void MeshModel::searchNearestIdx(const MeshModel& source_mesh, std::vector<int>&
     }
 }
 
-//void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
-//{
-//
-//    // Init the indices of the halfedges and the vertices.
-//    set_halfedgeds_items_id(deform_model_);
-//    // Create a deformation object
-//    Surface_mesh_deformation deform_mesh(deform_model_);
-//    // Definition of the region of interest (use the whole mesh)
-//    vertex_iterator vb,ve;
-//    boost::tie(vb, ve) = vertices(deform_model_);
-//    deform_mesh.insert_roi_vertices(vb, ve);
-//    // Select control vertices ...and insert them
-//    std::vector<vertex_descriptor> control_vertices;
-//    for (size_t i = 0, i_end = index.size(); i < i_end; i ++)
-//    {
-//        control_vertices.push_back(*CGAL::cpp11::next(vb, index[i]));
-//        deform_mesh.insert_control_vertex(control_vertices.at(i));
-//    }
-//    // The definition of the ROI and the control vertices is done, call preprocess
-//    bool is_matrix_factorization_OK = deform_mesh.preprocess();
-//    if(!is_matrix_factorization_OK){
-//        std::cerr << "Error in preprocessing, check documentation of preprocess()" << std::endl;
-//        return;
-//    }
-//    // Use set_target_position() to set the constained position
-//    for (size_t i = 0, i_end = indicators.size(); i < i_end; i ++)
-//    {
-//        const osg::Vec3& indicator = indicators.at(i);
-//        Surface_mesh_deformation::Point constrained_pos(indicator.x(), indicator.y(), indicator.z());
-//        deform_mesh.set_target_position(control_vertices[i], constrained_pos);
-//    }
-//    
-//    // Deform the mesh, the positions of vertices of 'mesh' are updated
-//    deform_mesh.deform();
-//    
-//    for (Polyhedron::Vertex_iterator vb = deform_model_.vertices_begin(), ve = deform_model_.vertices_end();
-//    vb != ve; vb ++)
-//    {
-//        osg::Vec3& point = vertices_->at(vb->id());
-//        point.x() = vb->point().x();
-//        point.y() = vb->point().y();
-//        point.z() = vb->point().z();
-//    }
-//}
+void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
+{
+
+    // Init the indices of the halfedges and the vertices.
+    set_halfedgeds_items_id(deform_model_);
+    // Create a deformation object
+    Surface_mesh_deformation deform_mesh(deform_model_);
+    // Definition of the region of interest (use the whole mesh)
+    vertex_iterator vb,ve;
+    boost::tie(vb, ve) = vertices(deform_model_);
+    deform_mesh.insert_roi_vertices(vb, ve);
+    // Select control vertices ...and insert them
+    std::vector<vertex_descriptor> control_vertices;
+    for (size_t i = 0, i_end = index.size(); i < i_end; i ++)
+    {
+        control_vertices.push_back(*CGAL::cpp11::next(vb, index[i]));
+        deform_mesh.insert_control_vertex(control_vertices.at(i));
+    }
+    // The definition of the ROI and the control vertices is done, call preprocess
+    bool is_matrix_factorization_OK = deform_mesh.preprocess();
+    if(!is_matrix_factorization_OK){
+        std::cerr << "Error in preprocessing, check documentation of preprocess()" << std::endl;
+        return;
+    }
+    // Use set_target_position() to set the constained position
+    for (size_t i = 0, i_end = indicators.size(); i < i_end; i ++)
+    {
+        const osg::Vec3& indicator = indicators.at(i);
+        Surface_mesh_deformation::Point constrained_pos(indicator.x(), indicator.y(), indicator.z());
+        deform_mesh.set_target_position(control_vertices[i], constrained_pos);
+    }
+    
+    // Deform the mesh, the positions of vertices of 'mesh' are updated
+    deform_mesh.deform();
+    
+    for (Polyhedron::Vertex_iterator vb = deform_model_.vertices_begin(), ve = deform_model_.vertices_end();
+    vb != ve; vb ++)
+    {
+        osg::Vec3& point = vertices_->at(vb->id());
+        point.x() = vb->point().x();
+        point.y() = vb->point().y();
+        point.z() = vb->point().z();
+    }
+}
 
 
