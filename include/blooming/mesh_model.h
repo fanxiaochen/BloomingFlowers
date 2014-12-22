@@ -37,8 +37,14 @@ public:
   
 	bool empty(void) const {return vertices_->empty();}
 
+    const std::string& getObjName() { return obj_name_; }
+    const std::string& getObjFile() { return obj_file_; }
+    const std::string& getMtlFile() { return mtl_file_; }
+
     // for deep copy
     inline const osg::ref_ptr<osg::Vec3Array> getVertices() const { return vertices_; }
+    inline const osg::ref_ptr<osg::Vec2Array> getTexcoords() const { return texcoords_; }
+    inline const osg::ref_ptr<osg::Vec3Array> getVertexNormals() const { return vertex_normals_; }
     inline const std::vector<std::vector<int> >& getFaces() const { return faces_; }
     inline const std::vector<std::vector<int> >& getAdjList() const { return adj_list_; }
     inline const Polyhedron& getDeformModel() const { return deform_model_; }
@@ -46,6 +52,8 @@ public:
     inline const std::vector<int>& getHardCtrsIndex() const { return hard_index_; }
 
     inline osg::ref_ptr<osg::Vec3Array> getVertices() { return vertices_; }
+    inline osg::ref_ptr<osg::Vec2Array> getTexcoords() { return texcoords_; }
+    inline osg::ref_ptr<osg::Vec3Array> getVertexNormals() { return vertex_normals_; }
     inline std::vector<std::vector<int> >& getFaces() { return faces_; }
     inline std::vector<std::vector<int> >& getAdjList() { return adj_list_; }
     inline Polyhedron& getDeformModel() { return deform_model_; }
@@ -86,10 +94,16 @@ private:
 
 
 protected:
+    std::string                         obj_name_;
+    std::string                         obj_file_;
+    std::string                         mtl_file_;
+
 	osg::ref_ptr<osg::Vec3Array>        vertices_;
+    osg::ref_ptr<osg::Vec2Array>        texcoords_;
+    osg::ref_ptr<osg::Vec3Array>        vertex_normals_;
 	osg::ref_ptr<osg::Vec4Array>        colors_;
 	std::vector<std::vector<int> >      faces_;
-	osg::ref_ptr<osg::Vec3Array>        face_normals_;
+//	osg::ref_ptr<osg::Vec3Array>        face_normals_;
     std::vector<std::vector<int> >      adj_list_;
 
     osg::ref_ptr<osgUtil::SmoothingVisitor>     smoothing_visitor_;

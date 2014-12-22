@@ -16,8 +16,10 @@
 
 MeshModel::MeshModel()
     :vertices_(new osg::Vec3Array),
+    texcoords_(new osg::Vec2Array),
+    vertex_normals_(new osg::Vec3Array),
     colors_(new osg::Vec4Array),
-    face_normals_(new osg::Vec3Array),
+    /*face_normals_(new osg::Vec3Array),*/
     smoothing_visitor_(new osgUtil::SmoothingVisitor),
     hard_ctrs_(new osg::Vec3Array)
 {
@@ -25,11 +27,16 @@ MeshModel::MeshModel()
 
 MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     :vertices_(new osg::Vec3Array),
+    texcoords_(new osg::Vec2Array),
+    vertex_normals_(new osg::Vec3Array),
     colors_(new osg::Vec4Array),
-    face_normals_(new osg::Vec3Array),
+    /*face_normals_(new osg::Vec3Array),*/
     smoothing_visitor_(new osgUtil::SmoothingVisitor),
     hard_ctrs_(new osg::Vec3Array)
 {
+    *(this->getVertices()) = *(mesh_model.getVertices());
+    *(this->getTexcoords()) = *(mesh_model.getTexcoords());
+    *(this->getVertexNormals()) = *(mesh_model.getVertexNormals());
     *(this->getVertices()) = *(mesh_model.getVertices());
     this->getFaces() = mesh_model.getFaces();
     this->getAdjList() = mesh_model.getAdjList();
@@ -105,10 +112,16 @@ bool MeshModel::load(const std::string& filename)
 
 bool MeshModel::readObjFile(const std::string& filename)
 {
+    QString obj_file(filename.c_str());
+    obj_file_ = obj_file.toStdString();
+
+    QString mtl_file = obj_file.replace(obj_file.indexOf("obj"), 3, "mtl");
+    mtl_file_ = mtl_file.toStdString();
+
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
 
-    std::string err = tinyobj::LoadObj(shapes, materials, filename.c_str());
+    std::string err = tinyobj::LoadObj(shapes, materials, obj_file_.c_str());
 
     if (!err.empty()) {
       std::cerr << err << std::endl;
@@ -123,17 +136,35 @@ bool MeshModel::readObjFile(const std::string& filename)
     tinyobj::mesh_t mesh_model = mesh_shape.mesh;
 
     size_t pos_size = mesh_model.positions.size();
+    size_t tex_size = mesh_model.texcoords.size();
+    size_t nl_size = mesh_model.normals.size();
     size_t face_size = mesh_model.indices.size();
     assert(pos_size % 3 == 0);
+    assert(tex_size % 2 == 0);
+    assert(nl_size % 3 == 0);
     assert(face_size % 3 == 0);
 
     pos_size = pos_size / 3;
+    tex_size = tex_size / 2;
+    nl_size = nl_size / 3;
     face_size = face_size / 3;
 
     for (size_t i = 0; i < pos_size; i ++)
     {
         vertices_->push_back(osg::Vec3(mesh_model.positions[i*3], 
             mesh_model.positions[i*3+1], mesh_model.positions[i*3+2]));
+    }
+
+    for (size_t i = 0; i < tex_size; i ++)
+    {
+        texcoords_->push_back(osg::Vec2(mesh_model.texcoords[i*2], 
+            mesh_model.texcoords[i*2+1]));
+    }
+
+    for (size_t i = 0; i < nl_size; i ++)
+    {
+        vertex_normals_->push_back(osg::Vec3(mesh_model.normals[i*3], 
+            mesh_model.normals[i*3+1], mesh_model.normals[i*3+2]));
     }
 
     for (size_t i = 0; i < face_size; i ++)
