@@ -37,6 +37,15 @@ void Flower::update()
     }
 }
 
+void Flower::hide()
+{
+    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+    {
+        Petal& petal = petals_[i];
+        MainWindow::getInstance()->getSceneWidget()->removeSceneChild(&petal);
+    }
+}
+
 Flower Flower::simplifyMesh(int scale)
 {
     Flower simplified_flower;

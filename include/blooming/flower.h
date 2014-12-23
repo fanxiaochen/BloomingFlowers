@@ -19,6 +19,7 @@ public:
 
     void show();
     void update();
+    void hide();
 
     void deform(const std::vector<osg::ref_ptr<osg::Vec3Array> >& pos, 
         const std::vector<std::vector<int> > idx);

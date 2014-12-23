@@ -193,53 +193,53 @@ void FlowerTrackThread::run()
         flower->getPetals().push_back(*petal_template); // deep copy
         mesh_file_system->hideMeshModel(mesh_indexes.values().at(i));
     }
-    
-    flower->show();
 
+    flower->show();
     flower->buildHardCtrs(2);
 
-    Flower* flower_backup = new Flower(*flower);
+    Flower* forward_flower = flower;
+    Flower* backward_flower = flower;
 
     std::string workspace = MainWindow::getInstance()->getWorkspace();
     QDir mesh_dir(QString(workspace.c_str()));
     mesh_dir.mkdir("meshes");
 
     std::cout << "Forward Tracking..." << std::endl;
-    for (size_t i = key_frame, i_end = end_frame;
+    for (size_t i = key_frame + 1, i_end = end_frame;
         i <= i_end; ++ i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
 
         PointCloud* forward_cloud = points_file_system->getPointCloud(i);
 
-        tracking_system_->cpd_registration(*forward_cloud, *flower);
+        tracking_system_->cpd_registration(*forward_cloud, *forward_flower);
 
         std::vector<osg::ref_ptr<osg::Vec3Array> > hard_ctrs;
         std::vector<std::vector<int> > hard_idx;
-        for (size_t j = 0, j_end = flower->getPetals().size(); j < j_end; ++ j)
+        for (size_t j = 0, j_end = forward_flower->getPetals().size(); j < j_end; ++ j)
         {
-            Petals& petals = flower->getPetals();
+            Petals& petals = forward_flower->getPetals();
             hard_ctrs.push_back(petals[j].getHardCtrs());
             hard_idx.push_back(petals[j].getHardCtrsIndex());
         }
 
-        flower->deform(hard_ctrs, hard_idx);
+        forward_flower->deform(hard_ctrs, hard_idx);
 
         QString frame_path = mesh_dir.absolutePath() + "/meshes";
         QDir mesh_frame(frame_path);
         QString frame_file = QString("frame_%1").arg(i, 5, 10, QChar('0'));
         mesh_frame.mkdir(frame_file);
         QString mesh_path = mesh_frame.absolutePath() + "/" + frame_file;
-        flower->save(mesh_path.toStdString());
+        forward_flower->save(mesh_path.toStdString());
 
-        flower->update();
-        flowers->push_back(*flower);
+        forward_flower->update();
+//        flowers->push_back(*flower);
 
         points_file_system->hidePointCloud(i - 1);
         points_file_system->showPointCloud(i);
     }
 
-    flower = flower_backup;
+
     std::cout << "Backward Tracking..." << std::endl;
     for (size_t i = key_frame - 1, i_end = start_frame;
         i >= i_end; -- i)
@@ -248,28 +248,28 @@ void FlowerTrackThread::run()
 
         PointCloud* backward_cloud = points_file_system->getPointCloud(i);
 
-        tracking_system_->cpd_registration(*backward_cloud, *flower);
+        tracking_system_->cpd_registration(*backward_cloud, *backward_flower);
 
         std::vector<osg::ref_ptr<osg::Vec3Array> > hard_ctrs;
         std::vector<std::vector<int> > hard_idx;
-        for (size_t j = 0, j_end = flower->getPetals().size(); j < j_end; ++ j)
+        for (size_t j = 0, j_end = backward_flower->getPetals().size(); j < j_end; ++ j)
         {
-            Petals& petals = flower->getPetals();
+            Petals& petals = backward_flower->getPetals();
             hard_ctrs.push_back(petals[j].getHardCtrs());
             hard_idx.push_back(petals[j].getHardCtrsIndex());
         }
 
-        flower->deform(hard_ctrs, hard_idx);
+        backward_flower->deform(hard_ctrs, hard_idx);
 
         QString frame_path = mesh_dir.absolutePath() + "/meshes";
         QDir mesh_frame(frame_path);
         QString frame_file = QString("frame_%1").arg(i, 5, 10, QChar('0'));
         mesh_frame.mkdir(frame_file);
         QString mesh_path = mesh_frame.absolutePath() + "/" + frame_file;
-        flower->save(mesh_path.toStdString());
+        backward_flower->save(mesh_path.toStdString());
 
-        flower->update();
-        flowers->push_back(*flower);
+        backward_flower->update();
+//        flowers->push_back(*flower);
 
         points_file_system->hidePointCloud(i + 1);
         points_file_system->showPointCloud(i);
