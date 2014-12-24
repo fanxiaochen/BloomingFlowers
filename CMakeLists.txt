@@ -122,6 +122,7 @@ set(filesystem_incs	${filesystem_inc}/file_system_model.h
                     ${filesystem_inc}/mesh_file_system.h
                     ${filesystem_inc}/tiny_obj_loader.h
 					${filesystem_inc}/obj_writer.h
+                    ${filesystem_inc}/registrator.h
                     )
                     
 set(filesystem_srcs	${filesystem_src}/file_system_model.cpp
@@ -129,6 +130,7 @@ set(filesystem_srcs	${filesystem_src}/file_system_model.cpp
                     ${filesystem_src}/mesh_file_system.cpp
                     ${filesystem_src}/tiny_obj_loader.cc
 					${filesystem_src}/obj_writer.cpp
+                    ${filesystem_src}/registrator.cpp
                     )
 
 set(incs    ${lily_incs} ${blooming_incs} ${filesystem_incs})
