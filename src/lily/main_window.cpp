@@ -16,6 +16,7 @@
 #include "tracking_system.h"
 #include "parameters.h"
 #include "trajectory_model.h"
+#include "registrator.h"
 
 
 MainWindow::MainWindow(void)
@@ -26,7 +27,8 @@ MainWindow::MainWindow(void)
     points_widget_(NULL),
     mesh_widget_(NULL),
     tracking_system_(NULL),
-    parameters_(NULL)
+    parameters_(NULL),
+    registrator_(NULL)
 {
     ui_.setupUi(this);
 
@@ -46,6 +48,7 @@ MainWindow::~MainWindow()
     delete scene_widget_;
     delete tracking_system_;
     delete parameters_;
+    delete registrator_;
 
     return;
 }
@@ -115,6 +118,7 @@ void MainWindow::init(void)
         dynamic_cast<PointsFileSystem*>(points_files_), dynamic_cast<MeshFileSystem*>(mesh_files_));
 
     parameters_ = new Parameters;
+    registrator_ = new Registrator;
 
     QDockWidget* points_viewer = new QDockWidget("Points Viewer", this);
     addDockWidget(Qt::LeftDockWidgetArea, points_viewer);
@@ -144,7 +148,7 @@ void MainWindow::init(void)
     connect(ui_.actionLoadTrajectories, SIGNAL(triggered()), this, SLOT(slotLoadTrajectories()));
     connect(ui_.actionLoadParameters, SIGNAL(triggered()), this, SLOT(slotLoadParameters()));
     connect(ui_.actionSaveParameters, SIGNAL(triggered()), this, SLOT(slotSaveParameters()));
-
+    connect(ui_.actionLoadAxis, SIGNAL(triggered()), this, SLOT(slotLoadAxis()));
 
     connect(ui_.actionPointCloudTracking, SIGNAL(triggered()), tracking_system_, SLOT(pointcloud_tracking()));
     connect(ui_.actionMeshTracking, SIGNAL(triggered()), tracking_system_, SLOT(mesh_tracking()));
@@ -218,6 +222,16 @@ bool MainWindow::slotSaveParameters()
 {
     std::string para_file = workspace_ + "/parameters.xml";
     return parameters_->save(para_file);
+}
+
+bool MainWindow::slotLoadAxis()
+{
+    QString axis_file = QFileDialog::getOpenFileName(this, tr("Load Axis"), workspace_.c_str(),  tr("Registrator (*.txt)"));
+
+    if (axis_file.isEmpty())
+        return false;
+
+    return registrator_->load(axis_file);
 }
 
 void MainWindow::loadSettings()

@@ -15,6 +15,7 @@ class FileViewerWidget;
 class SceneWidget;
 class TrackingSystem;
 class Parameters;
+class Registrator;
 
 class MainWindow : public QMainWindow
 {
@@ -61,6 +62,7 @@ private slots:
     bool slotLoadTrajectories();
     bool slotLoadParameters();
     bool slotSaveParameters();
+    bool slotLoadAxis();
 
 private:
     void loadSettings();
@@ -81,6 +83,7 @@ private:
 
     TrackingSystem*					tracking_system_;
     Parameters*                     parameters_;
+    Registrator*                    registrator_;
 };
 
 class MainWindowInstancer

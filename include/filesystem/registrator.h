@@ -3,8 +3,6 @@
 
 #include <QObject>
 
-//#include <osg/Vec3>
-//#include <osg/Matrix>
 #include <osg/MatrixTransform>
 
 class Registrator : public QObject
@@ -16,10 +14,6 @@ public:
 
     virtual const char* className() const {return "Registrator";}
 
-    void init(void);
-    bool load(void);
-    void reset(void);
-
     osg::Vec3 getPivotPoint() const;
     osg::Vec3 getAxisNormal() const;
     osg::Matrix getRotationMatrix(double angle) const;
@@ -27,11 +21,6 @@ public:
     void setPivotPoint(const osg::Vec3& pivot_point);
     void setAxisNormal(const osg::Vec3& axis_normal);
 
-    public slots:
-        void save(void);
-
-protected:
-    void save(const QString& filename);
     bool load(const QString& filename);
 
 protected:

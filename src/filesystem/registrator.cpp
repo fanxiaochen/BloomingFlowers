@@ -1,11 +1,6 @@
 #include <cstdio>
 
-#include "color_map.h"
 #include "main_window.h"
-#include "point_cloud.h"
-#include "osg_viewer_widget.h"
-#include "file_system_model.h"
-
 #include "registrator.h"
 
 Registrator::Registrator(void)
@@ -46,7 +41,6 @@ void Registrator::setPivotPoint(const osg::Vec3& pivot_point)
     pivot_point_->setMatrix(osg::Matrix::translate(pivot_point));
     normal_point_->setMatrix(osg::Matrix::translate(normal_point));
 
-    expire();
 }
 
 void Registrator::setAxisNormal(const osg::Vec3& axis_normal)
@@ -64,39 +58,6 @@ void Registrator::setAxisNormal(const osg::Vec3& axis_normal)
     osg::Vec3 normal_point = pivot_point + normal*length;
     normal_point_->setMatrix(osg::Matrix::translate(normal_point));
 
-    expire();
-}
-
-void Registrator::reset(void)
-{
-    initilized_ = false;
-    clear();
-
-    return;
-}
-
-
-void Registrator::init(void)
-{
-    if (initilized_)
-        return;
-
-    osg::BoundingSphere boundingSphere = MainWindow::getInstance()->getOSGViewerWidget()->getBound();
-    double radius = boundingSphere.radius();
-
-    if (load())
-    {
-        normal_point_->setMatrix(osg::Matrix::translate(getPivotPoint()+getAxisNormal()*radius));
-    }
-    else
-    {
-        pivot_point_->setMatrix(osg::Matrix::translate(boundingSphere.center()));
-        normal_point_->setMatrix(osg::Matrix::translate(boundingSphere.center()+osg::Vec3(0, -radius, 0)));
-    }
-
-    initilized_ = true;
-
-    return;
 }
 
 bool Registrator::load(const QString& filename)
@@ -117,41 +78,11 @@ bool Registrator::load(const QString& filename)
     return true;
 }
 
-bool Registrator::load(void)
-{
-    const QString& workspace = MainWindow::getInstance()->getWorkspace();
-    return load(workspace+"/axis.txt");
-}
-
-void Registrator::save(const QString& filename)
-{
-    FILE *file = fopen(filename.toStdString().c_str(),"w");
-    if (file == NULL)
-        return;
-
-    osg::Vec3 pivot_point = getPivotPoint();
-    osg::Vec3 axis_normal = getAxisNormal();
-
-    fprintf(file, "%f %f %f\n", pivot_point.x(), pivot_point.y(), pivot_point.z());
-    fprintf(file, "%f %f %f\n", axis_normal.x(), axis_normal.y(), axis_normal.z());
-    fclose(file);
-
-    return;
-}
-
-void Registrator::save(void)
-{
-    MainWindow* main_window = MainWindow::getInstance();
-    QString filename = QFileDialog::getSaveFileName(main_window,
-        "Save Registrator", main_window->getWorkspace(), "Registrator (*.txt)");
-    if (filename.isEmpty())
-        return;
-
-    save(filename);
-
-    return;
-}
-
+//bool Registrator::load(void)
+//{
+//    const QString& workspace = QString(MainWindow::getInstance()->getWorkspace().c_str());
+//    return load(workspace+"/axis.txt");
+//}
 
 osg::Matrix Registrator::getRotationMatrix(double angle) const
 {
