@@ -42,6 +42,8 @@ public:
 	void setUpVector(osg::Vec3 up_vector) {up_vector_ = up_vector;}
 	const osg::Vec3& getUpVector(void) const {return up_vector_;}
 
+    osg::ref_ptr<osg::Group> getSceneRoot() { return scene_root_; }
+
 	virtual void eventTraversal();
 public slots:
 	void increasePointSize(void);

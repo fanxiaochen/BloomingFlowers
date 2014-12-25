@@ -30,13 +30,19 @@ public:
     Flower simplifyMesh(int scale);
 
     void buildHardCtrs(int scale);
+
+    void determineVisibility();
+
+private:
+    int contains(Petal* petal);
     
     //// source is simplified_flower, target is this flower
     //void searchNearestIdx(Flower& simplified_flower, 
     //    std::vector<std::vector<int> >& knn_idx);
-    //source is this flower, target is point_cloud
-    void searchNearestIdx(PointCloud& point_cloud,
-        std::vector<osg::ref_ptr<osg::Vec3Array> >& knn_pos);
+
+    ////source is this flower, target is point_cloud
+    //void searchNearestIdx(PointCloud& point_cloud,
+    //    std::vector<osg::ref_ptr<osg::Vec3Array> >& knn_pos);
 
 private:
     Petals            petals_;

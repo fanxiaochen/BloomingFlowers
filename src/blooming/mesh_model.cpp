@@ -72,7 +72,7 @@ void MeshModel::visualizeMesh(void)
     for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
     {
       size_t vertex_num = faces_[i].size();
-      osg::ref_ptr<osg::DrawElementsUInt> face = new osg::DrawElementsUInt(GL_LINE_LOOP, vertex_num);
+      osg::ref_ptr<osg::DrawElementsUInt> face = new osg::DrawElementsUInt(GL_TRIANGLES, vertex_num);
       for (size_t j = 0; j < vertex_num; ++ j)
         face->at(j) = faces_[i][j];
 
@@ -528,6 +528,51 @@ void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<in
     free(p);
 }
 
+void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
+{
+
+    // Init the indices of the halfedges and the vertices.
+    set_halfedgeds_items_id(deform_model_);
+    // Create a deformation object
+    Surface_mesh_deformation deform_mesh(deform_model_);
+    // Definition of the region of interest (use the whole mesh)
+    vertex_iterator vb,ve;
+    boost::tie(vb, ve) = vertices(deform_model_);
+    deform_mesh.insert_roi_vertices(vb, ve);
+    // Select control vertices ...and insert them
+    std::vector<vertex_descriptor> control_vertices;
+    for (size_t i = 0, i_end = index.size(); i < i_end; i ++)
+    {
+        control_vertices.push_back(*CGAL::cpp11::next(vb, index[i]));
+        deform_mesh.insert_control_vertex(control_vertices.at(i));
+    }
+    // The definition of the ROI and the control vertices is done, call preprocess
+    bool is_matrix_factorization_OK = deform_mesh.preprocess();
+    if(!is_matrix_factorization_OK){
+        std::cerr << "Error in preprocessing, check documentation of preprocess()" << std::endl;
+        return;
+    }
+    // Use set_target_position() to set the constained position
+    for (size_t i = 0, i_end = indicators.size(); i < i_end; i ++)
+    {
+        const osg::Vec3& indicator = indicators.at(i);
+        Surface_mesh_deformation::Point constrained_pos(indicator.x(), indicator.y(), indicator.z());
+        deform_mesh.set_target_position(control_vertices[i], constrained_pos);
+    }
+
+    // Deform the mesh, the positions of vertices of 'mesh' are updated
+    deform_mesh.deform();
+
+    for (Polyhedron::Vertex_iterator vb = deform_model_.vertices_begin(), ve = deform_model_.vertices_end();
+        vb != ve; vb ++)
+    {
+        osg::Vec3& point = vertices_->at(vb->id());
+        point.x() = vb->point().x();
+        point.y() = vb->point().y();
+        point.z() = vb->point().z();
+    }
+}
+
 void MeshModel::searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx)
 {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
@@ -601,49 +646,46 @@ void MeshModel::searchNearestIdx(const MeshModel& source_mesh, std::vector<int>&
     }
 }
 
-void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
+int MeshModel::searchNearestIdx(osg::Vec3 point)
 {
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
-    // Init the indices of the halfedges and the vertices.
-    set_halfedgeds_items_id(deform_model_);
-    // Create a deformation object
-    Surface_mesh_deformation deform_mesh(deform_model_);
-    // Definition of the region of interest (use the whole mesh)
-    vertex_iterator vb,ve;
-    boost::tie(vb, ve) = vertices(deform_model_);
-    deform_mesh.insert_roi_vertices(vb, ve);
-    // Select control vertices ...and insert them
-    std::vector<vertex_descriptor> control_vertices;
-    for (size_t i = 0, i_end = index.size(); i < i_end; i ++)
+    for (size_t i = 0, i_end = this->getVertices()->size(); i < i_end; ++ i)
     {
-        control_vertices.push_back(*CGAL::cpp11::next(vb, index[i]));
-        deform_mesh.insert_control_vertex(control_vertices.at(i));
+        const osg::Vec3& point = this->getVertices()->at(i);
+
+        pcl::PointXYZ pcl_point(point.x(), point.y(), point.z());
+        cloud->push_back(pcl_point);
     }
-    // The definition of the ROI and the control vertices is done, call preprocess
-    bool is_matrix_factorization_OK = deform_mesh.preprocess();
-    if(!is_matrix_factorization_OK){
-        std::cerr << "Error in preprocessing, check documentation of preprocess()" << std::endl;
-        return;
-    }
-    // Use set_target_position() to set the constained position
-    for (size_t i = 0, i_end = indicators.size(); i < i_end; i ++)
-    {
-        const osg::Vec3& indicator = indicators.at(i);
-        Surface_mesh_deformation::Point constrained_pos(indicator.x(), indicator.y(), indicator.z());
-        deform_mesh.set_target_position(control_vertices[i], constrained_pos);
-    }
-    
-    // Deform the mesh, the positions of vertices of 'mesh' are updated
-    deform_mesh.deform();
-    
-    for (Polyhedron::Vertex_iterator vb = deform_model_.vertices_begin(), ve = deform_model_.vertices_end();
-    vb != ve; vb ++)
-    {
-        osg::Vec3& point = vertices_->at(vb->id());
-        point.x() = vb->point().x();
-        point.y() = vb->point().y();
-        point.z() = vb->point().z();
-    }
+
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+
+    kdtree.setInputCloud (cloud);
+
+    int K = 1;
+
+    // K nearest neighbor search
+
+    int index = -1;
+    pcl::PointXYZ searchPoint;
+    std::vector<int> pointIdxNKNSearch(K);
+    std::vector<float> pointNKNSquaredDistance(K);
+
+    searchPoint.x = point.x();
+    searchPoint.y = point.y();
+    searchPoint.z = point.z();
+
+    if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+        index = pointIdxNKNSearch[0];
+    return index;
 }
 
+
+
+void MeshModel::initializeVisibility()
+{
+    for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
+        visibility_.push_back(0);
+    return;
+}
 

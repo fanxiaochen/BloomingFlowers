@@ -50,6 +50,7 @@ public:
     inline const Polyhedron& getDeformModel() const { return deform_model_; }
     inline const std::vector<int>& getEdgeIndex() const { return edge_index_; }
     inline const std::vector<int>& getHardCtrsIndex() const { return hard_index_; }
+    inline const std::vector<int>& getVisibility() const { return visibility_; }
 
     inline osg::ref_ptr<osg::Vec3Array> getVertices() { return vertices_; }
     inline osg::ref_ptr<osg::Vec2Array> getTexcoords() { return texcoords_; }
@@ -59,6 +60,7 @@ public:
     inline Polyhedron& getDeformModel() { return deform_model_; }
     inline std::vector<int>& getEdgeIndex() { return edge_index_; }
     inline std::vector<int>& getHardCtrsIndex(){ return hard_index_; }
+    inline std::vector<int>& getVisibility() { return visibility_; }
 
     inline osg::ref_ptr<osg::Vec3Array>& getHardCtrs() { return hard_ctrs_; }
 
@@ -76,6 +78,11 @@ public:
 
     // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
     void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
+
+    // source is point, target is this mesh, return index based on mesh
+    int searchNearestIdx(osg::Vec3 point);
+
+    void initializeVisibility();
 
 protected:
 	virtual void updateImpl(void);
@@ -114,6 +121,8 @@ protected:
 
     osg::ref_ptr<osg::Vec3Array>        hard_ctrs_;
     std::vector<int>                    hard_index_; // hard constraints 
+
+    std::vector<int>                    visibility_; // the same size of vertices
 };
 
 // A modifier creating a triangle with the incremental builder.
