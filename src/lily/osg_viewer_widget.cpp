@@ -191,6 +191,12 @@ void OSGViewerWidget::closeEvent(QCloseEvent *event)
 
 osg::BoundingSphere OSGViewerWidget::getBoundingSphere(void) const
 {
+    osgUtil::UpdateVisitor update_visitor;
+    scene_root_->accept(update_visitor);
+
+    osg::ComputeBoundsVisitor visitor;
+    scene_root_->accept(visitor);
+
     return scene_root_->getBound();
 }
 
@@ -209,21 +215,13 @@ void OSGViewerWidget::centerScene(void)
 {
     QMutexLocker locker(&mutex_);
 
-    osg::BoundingBox bounding_box = getBoundingBox();
-    if (bounding_box.xMax() == -std::numeric_limits<float>::max())
-    {
-        bounding_box._min = osg::Vec3(0.0, 0.0, 0.0);
-        bounding_box._max = osg::Vec3(1.0, 1.0, 1.0);
-    }
+    osg::BoundingSphere bounding_sphere = getBoundingSphere();
+    double radius = bounding_sphere.radius();
 
-    osg::Vec3 center = (bounding_box._min+bounding_box._max)/2;
-    double distance = (bounding_box._max-bounding_box._min).length();
-    osg::Vec3d eye_offset(1.0, 1.0, -1.0);
-    eye_offset.normalize();
-    eye_offset = eye_offset*distance*1.9;
+    osg::Vec3d eye_offset(0.0, 0.0, -3.0*radius);
 
     osgGA::CameraManipulator* camera_manipulator = getCameraManipulator();
-    camera_manipulator->setHomePosition(center+eye_offset, center, up_vector_);
+    camera_manipulator->setHomePosition(bounding_sphere.center()+eye_offset, bounding_sphere.center(), up_vector_);
     camera_manipulator->home(0);
 
     return;
@@ -383,12 +381,10 @@ bool CameraHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdap
                     osg::Vec3 axis_normal = registrator->getAxisNormal();
                     osg::Vec3 center_pivot = registrator->getPivotPoint();
 
-                    
-
-                    osg::Matrix rotation = osg::Matrix::rotate(angle, axis_normal);
+                    osg::Matrix rotation = osg::Matrix::rotate(-angle, axis_normal);
                     osg::Vec3d new_eye = center + rotation.preMult(eye - center);
-
-                    cm->setHomePosition(new_eye, center, up);
+                    osg::Vec3d new_up = rotation.preMult(up);
+                    cm->setHomePosition(new_eye, center, new_up);
                     cm->home(0);
 
                     ++ count_;
