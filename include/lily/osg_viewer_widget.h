@@ -70,4 +70,20 @@ protected:
 };
 
 
+class CameraHandler: public osgGA::GUIEventHandler
+{
+public:
+    CameraHandler(void);
+    virtual ~CameraHandler(void);
+
+    virtual bool handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapter& aa);
+    virtual void accept(osgGA::GUIEventHandlerVisitor& v)   { v.visit(*this); };
+private:
+    int count_;
+
+    osg::Vec3 eye_;
+    osg::Vec3 center_;
+    osg::Vec3 up_;
+};
+
 #endif // OSG_VIEWER_WIDGET_H

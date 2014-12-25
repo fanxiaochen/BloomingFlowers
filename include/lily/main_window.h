@@ -34,6 +34,7 @@ public:
     inline FileViewerWidget* getMeshWidget() { return mesh_widget_; }
     inline TrackingSystem* getTrackingSystem() { return tracking_system_; }
     inline Parameters* getParameters(){ return parameters_; }
+    inline Registrator* getRegistrator(){ return registrator_; }
 
     inline std::string& getPointsPath(){ return points_path_; }
     inline std::string& getMeshPath(){ return mesh_path_; }

@@ -21,6 +21,7 @@ SceneWidget::SceneWidget(QWidget * parent, const QGLWidget * shareWidget, Qt::Wi
 
 	//addSceneChild(point_cloud_);
     addEventHandler(new PickHandler());
+    addEventHandler(new CameraHandler());
 }
 
 SceneWidget::~SceneWidget()

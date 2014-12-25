@@ -12,6 +12,7 @@
 
 #include "main_window.h"
 #include "toggle_handler.h"
+#include "registrator.h"
 #include "osg_viewer_widget.h"
 
 QMutex OSGViewerWidget::mutex_first_frame_;
@@ -341,4 +342,84 @@ void OSGViewerWidget::mouseDoubleClickEvent(QMouseEvent* event)
     AdapterWidget::mousePressEvent(event);  
 
     return;
+}
+
+
+CameraHandler::CameraHandler()
+    :count_(0){}
+
+CameraHandler::~CameraHandler(void)
+{
+
+}
+
+bool CameraHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapter& aa)
+{
+    switch(ea.getEventType())
+    {
+    case(osgGA::GUIEventAdapter::KEYDOWN):
+        {
+            osgViewer::View* view = dynamic_cast<osgViewer::View*>(&aa);
+            if (view == NULL)
+                return false;
+
+            switch (ea.getKey())
+            {
+            case (osgGA::GUIEventAdapter::KEY_C):
+                {
+                    osgGA::CameraManipulator* cm = view->getCameraManipulator();
+                    osg::Vec3d eye, center, up;
+                    cm->getHomePosition(eye, center, up);
+
+                    if (count_ == 0)
+                    {
+                        eye_  = eye;
+                        center_ = center;
+                        up_ = up;
+                    }
+
+                    double angle = (2*M_PI) / 6; // default six cameras in our case
+                    Registrator* registrator = MainWindow::getInstance()->getRegistrator();
+                    osg::Vec3 axis_normal = registrator->getAxisNormal();
+                    osg::Vec3 center_pivot = registrator->getPivotPoint();
+
+                    
+
+                    osg::Matrix rotation = osg::Matrix::rotate(angle, axis_normal);
+                    osg::Vec3d new_eye = center + rotation.preMult(eye - center);
+
+                    cm->setHomePosition(new_eye, center, up);
+                    cm->home(0);
+
+                    ++ count_;
+                    
+                    break;
+                }
+            default:
+                break;
+            }
+
+            switch (ea.getModKeyMask())
+            {
+            case (osgGA::GUIEventAdapter::MODKEY_ALT):
+                {
+                    if (ea.getKey() == osgGA::GUIEventAdapter::KEY_C)
+                    {
+                        osgGA::CameraManipulator* cm = view->getCameraManipulator();
+                        cm->setHomePosition(eye_, center_, up_);
+                        cm->home(0);
+
+                        break;
+                    }
+                }
+
+            default:
+                break;
+            }
+        }
+  
+        break;
+    }
+
+    return false;
 }
