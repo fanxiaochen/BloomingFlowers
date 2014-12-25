@@ -84,6 +84,9 @@ public:
 
     void initializeVisibility();
 
+    // change mesh position truly, not by MatrixTransform in the graph scene
+    void rotate(const osg::Matrix& rot_matrix);
+
 protected:
 	virtual void updateImpl(void);
     virtual void visualizeMesh(void);

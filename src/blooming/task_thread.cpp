@@ -197,7 +197,7 @@ void FlowerTrackThread::run()
     flower->show();
 
     flower->determineVisibility();
-//    flower->buildHardCtrs(2);
+    flower->buildHardCtrs(2);
 //
 //    Flower* forward_flower = flower;
 //    Flower* backward_flower = flower;

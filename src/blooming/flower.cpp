@@ -30,6 +30,7 @@ void Flower::show()
     }
 }
 
+
 void Flower::update()
 {
     for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
@@ -46,6 +47,13 @@ void Flower::hide()
         Petal& petal = petals_[i];
         MainWindow::getInstance()->getSceneWidget()->removeSceneChild(&petal);
     }
+}
+
+void Flower::rotate(const osg::Matrix& rot_matrix)
+{
+    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+        petals_[i].rotate(rot_matrix);
+    return;
 }
 
 int Flower::contains(Petal* petal)
@@ -164,8 +172,25 @@ void Flower::determineVisibility()
     for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
         petals_[i].initializeVisibility();
 
-    Registrator* registrator = MainWindow::getInstance()->getRegistrator();
+    // default, six views
+    const int view_num = 6;
+    double angle = (2 * M_PI) / view_num;
 
+    Registrator* registrator = MainWindow::getInstance()->getRegistrator();
+    osg::Matrix rotation = registrator->getRotationMatrix(angle);
+
+    
+    for (size_t i = 0; i < view_num; ++ i)
+    {
+        rotate(rotation);
+        update();
+
+        determineIntersection();
+    }
+}
+
+void Flower::determineIntersection()
+{
     osg::BoundingSphere bounding_sphere = MainWindow::getInstance()->getSceneWidget()->getBoundingSphere();
     osg::ref_ptr<osg::Group> scene_root = MainWindow::getInstance()->getSceneWidget()->getSceneRoot();
 
@@ -189,62 +214,49 @@ void Flower::determineVisibility()
             osg::ref_ptr<osgUtil::LineSegmentIntersector> intersector = new osgUtil::LineSegmentIntersector(s, e);
             intersectorGroup->addIntersector( intersector.get() );
         }
-     }
+    }
 
     osgUtil::IntersectionVisitor intersectVisitor( intersectorGroup.get());
     scene_root->accept(intersectVisitor);
 
     if (intersectorGroup->containsIntersections())
     {
-         std::cout<<"Found intersections "<<std::endl;
-         int count = 0;
-         osgUtil::IntersectorGroup::Intersectors& intersectors = intersectorGroup->getIntersectors();
-         for(osgUtil::IntersectorGroup::Intersectors::iterator intersector_itr = intersectors.begin();
-             intersector_itr != intersectors.end(); ++intersector_itr)
-         {
-             osgUtil::LineSegmentIntersector* lsi = dynamic_cast<osgUtil::LineSegmentIntersector*>(intersector_itr->get());
-             if (lsi)
-             {
-                 osgUtil::LineSegmentIntersector::Intersection& intersection = lsi->getFirstIntersection();
-                 osg::NodePath& node_path = intersection.nodePath;
-                 Petal* intersection_object = NULL;
+        std::cout<<"Found intersections "<<std::endl;
+        osgUtil::IntersectorGroup::Intersectors& intersectors = intersectorGroup->getIntersectors();
+        for(osgUtil::IntersectorGroup::Intersectors::iterator intersector_itr = intersectors.begin();
+            intersector_itr != intersectors.end(); ++intersector_itr)
+        {
+            osgUtil::LineSegmentIntersector* lsi = dynamic_cast<osgUtil::LineSegmentIntersector*>(intersector_itr->get());
+            if (lsi)
+            {
+                osgUtil::LineSegmentIntersector::Intersection& intersection = lsi->getFirstIntersection();
+                osg::NodePath& node_path = intersection.nodePath;
+                Petal* intersection_object = NULL;
 
-                 while (!node_path.empty()) {
-                     intersection_object = dynamic_cast<Petal*>(node_path.back());
-                     if (intersection_object != NULL) {
-                         break;
-                     }
-                     node_path.pop_back();
-                 }
+                while (!node_path.empty()) {
+                    intersection_object = dynamic_cast<Petal*>(node_path.back());
+                    if (intersection_object != NULL) {
+                        break;
+                    }
+                    node_path.pop_back();
+                }
 
-                 if (intersection_object != NULL)
-                 {
-                     count ++;
-                      std::cout << intersection.getWorldIntersectPoint().x() << std::endl;
-                      std::cout << intersection.getWorldIntersectPoint().y() << std::endl;
-                      std::cout << intersection.getWorldIntersectPoint().z() << std::endl;
+                if (intersection_object != NULL)
+                {
+                    std::cout << intersection.getWorldIntersectPoint().x() << std::endl;
+                    std::cout << intersection.getWorldIntersectPoint().y() << std::endl;
+                    std::cout << intersection.getWorldIntersectPoint().z() << std::endl;
 
-                     // Petal* petal = dynamic_cast<Petal*>(intersection_object);
+                    int index = intersection_object->searchNearestIdx(intersection.getWorldIntersectPoint());
+                    intersection_object->getVisibility().at(index) = 1;
+                }
 
-                      int index = intersection_object->searchNearestIdx(intersection.getWorldIntersectPoint());
-                      intersection_object->getVisibility().at(index) = 1;
-                  //    std::cout << "  indices " << intersection.indexList.at(0) << std::endl;
-                 }
-                
-              //       std::cout << "  ratio " << intersection.ratio << std::endl;
-              //       std::cout << "  point " << intersection.localIntersectionPoint << std::endl;
-              //       std::cout << "  normal " << intersection.localIntersectionNormal << std::endl;
-              //       std::cout << "  indices " << intersection.indexList.size() << std::endl;
-              //       std::cout << "  primitiveIndex " << intersection.primitiveIndex << std::endl;
-              //       std::cout << std::endl;
-                
-                 
-             }
-         }
-         std::cout << count << std::endl;
+            }
+        }
     }
     else
     {
         std::cout << "No intersections" << std::endl;
     }
 }
+

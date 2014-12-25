@@ -689,3 +689,14 @@ void MeshModel::initializeVisibility()
     return;
 }
 
+void MeshModel::rotate(const osg::Matrix& rot_matrix)
+{
+    for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
+    {
+        osg::Vec3& point = vertices_->at(i);
+        point = rot_matrix.preMult(point);
+    }
+
+    return;
+}
+

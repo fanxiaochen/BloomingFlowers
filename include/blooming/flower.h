@@ -21,6 +21,8 @@ public:
     void update();
     void hide();
 
+    void rotate(const osg::Matrix& rot_matrix);
+
     void deform(const std::vector<osg::ref_ptr<osg::Vec3Array> >& pos, 
         const std::vector<std::vector<int> > idx);
 
@@ -35,6 +37,8 @@ public:
 
 private:
     int contains(Petal* petal);
+
+    void determineIntersection();
     
     //// source is simplified_flower, target is this flower
     //void searchNearestIdx(Flower& simplified_flower, 
