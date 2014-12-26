@@ -44,6 +44,8 @@ public:
 
     osg::ref_ptr<osg::Group> getSceneRoot() { return scene_root_; }
 
+    void setCenterScene(bool center_scene);
+
 	virtual void eventTraversal();
 public slots:
 	void increasePointSize(void);
@@ -69,6 +71,8 @@ protected:
 	bool									first_frame_;
 
 	osg::Vec3                               up_vector_;
+
+    bool                                    center_scene_;
 };
 
 

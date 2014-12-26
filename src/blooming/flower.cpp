@@ -178,13 +178,14 @@ void Flower::determineVisibility()
 
     Registrator* registrator = MainWindow::getInstance()->getRegistrator();
     osg::Matrix rotation = registrator->getRotationMatrix(angle);
+    determineIntersection();
 
-    for (size_t i = 0; i < view_num; ++ i)
+    /*for (size_t i = 0; i < view_num; ++ i)
     {
         rotate(rotation);
         determineIntersection();
         update();
-    }
+    }*/
 }
 
 void Flower::determineIntersection()

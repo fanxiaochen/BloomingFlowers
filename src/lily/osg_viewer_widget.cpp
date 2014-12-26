@@ -24,7 +24,8 @@ OSGViewerWidget::OSGViewerWidget(QWidget * parent, const QGLWidget * shareWidget
     gl_thread_(this),
     threaded_painter_(this),
     first_frame_(true),
-    up_vector_(0.0f, -1.0f, 0.0f)
+    up_vector_(0.0f, -1.0f, 0.0f),
+    center_scene_(false)
 {
     osg::ref_ptr<osg::Group> root = new osg::Group;
     setSceneData(root);
@@ -211,18 +212,32 @@ osg::BoundingBox OSGViewerWidget::getBoundingBox(void) const
   return visitor.getBoundingBox();
 }
 
+// camera position
+// if center_scene_ is true, camera will look at the center of the graph scene,
+// or camera will be put at the original position of World Coordinate which is the real camera position in our scanning device
+// however, here I put the camera not at the (0,0,0) but have a small z-translation for nice look in the scene resulting in not total accurate
+// results in visibility determination
 void OSGViewerWidget::centerScene(void)
 {
     QMutexLocker locker(&mutex_);
 
+    osgGA::CameraManipulator* camera_manipulator = getCameraManipulator();
     osg::BoundingSphere bounding_sphere = getBoundingSphere();
     double radius = bounding_sphere.radius();
 
-    osg::Vec3d eye_offset(0.0, 0.0, -3.0*radius);
-
-    osgGA::CameraManipulator* camera_manipulator = getCameraManipulator();
-    camera_manipulator->setHomePosition(bounding_sphere.center()+eye_offset, bounding_sphere.center(), up_vector_);
-    camera_manipulator->home(0);
+    if (!center_scene_)
+    {
+        camera_manipulator->setHomePosition(osg::Vec3(0.0, 0.0, bounding_sphere.center().z()-4.0*radius), 
+            osg::Vec3(0.0, 0.0, bounding_sphere.center().z()), up_vector_);
+        camera_manipulator->home(0);
+    }
+    else
+    {
+        osg::Vec3d eye_offset(0.0, 0.0, -4.0*radius);
+        camera_manipulator->setHomePosition(bounding_sphere.center()+eye_offset, bounding_sphere.center(), up_vector_);
+        camera_manipulator->home(0);
+    }
+    
 
     return;
 }
@@ -418,4 +433,9 @@ bool CameraHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdap
     }
 
     return false;
+}
+
+void OSGViewerWidget::setCenterScene(bool center_scene)
+{
+    center_scene_ = center_scene;
 }
