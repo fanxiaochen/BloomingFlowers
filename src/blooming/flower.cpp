@@ -178,19 +178,31 @@ void Flower::determineVisibility()
 
     Registrator* registrator = MainWindow::getInstance()->getRegistrator();
     osg::Matrix rotation = registrator->getRotationMatrix(angle);
-    determineIntersection();
 
-    /*for (size_t i = 0; i < view_num; ++ i)
+    for (size_t i = 0; i < view_num; ++ i)
     {
         rotate(rotation);
         determineIntersection();
         update();
-    }*/
+    }
 }
 
+// an estimation method of visibility for our special case by geometry relationship, not by accurate algorithm
 void Flower::determineIntersection()
 {
     osg::BoundingSphere bounding_sphere = MainWindow::getInstance()->getSceneWidget()->getBoundingSphere();
+    
+    osg::Vec3 plane_normal = osg::Vec3(0.0, 0.0, 1.0) ^ bounding_sphere.center();
+    plane_normal.normalize();
+
+    float cos_alpha = osg::Vec3(0.0, 0.0, 1.0) * bounding_sphere.center() / bounding_sphere.center().length();
+    float alpha = acos(cos_alpha);
+
+    osg::Matrix rot_matrix = osg::Matrix::identity();
+    rot_matrix = rot_matrix * osg::Matrix::translate(-bounding_sphere.center());
+    rot_matrix = rot_matrix * osg::Matrix::rotate(alpha, plane_normal);
+    rot_matrix = rot_matrix * osg::Matrix::translate(bounding_sphere.center());
+
     osg::ref_ptr<osg::Group> scene_root = MainWindow::getInstance()->getSceneWidget()->getSceneRoot();
 
     osg::Vec3d z_start = bounding_sphere.center() - osg::Vec3d(0.0, 0.0, bounding_sphere.radius());
@@ -210,6 +222,8 @@ void Flower::determineIntersection()
         {
             osg::Vec3d s = z_start + deltaColumn * double(c) + deltaRow * double(r);
             osg::Vec3d e = z_end + deltaColumn * double(c) + deltaRow * double(r);
+            s = rot_matrix.preMult(s);
+            e = rot_matrix.preMult(e);
             osg::ref_ptr<osgUtil::LineSegmentIntersector> intersector = new osgUtil::LineSegmentIntersector(s, e);
             intersectorGroup->addIntersector( intersector.get() );
         }
