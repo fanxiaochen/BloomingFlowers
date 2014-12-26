@@ -178,13 +178,13 @@ void Flower::determineVisibility()
 
     Registrator* registrator = MainWindow::getInstance()->getRegistrator();
     osg::Matrix rotation = registrator->getRotationMatrix(angle);
-    determineIntersection();
-    /*for (size_t i = 0; i < view_num; ++ i)
+
+    for (size_t i = 0; i < view_num; ++ i)
     {
         rotate(rotation);
         determineIntersection();
         update();
-    }*/
+    }
 }
 
 void Flower::determineIntersection()
@@ -241,28 +241,8 @@ void Flower::determineIntersection()
 
                 if (intersection_object != NULL)
                 {
-                    /* std::cout << intersection.getWorldIntersectPoint().x() << " "<< intersection.getWorldIntersectPoint().y() << " " 
-                    << intersection.getWorldIntersectPoint().z() << std::endl;
-
-                    std::cout << intersection.indexList.size() << std::endl;
-                    osg::Vec3 avg_p(0,0,0);*/
                     for (size_t k = 0, k_end = intersection.indexList.size(); k < k_end; ++ k)
-                    {
-                        /*osg::Vec3 p = intersection_object->getVertices()->at(intersection.indexList[k]);
-                        avg_p += p;*/
                         intersection_object->getVisibility().at(intersection.indexList[k]) = 1;
-                        /*std::cout << p.x() << " "<< p.y() << " " 
-                            << p.z() << std::endl;*/
-                    }
-                    /*std::cout << avg_p.x() / 3<< " "<< avg_p.y() / 3<< " " 
-                        << avg_p.z() / 3<< std::endl;
-                    std::cout << std::endl;*/
-                    /*osg::Vec3 p1 = intersection_object->getVertices()->at(intersection.indexList[0]);
-                    osg::Vec3 p1 = intersection_object->getVertices()->at(intersection.indexList[1]);
-                    osg::Vec3 p1 = intersection_object->getVertices()->at(intersection.indexList[2]);*/
-                    
-                    /*int index = intersection_object->searchNearestIdx(intersection.getWorldIntersectPoint());
-                    intersection_object->getVisibility().at(index) = 1;*/
                 }
 
             }
