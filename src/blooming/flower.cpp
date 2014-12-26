@@ -178,15 +178,13 @@ void Flower::determineVisibility()
 
     Registrator* registrator = MainWindow::getInstance()->getRegistrator();
     osg::Matrix rotation = registrator->getRotationMatrix(angle);
-
-    
-    for (size_t i = 0; i < view_num; ++ i)
+    determineIntersection();
+    /*for (size_t i = 0; i < view_num; ++ i)
     {
         rotate(rotation);
-        update();
-
         determineIntersection();
-    }
+        update();
+    }*/
 }
 
 void Flower::determineIntersection()
@@ -194,23 +192,23 @@ void Flower::determineIntersection()
     osg::BoundingSphere bounding_sphere = MainWindow::getInstance()->getSceneWidget()->getBoundingSphere();
     osg::ref_ptr<osg::Group> scene_root = MainWindow::getInstance()->getSceneWidget()->getSceneRoot();
 
-    osg::Vec3d start = bounding_sphere.center() + osg::Vec3d(0.0, 0.0, bounding_sphere.radius());
-    osg::Vec3d end = bounding_sphere.center() - osg::Vec3d(0.0, 0.0, bounding_sphere.radius());
+    osg::Vec3d z_start = bounding_sphere.center() - osg::Vec3d(0.0, 0.0, bounding_sphere.radius());
+    osg::Vec3d z_end = bounding_sphere.center() + osg::Vec3d(0.0, 0.0, bounding_sphere.radius());
 
     osg::Vec3d deltaRow(bounding_sphere.radius()*0.01, 0.0, 0.0);
     osg::Vec3d deltaColumn(0.0, bounding_sphere.radius()*0.01, 0.0);
 
-    unsigned int numRows = 200;
-    unsigned int numColumns = 200;
+    const int numRows = 100;
+    const int numColumns = 100;
 
     osg::ref_ptr<osgUtil::IntersectorGroup> intersectorGroup = new osgUtil::IntersectorGroup();
 
-    for(unsigned int r = 0; r < numRows; ++r)
+    for(int r = -numRows; r <= numRows; ++r)
     {
-        for(unsigned int c = 0; c < numColumns; ++c)
+        for(int c = -numColumns; c <= numColumns; ++c)
         {
-            osg::Vec3d s = start + deltaColumn * double(c) + deltaRow * double(r);
-            osg::Vec3d e = end + deltaColumn * double(c) + deltaRow * double(r);
+            osg::Vec3d s = z_start + deltaColumn * double(c) + deltaRow * double(r);
+            osg::Vec3d e = z_end + deltaColumn * double(c) + deltaRow * double(r);
             osg::ref_ptr<osgUtil::LineSegmentIntersector> intersector = new osgUtil::LineSegmentIntersector(s, e);
             intersectorGroup->addIntersector( intersector.get() );
         }
@@ -243,12 +241,28 @@ void Flower::determineIntersection()
 
                 if (intersection_object != NULL)
                 {
-                    std::cout << intersection.getWorldIntersectPoint().x() << std::endl;
-                    std::cout << intersection.getWorldIntersectPoint().y() << std::endl;
-                    std::cout << intersection.getWorldIntersectPoint().z() << std::endl;
+                    /* std::cout << intersection.getWorldIntersectPoint().x() << " "<< intersection.getWorldIntersectPoint().y() << " " 
+                    << intersection.getWorldIntersectPoint().z() << std::endl;
 
-                    int index = intersection_object->searchNearestIdx(intersection.getWorldIntersectPoint());
-                    intersection_object->getVisibility().at(index) = 1;
+                    std::cout << intersection.indexList.size() << std::endl;
+                    osg::Vec3 avg_p(0,0,0);*/
+                    for (size_t k = 0, k_end = intersection.indexList.size(); k < k_end; ++ k)
+                    {
+                        /*osg::Vec3 p = intersection_object->getVertices()->at(intersection.indexList[k]);
+                        avg_p += p;*/
+                        intersection_object->getVisibility().at(intersection.indexList[k]) = 1;
+                        /*std::cout << p.x() << " "<< p.y() << " " 
+                            << p.z() << std::endl;*/
+                    }
+                    /*std::cout << avg_p.x() / 3<< " "<< avg_p.y() / 3<< " " 
+                        << avg_p.z() / 3<< std::endl;
+                    std::cout << std::endl;*/
+                    /*osg::Vec3 p1 = intersection_object->getVertices()->at(intersection.indexList[0]);
+                    osg::Vec3 p1 = intersection_object->getVertices()->at(intersection.indexList[1]);
+                    osg::Vec3 p1 = intersection_object->getVertices()->at(intersection.indexList[2]);*/
+                    
+                    /*int index = intersection_object->searchNearestIdx(intersection.getWorldIntersectPoint());
+                    intersection_object->getVisibility().at(index) = 1;*/
                 }
 
             }

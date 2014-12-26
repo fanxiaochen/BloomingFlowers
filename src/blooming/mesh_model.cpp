@@ -51,39 +51,65 @@ MeshModel::~MeshModel(void)
 
 void MeshModel::visualizeMesh(void)
 {
-  osg::ref_ptr<osg::Geode> geode(new osg::Geode);
-  osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry;
-  geometry->setUseDisplayList(true);
-  geometry->setVertexArray(vertices_);
-  colors_->push_back(osg::Vec4(0.0f, 1.0f, 0.0f, 0.0f));
-  geometry->setColorArray(colors_);
-  colors_->setBinding(osg::Array::BIND_OVERALL);
+      osg::ref_ptr<osg::Geode> geode(new osg::Geode);
+      osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry;
+      geometry->setUseDisplayList(true);
+      geometry->setVertexArray(vertices_);
+      colors_->push_back(osg::Vec4(0.0f, 1.0f, 0.0f, 0.0f));
+      geometry->setColorArray(colors_);
+      colors_->setBinding(osg::Array::BIND_OVERALL);
 
-  if (faces_.empty())
-  {
-    geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices_->size()));
-  }
-  else
-  {
-      /*geometry->setNormalArray(face_normals_);
-      face_normals_->setBinding(osg::Array::BIND_PER_VERTEX);*/
-      geode->accept(*smoothing_visitor_);
+      if (faces_.empty())
+      {
+        geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices_->size()));
+      }
+      else
+      {
+          /*geometry->setNormalArray(face_normals_);
+          face_normals_->setBinding(osg::Array::BIND_PER_VERTEX);*/
+          geode->accept(*smoothing_visitor_);
 
-    for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
-    {
-      size_t vertex_num = faces_[i].size();
-      osg::ref_ptr<osg::DrawElementsUInt> face = new osg::DrawElementsUInt(GL_TRIANGLES, vertex_num);
-      for (size_t j = 0; j < vertex_num; ++ j)
-        face->at(j) = faces_[i][j];
+        for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
+        {
+          size_t vertex_num = faces_[i].size();
+          osg::ref_ptr<osg::DrawElementsUInt> face = new osg::DrawElementsUInt(GL_TRIANGLES, vertex_num);
+          for (size_t j = 0; j < vertex_num; ++ j)
+            face->at(j) = faces_[i][j];
 
-      geometry->addPrimitiveSet(face.get());
-    }
-  }
+          geometry->addPrimitiveSet(face.get());
+        }
+      }
 
-  geode->addDrawable(geometry);
-  content_root_->addChild(geode);
+      geode->addDrawable(geometry);
+      content_root_->addChild(geode);
 
-    return;
+
+      if (!visibility_.empty())
+      {
+          osg::ref_ptr<osg::Geode> vis_geo(new osg::Geode);
+          osg::ref_ptr<osg::Geometry> vis_geometry = new osg::Geometry;
+          osg::ref_ptr<osg::Vec3Array> vis_vetices = new osg::Vec3Array;
+          osg::ref_ptr<osg::Vec4Array> vis_colors = new osg::Vec4Array;
+          vis_colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 0.0f));
+
+          for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
+          {
+              if (visibility_[i] == 1)
+                  vis_vetices->push_back(vertices_->at(i));
+          }
+
+          vis_geometry->setUseDisplayList(true);
+          vis_geometry->setVertexArray(vis_vetices);
+          vis_geometry->setColorArray(vis_colors);
+          vis_colors->setBinding(osg::Array::BIND_OVERALL);
+          vis_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vis_vetices->size()));
+          vis_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
+
+          vis_geo->addDrawable(vis_geometry);
+          content_root_->addChild(vis_geo);
+      }
+
+      return;
 }
 
 void MeshModel::updateImpl()
