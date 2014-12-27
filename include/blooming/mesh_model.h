@@ -30,6 +30,7 @@ class MeshModel : public Renderable
 public:
 	MeshModel();
     MeshModel(const MeshModel& mesh_model);  // deep copy
+    MeshModel(const MeshModel* mesh_model);
 	virtual ~MeshModel(void);
 
 	bool load(const std::string& filename);
