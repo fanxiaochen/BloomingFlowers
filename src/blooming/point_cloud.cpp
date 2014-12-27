@@ -198,9 +198,42 @@ void PointCloud::kmeans_segmentation()
     return;
 }
 
-void PointCloud::template_segmentation()
+void PointCloud::template_segmentation(Flower* flower)
 {
+    std::vector<std::vector<int> > knns_idx;
+    std::vector<std::vector<float> > knns_dists;
 
+    for (size_t i = 0, i_end = flower->getPetals().size(); i < i_end; ++ i)
+    {
+        std::vector<int> knn_idx;
+        std::vector<float> knn_dists;
+
+        Petal& petal = flower->getPetals().at(i);
+        searchNearestIdx(&petal, knn_idx, knn_dists);
+
+        knns_idx.push_back(knn_idx);
+        knns_dists.push_back(knn_dists);
+    }
+
+
+    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+    {
+        float min_dist = std::numeric_limits<float>::max();
+        int min_j = std::numeric_limits<int>::max();
+
+        for (size_t j = 0, j_end = knns_idx.size(); j < j_end; ++ j)
+        {
+            if (min_dist > knns_dists[j][i])
+            {
+                min_j = j;
+                min_dist = knns_dists[j][i];
+            }
+        }
+
+        segment_flags_.push_back(min_j);
+    }
+
+    segmented_ = true;
 }
 
 
@@ -378,42 +411,4 @@ void PointCloud::searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_i
             knn_dists.push_back(pointNKNSquaredDistance[0]);
         }
     }
-}
-
-void PointCloud::segmentation_by_flower(Flower* flower)
-{
-    std::vector<std::vector<int> > knns_idx;
-    std::vector<std::vector<float> > knns_dists;
-
-    for (size_t i = 0, i_end = flower->getPetals().size(); i < i_end; ++ i)
-    {
-        std::vector<int> knn_idx;
-        std::vector<float> knn_dists;
-
-        Petal& petal = flower->getPetals().at(i);
-        searchNearestIdx(&petal, knn_idx, knn_dists);
-
-        knns_idx.push_back(knn_idx);
-        knns_dists.push_back(knn_dists);
-    }
-
-
-    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
-    {
-        float min_dist = std::numeric_limits<float>::max();
-        int min_j = std::numeric_limits<int>::max();
-
-        for (size_t j = 0, j_end = knns_idx.size(); j < j_end; ++ j)
-        {
-            if (min_dist > knns_dists[j][i])
-            {
-                min_j = j;
-                min_dist = knns_dists[j][i];
-            }
-        }
-
-        segment_flags_.push_back(min_j);
-    }
-
-    segmented_ = true;
 }

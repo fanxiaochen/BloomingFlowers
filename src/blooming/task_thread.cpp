@@ -185,7 +185,7 @@ void FlowerTrackThread::run()
     flower->show();
 
     PointCloud* point_cloud = points_file_system->getPointCloud(250);
-    point_cloud->segmentation_by_flower(flower);
+    point_cloud->template_segmentation(flower);
     point_cloud->expire();
 //    flower->determineVisibility();
 //    flower->update();
@@ -379,11 +379,10 @@ void KmeansSegmentThread::run()
     return;
 }
 
-TemplateSegmentThread::TemplateSegmentThread(PointsFileSystem* points_file_system, int frame)
+TemplateSegmentThread::TemplateSegmentThread(TrackingSystem* tracking_system)
     :QThread()
 {
-    points_file_system_ = points_file_system;
-    frame_ = frame;
+    tracking_system_ = tracking_system;
 }
 
 TemplateSegmentThread::~TemplateSegmentThread()
@@ -391,10 +390,33 @@ TemplateSegmentThread::~TemplateSegmentThread()
 
 void TemplateSegmentThread::run()
 {
-    std::cout << "Start Segmentation..." << std::endl;
+    std::cout << "Start Template Segmentation..." << std::endl;
 
-    points_file_system_->segmentPointCloudByTemplate(frame_);
+    int key_frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
 
-    std::cout << "Segmentation Finished..." << std::endl;
+    PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
+    MeshFileSystem* mesh_file_system = tracking_system_->getMeshFileSystem();
+
+    int start_frame = points_file_system->getStartFrame();
+    int end_frame = points_file_system->getEndFrame();
+
+    QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
+
+    // build flower structure, memory leak...
+    Flower* flower = new Flower;
+    for (size_t i = 0, i_end = mesh_indexes.size(); i < i_end; ++ i)
+    {
+        osg::ref_ptr<Petal> petal_template = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
+        flower->getPetals().push_back(*petal_template); // deep copy
+        mesh_file_system->hideMeshModel(mesh_indexes.values().at(i));
+    }
+
+    flower->show();
+
+    PointCloud* key_cloud = points_file_system->getPointCloud(key_frame);
+    key_cloud->template_segmentation(flower);
+    key_cloud->expire();
+
+    std::cout << "Template Segmentation Finished..." << std::endl;
     return;
 }

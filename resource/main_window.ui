@@ -50,7 +50,7 @@
     <addaction name="separator"/>
     <addaction name="actionLoadAxis"/>
    </widget>
-   <widget class="QMenu" name="menuAlgorithms">
+   <widget class="QMenu" name="menuTracking">
     <property name="title">
      <string>Tracking</string>
     </property>
@@ -62,7 +62,7 @@
     <addaction name="actionPetalTracking"/>
     <addaction name="actionFlowerTracking"/>
    </widget>
-   <widget class="QMenu" name="menuVisualization">
+   <widget class="QMenu" name="menuSegmentation">
     <property name="title">
      <string>Segmentation</string>
     </property>
@@ -72,8 +72,8 @@
     <addaction name="actionSegmentationByTemplate"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuVisualization"/>
-   <addaction name="menuAlgorithms"/>
+   <addaction name="menuSegmentation"/>
+   <addaction name="menuTracking"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">
@@ -81,7 +81,7 @@
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>false</bool>
+    <bool>true</bool>
    </attribute>
   </widget>
   <action name="actionLoadPoints">

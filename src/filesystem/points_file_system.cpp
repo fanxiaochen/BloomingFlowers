@@ -13,6 +13,7 @@
 #include "scene_widget.h"
 #include "parameters.h"
 #include "task_thread.h"
+#include "flower.h"
 
 PointsFileSystem::PointsFileSystem()
     :start_frame_(-1),
@@ -410,28 +411,10 @@ void PointsFileSystem::segmentPointCloudByKmeans(int frame)
     return;
 }
 
-void PointsFileSystem::segmentPointCloudByTemplate(int frame)
-{
-    PointCloud* point_cloud = getPointCloud(frame);
-    point_cloud->template_segmentation();
-
-    return;
-}
-
 void PointsFileSystem::kmeans_segmentation()
 {
     int frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
     KmeansSegmentThread* seg_thread = new KmeansSegmentThread(this, frame);
-    connect(seg_thread, SIGNAL(finished()), seg_thread, SLOT(quit()));
-
-    seg_thread->start();
-    return;
-}
-
-void PointsFileSystem::template_segmentation()
-{
-    int frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
-    TemplateSegmentThread* seg_thread = new TemplateSegmentThread(this, frame);
     connect(seg_thread, SIGNAL(finished()), seg_thread, SLOT(quit()));
 
     seg_thread->start();

@@ -152,7 +152,7 @@ void MainWindow::init(void)
 
     connect(ui_.actionKMeansForTrajectories, SIGNAL(triggered()), tracking_system_, SLOT(clusterTrajectories()));
     connect(ui_.actionKMeansForFlower, SIGNAL(triggered()), points_files_, SLOT(kmeans_segmentation()));
-    connect(ui_.actionSegmentationByTemplate, SIGNAL(triggered()), points_files_, SLOT(template_segmentation()));
+    connect(ui_.actionSegmentationByTemplate, SIGNAL(triggered()), tracking_system_, SLOT(template_segmentation()));
 
     connect(ui_.actionPointCloudTracking, SIGNAL(triggered()), tracking_system_, SLOT(pointcloud_tracking()));
     connect(ui_.actionMeshTracking, SIGNAL(triggered()), tracking_system_, SLOT(mesh_tracking()));

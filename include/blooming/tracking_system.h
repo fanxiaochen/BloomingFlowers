@@ -45,6 +45,7 @@ public:
     void buildTrajectories();
     void clusterTrajectories();
 
+    void template_segmentation();
 
 public:
     void cpd_registration(const PointCloud& tracked_frame, PointCloud& tracking_template);

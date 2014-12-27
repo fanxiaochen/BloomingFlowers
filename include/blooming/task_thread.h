@@ -105,15 +105,14 @@ protected:
 class TemplateSegmentThread: public QThread
 {
 public:
-    TemplateSegmentThread(PointsFileSystem* points_file_system, int frame);
+    TemplateSegmentThread(TrackingSystem* tracking_system);
     virtual ~TemplateSegmentThread();
 
 protected:
     void run();
 
 protected:
-    PointsFileSystem*	points_file_system_;
-    int                 frame_;
+    TrackingSystem*  tracking_system_;
 };
 
 

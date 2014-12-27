@@ -86,6 +86,14 @@ void TrackingSystem::clusterTrajectories()
     return;
 }
 
+void TrackingSystem::template_segmentation()
+{
+    TemplateSegmentThread* temseg_thread = new TemplateSegmentThread(this);
+    connect(temseg_thread, SIGNAL(finished()), temseg_thread, SLOT(quit()));
+
+    temseg_thread->start();
+    return;
+}
 
 void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, PointCloud& tracking_template)
 {	

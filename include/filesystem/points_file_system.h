@@ -10,6 +10,7 @@
 #include "file_system_model.h"
 
 class PointCloud;
+class Flower;
 
 class PointsFileSystem : public FileSystemModel
 {
@@ -54,11 +55,9 @@ public:
     void hideAndShowPointCloud(int hide_frame, int show_frame);
 
     void segmentPointCloudByKmeans(int frame);
-    void segmentPointCloudByTemplate(int frame);
 
     public slots:
         void kmeans_segmentation();
-        void template_segmentation();
 private:
 
     //void limitPointCloudCacheSize(void);
@@ -73,6 +72,5 @@ private:
 
     int								start_frame_;
     int								end_frame_;
-
 };
 #endif // FILE_SYSTEM_MODEL_H

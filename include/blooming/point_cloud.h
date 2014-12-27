@@ -89,20 +89,13 @@ class PointCloud : public QObject, public Renderable, public PclPointCloud
 {
 public:
 
-    // segmentation
-//    inline std::vector<FlowerPoint>& getFlowerPoints() { return flower_points_; }
+    // kmeans_segmentation
     inline const std::vector<int>& getPickedIndices() const { return picked_indices_; }
     inline std::vector<osg::Vec3>& getPickedPoints() { return picked_points_; }
     void pickEvent(int pick_mode, osg::Vec3 position);
 
-    void kmeans_segmentation();
-    void template_segmentation();
-
-    void petal_segmentation();
-    void resetSegmentation();
-
 private:
-    // segmentation
+    // kmeans_segmentation
     void k_means();
     float distance(const Point& p1, const Point& p2);
     void estimateNormals();
@@ -114,15 +107,10 @@ private:
     bool terminal(const std::vector<Point>& cluster_centers, const std::vector<Point>& next_centers);
 
 private:
-    // segmentation
- //   std::vector<FlowerPoint>      flower_points_;
-
+    // kmeans_segmentation
     std::vector<int>              picked_indices_;
     std::vector<osg::Vec3>        picked_points_;
     std::vector<Point>            cluster_centers_;
-
-    bool                          segmented_;
-
 
 public:
   PointCloud(void);
@@ -141,7 +129,13 @@ public:
   // using idx vector of this point cloud to build a new cloud
   void reordering(osg::ref_ptr<PointCloud> point_cloud, const std::vector<int>& idx);
 
-  void segmentation_by_flower(Flower* flower);
+  // k-means segmentation
+  void kmeans_segmentation();
+
+  // template segmentation
+  void template_segmentation(Flower* flower);
+
+  void resetSegmentation();
 
 protected:
   virtual void clearData();
@@ -156,9 +150,11 @@ protected:
 
 
 protected:
-  std::string                    filename_;
+  std::string                   filename_;
 
-  std::vector<int>               segment_flags_;
+  std::vector<int>              segment_flags_;
+  bool                          segmented_;
+
 };
 
 #endif // POINTCLOUD_H
