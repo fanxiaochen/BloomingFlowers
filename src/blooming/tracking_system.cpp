@@ -50,6 +50,15 @@ void TrackingSystem::mesh_tracking()
     return;
 }
 
+void TrackingSystem::petal_tracking()
+{
+    PetalTrackThread* track_thread = new PetalTrackThread(this);
+    connect(track_thread, SIGNAL(finished()), track_thread, SLOT(quit()));
+
+    track_thread->start();
+    return;
+}
+
 void TrackingSystem::flower_tracking()
 {
     FlowerTrackThread* track_thread = new FlowerTrackThread(this);
@@ -74,15 +83,6 @@ void TrackingSystem::clusterTrajectories()
     connect(clustering_thread, SIGNAL(finished()), clustering_thread, SLOT(quit()));
 
     clustering_thread->start();
-    return;
-}
-
-void TrackingSystem::propagateSegments()
-{
-    PropagateSegmentsThread* propagate_thread = new PropagateSegmentsThread(this);
-    connect(propagate_thread, SIGNAL(finished()), propagate_thread, SLOT(quit()));
-
-    propagate_thread->start();
     return;
 }
 
@@ -169,7 +169,7 @@ void TrackingSystem::cpd_registration(const PointCloud& source_frame, const Poin
         corres.row(i).maxCoeff(&max_index);
         tar_idx.push_back(int(max_index));
 
-    //    trajectories_->getPath(i)._trajectory.push_back(int(max_index));
+        trajectories_->getPath(i)._trajectory.push_back(int(max_index));
     }    
 }
 

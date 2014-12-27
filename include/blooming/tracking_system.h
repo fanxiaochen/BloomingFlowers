@@ -39,14 +39,11 @@ public:
     public slots:
     void pointcloud_tracking();
     void mesh_tracking();
+    void petal_tracking();
+    void flower_tracking();
 
     void buildTrajectories();
     void clusterTrajectories();
-
-    void propagateSegments();
-
-    void flower_tracking();
-
 
 
 public:

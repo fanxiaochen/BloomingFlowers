@@ -35,6 +35,19 @@ protected:
     TrackingSystem*	tracking_system_;
 };
 
+class PetalTrackThread: public QThread
+{
+public:
+    PetalTrackThread(TrackingSystem* tracking_system);
+    virtual ~PetalTrackThread();
+
+protected:
+    void run();
+
+protected:
+    TrackingSystem*	tracking_system_;
+};
+
 class FlowerTrackThread: public QThread
 {
 public:
@@ -75,11 +88,11 @@ protected:
     Trajectories*	trajectories_;
 };
 
-class SegmentThread: public QThread
+class KmeansSegmentThread: public QThread
 {
 public:
-    SegmentThread(PointsFileSystem* points_file_system, int frame);
-    virtual ~SegmentThread();
+    KmeansSegmentThread(PointsFileSystem* points_file_system, int frame);
+    virtual ~KmeansSegmentThread();
 
 protected:
     void run();
@@ -89,18 +102,19 @@ protected:
     int                 frame_;
 };
 
-
-class PropagateSegmentsThread: public QThread
+class TemplateSegmentThread: public QThread
 {
 public:
-    PropagateSegmentsThread(TrackingSystem* tracking_system);
-    virtual ~PropagateSegmentsThread();
+    TemplateSegmentThread(PointsFileSystem* points_file_system, int frame);
+    virtual ~TemplateSegmentThread();
 
 protected:
     void run();
 
 protected:
-    TrackingSystem* tracking_system_;
+    PointsFileSystem*	points_file_system_;
+    int                 frame_;
 };
+
 
 #endif

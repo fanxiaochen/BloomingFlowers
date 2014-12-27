@@ -465,7 +465,6 @@ void MeshModel::deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& 
         vi_soft_idx.push_back(soft_idx.at(i));
     }
 
-    float delta;
     Deform deform_model(p, p_num, adj_list_, faces_);
     deform_model.set_hard_ctrs(vf_hard_ctrs, vi_hard_idx);
     deform_model.set_soft_ctrs(vf_soft_ctrs, vi_soft_idx);
@@ -534,7 +533,6 @@ void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<in
         p[3*i+2] = point.z();
     }
 
-    float delta;
     Deform deform_model(p, p_num, adj_list_, faces_);
     deform_model.set_arap_type(Deform::HARD_SOFT);
     deform_model.set_hard_ctrs(hard_ctrs, hard_idx);

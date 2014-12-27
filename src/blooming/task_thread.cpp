@@ -74,10 +74,6 @@ void MeshTrackThread::run()
     QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
     MeshModel* tracking_template = mesh_file_system->getMeshModel(mesh_indexes.values().at(0));
 
-    /*std::vector<int> deform_idx;
-    for (size_t i = 0, i_end = tracking_template->getVertices()->size(); i < i_end; i ++)
-    deform_idx.push_back(i);*/
-
     for (int i = start_frame + 1; i <= end_frame; i ++)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
@@ -87,78 +83,70 @@ void MeshTrackThread::run()
 
         tracking_system_->cpd_registration(*tracked_frame, *tracking_template);
 
-        //VectorFArray m_vfa;
-        //VectorIArray m_via;
-        //MESHMODEL_TO_VECTORARRAY(*tracking_template, m_vfa, m_via);
-
-        //VectorFArray p_vfa;
-        //VectorIArray p_via;
-        //osg::ref_ptr<PointCloud> cloud = new PointCloud;
-        //tracking_template->searchNearestIdx(tracked_frame, p_via);
-        //tracked_frame->reordering(cloud, p_via);
-        //POINTCLOUD_TO_VECTORARRAY(*cloud, p_vfa, p_via);
-
-        //// stable now!
-        //tracking_template->deform(m_vfa, m_via, p_vfa, p_via);
-
         tracking_template->expire();
         points_file_system->hidePointCloud(i - 1);
     }
 
     std::cout << "Mesh Tracking Finished!" << std::endl;
+}
 
-//    MeshFileSystem* mesh_file_system = tracking_system_->getMeshFileSystem();
-//    QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
-//    MeshModel* tracking_template = mesh_file_system->getMeshModel(mesh_indexes.values().at(0));
-//    osg::Vec3Array* indicators = new osg::Vec3Array;
-//    std::vector<int> deform_idx;
-//
-//    /*indicators->push_back(osg::Vec3(0.05, 0.05, 0.1));
-//    deform_idx.push_back(2);
-//    tracking_template->deform(*indicators, deform_idx);
-//    tracking_template->expire();*/
-//
-//    //////for (size_t i = 0, i_end = 1; i < i_end; i ++)
-//    deform_idx.push_back(0);
-//    deform_idx.push_back(440);
-//
-//    indicators->push_back(osg::Vec3(0.0, 0.0, 0.0));
-//    indicators->push_back(osg::Vec3(1.0, 0.8, 0.5));
-//
-//    //////for (size_t i = 0, i_end = 1; i < i_end; i ++)
-//    //deform_idx.push_back(84);
-//    //deform_idx.push_back(336);
-//
-////    indicators->push_back(osg::Vec3(0.05, 0.05, 0.1));
-////    indicators->push_back(osg::Vec3(0.1, 0.0, 0.1));
-//
-//    //for (size_t i = 0, i_end = 1; i < i_end; i ++)
-////    deform_idx.push_back(2);
-////    deform_idx.push_back(2);
-//
-//    tracking_template->deform(*indicators, deform_idx);
-//    tracking_template->expire();
-//
-//
-//    //for (int k = 0; k < 10; k ++)
-//    //{
-//    //    indicators->clear();
-//    //    deform_idx.clear();
-//
-//    //    indicators->push_back(osg::Vec3(0.2+0.05*k, 0.4, 0.3));
-//    //    indicators->push_back(osg::Vec3(0.8-0.05*k, 0.4, -0.3));
-//
-//    //    //for (size_t i = 0, i_end = 1; i < i_end; i ++)
-//    //    deform_idx.push_back(84);
-//    //    deform_idx.push_back(336);
-//
-//    //    tracking_template->deform(*indicators, deform_idx);
-//    //    tracking_template->expire();
-//    //}
-//     
-//
-//    std::string file = MainWindow::getInstance()->getWorkspace() + "/deformed_mesh.obj";
-//    tracking_template->save(file);
+PetalTrackThread::PetalTrackThread(TrackingSystem* tracking_system)
+    :QThread()
+{
+    tracking_system_ = tracking_system;
+}
+
+PetalTrackThread::~PetalTrackThread()
+{}
+
+void PetalTrackThread::run()
+{
+    std::cout << "Petal Tracking Starts..." << std::endl;
+
+    PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
+    MeshFileSystem* mesh_file_system = tracking_system_->getMeshFileSystem();
+
+    int start_frame = points_file_system->getStartFrame();
+    int end_frame = points_file_system->getEndFrame();
+
+    QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
+    MeshModel* tracking_template = mesh_file_system->getMeshModel(mesh_indexes.values().at(0));
+
+    Petal* petal = new Petal(*tracking_template);
+
+
+    std::string workspace = MainWindow::getInstance()->getWorkspace();
+    QDir mesh_dir(QString(workspace.c_str()));
+    mesh_dir.mkdir("meshes");
+    
+    for (size_t i = start_frame, i_end = end_frame;
+        i <= i_end; ++ i)
+    {
+        std::cout << "tracking [frame " << i << "]" << std::endl;
+    
+        PointCloud* forward_cloud = points_file_system->getPointCloud(i);
+    
+        tracking_system_->cpd_registration(*forward_cloud, *petal);
+    
+        osg::ref_ptr<osg::Vec3Array>& hard_ctrs = petal->getHardCtrs();
+        std::vector<int>& hard_idx = petal->getHardCtrsIndex();
+       
+        petal->deform(*hard_ctrs, hard_idx);
+    
+        QString frame_path = mesh_dir.absolutePath() + "/meshes";
+        QDir mesh_frame(frame_path);
+        QString frame_file = QString("frame_%1").arg(i, 5, 10, QChar('0'));
+        mesh_frame.mkdir(frame_file);
+        QString mesh_path = mesh_frame.absolutePath() + "/" + frame_file;
+        petal->save(mesh_path.toStdString());
+    
+        petal->expire();
+    
+        points_file_system->hidePointCloud(i - 1);
+        points_file_system->showPointCloud(i);
+    }
+
+    std::cout << "Petal Tracking Finished!" << std::endl;
 }
 
 FlowerTrackThread::FlowerTrackThread(TrackingSystem* tracking_system)
@@ -340,13 +328,6 @@ void TrajectoryTrackThread::run()
         src_idx = tar_idx;
     }
 
-    //for (auto& it = trajectories->getPaths().begin(); it != trajectories->getPaths().end(); ++ it)
-    //{
-    //    std::cout << "id " << it->_id << std::endl;
-    //    for (auto& tt = it->_trajectory.begin(); tt != it->_trajectory.end(); ++ tt)
-    //        std::cout << *tt << " ";
-    //    std::cout << std::endl;
-    //}
 
     std::string workspace = MainWindow::getInstance()->getWorkspace();
     std::string traj_file = workspace + "/trajectories.json";
@@ -378,105 +359,42 @@ void TrajClusteringThread::run()
     return;
 }
 
-SegmentThread::SegmentThread(PointsFileSystem* points_file_system, int frame)
+KmeansSegmentThread::KmeansSegmentThread(PointsFileSystem* points_file_system, int frame)
     :QThread()
 {
     points_file_system_ = points_file_system;
     frame_ = frame;
 }
 
-SegmentThread::~SegmentThread()
+KmeansSegmentThread::~KmeansSegmentThread()
 {}
 
-void SegmentThread::run()
+void KmeansSegmentThread::run()
 {
     std::cout << "Start Segmentation..." << std::endl;
 
-    points_file_system_->segmentPointCloud(frame_);
+    points_file_system_->segmentPointCloudByKmeans(frame_);
 
     std::cout << "Segmentation Finished..." << std::endl;
     return;
 }
 
-PropagateSegmentsThread::PropagateSegmentsThread(TrackingSystem* tracking_system)
+TemplateSegmentThread::TemplateSegmentThread(PointsFileSystem* points_file_system, int frame)
     :QThread()
 {
-    tracking_system_ = tracking_system;
+    points_file_system_ = points_file_system;
+    frame_ = frame;
 }
 
-PropagateSegmentsThread::~PropagateSegmentsThread()
+TemplateSegmentThread::~TemplateSegmentThread()
 {}
 
-void PropagateSegmentsThread::run()
+void TemplateSegmentThread::run()
 {
-    std::cout << "Start Propagating Segments..." << std::endl;
+    std::cout << "Start Segmentation..." << std::endl;
 
-    int key_frame = tracking_system_->getKeyFrame();
-    PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
-    PointCloud* key_cloud = points_file_system->getPointCloud(key_frame);
+    points_file_system_->segmentPointCloudByTemplate(frame_);
 
-    std::cout << "forward propagation starts" << std::endl;
-    for (size_t i = key_frame, i_end = points_file_system->getEndFrame();
-        i < i_end; ++ i)
-    {
-        PointCloud* forward_cloud = points_file_system->getPointCloud(i + 1);
-
-        std::vector<int> src_idx, tar_idx;
-        for (size_t i = 0, i_end = forward_cloud->size(); i < i_end; ++ i)
-            src_idx.push_back(i);
-
-        tracking_system_->cpd_registration(*forward_cloud, *key_cloud, src_idx, tar_idx);
-        
-        for (size_t j = 0, j_end = src_idx.size(); j < j_end; ++ j)
-        {
-            std::vector<PointCloud::FlowerPoint>& cluster_points = 
-                forward_cloud->getFlowerPoints();
-            
-            PointCloud::FlowerPoint key_cp = 
-                key_cloud->getFlowerPoints()[tar_idx[j]];
-            PointCloud::FlowerPoint fw_cp;
-            fw_cp._pt = key_cp._pt;
-            fw_cp._label = key_cp._label;
-            cluster_points.push_back(fw_cp);
-        }
-
-        forward_cloud->expire();
-        key_cloud = forward_cloud;
-    }
-
-    std::cout << "backward propagation starts" << std::endl;
-    for (size_t i = key_frame, i_end = points_file_system->getStartFrame();
-        i > i_end; -- i)
-    {
-        PointCloud* backward_cloud = points_file_system->getPointCloud(i - 1);
-
-        std::vector<int> src_idx, tar_idx;
-        for (size_t i = 0, i_end = backward_cloud->size(); i < i_end; ++ i)
-            src_idx.push_back(i);
-
-        tracking_system_->cpd_registration(*backward_cloud, *key_cloud, src_idx, tar_idx);
-
-        for (size_t j = 0, j_end = src_idx.size(); j < j_end; ++ j)
-        {
-            std::vector<PointCloud::FlowerPoint>& cluster_points =
-                backward_cloud->getFlowerPoints();
-
-            PointCloud::FlowerPoint key_cp =
-                key_cloud->getFlowerPoints()[tar_idx[j]];
-
-            PointCloud::FlowerPoint bw_cp;
-            bw_cp._pt = key_cp._pt;
-            bw_cp._label = key_cp._label;
-            cluster_points.push_back(bw_cp);
-        }
-
-        backward_cloud->expire();
-        key_cloud = backward_cloud;
-    }
-
-
-
-    std::cout << "Propagating Segments Finished..." << std::endl;
+    std::cout << "Segmentation Finished..." << std::endl;
     return;
 }
-

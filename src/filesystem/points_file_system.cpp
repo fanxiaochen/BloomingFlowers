@@ -15,16 +15,16 @@
 #include "task_thread.h"
 
 PointsFileSystem::PointsFileSystem()
-	:start_frame_(-1),
-	end_frame_(-1)
+    :start_frame_(-1),
+    end_frame_(-1)
 {
-	setNameFilterDisables(false);
-	QStringList allowed_file_extensions;
-	allowed_file_extensions.push_back("*.pcd");
-	setNameFilters(allowed_file_extensions);
+    setNameFilterDisables(false);
+    QStringList allowed_file_extensions;
+    allowed_file_extensions.push_back("*.pcd");
+    setNameFilters(allowed_file_extensions);
 
-	/*connect(this, SIGNAL(timeToHideAndShowPointCloud(int, int, int, int)), this, SLOT(hideAndShowPointCloud(int, int, int, int)));
-	connect(this, SIGNAL(timeToShowPointCloud(int, int)), this, SLOT(showPointCloud(int, int)));*/
+    /*connect(this, SIGNAL(timeToHideAndShowPointCloud(int, int, int, int)), this, SLOT(hideAndShowPointCloud(int, int, int, int)));
+    connect(this, SIGNAL(timeToShowPointCloud(int, int)), this, SLOT(showPointCloud(int, int)));*/
 }
 
 PointsFileSystem::~PointsFileSystem()
@@ -33,52 +33,52 @@ PointsFileSystem::~PointsFileSystem()
 
 QModelIndex PointsFileSystem::setRootPath(const QString & root_path)
 {
-	point_cloud_cache_map_.clear();
-	point_cloud_map_.clear();
-	checked_indexes_.clear();
+    point_cloud_cache_map_.clear();
+    point_cloud_map_.clear();
+    checked_indexes_.clear();
 
-	QModelIndex index = FileSystemModel::setRootPath(root_path);
-	computeFrameRange();
+    QModelIndex index = FileSystemModel::setRootPath(root_path);
+    computeFrameRange();
 
-	if (start_frame_ != -1)
-	{
-		if (getPointCloud(start_frame_) != NULL)
-			showPointCloud(start_frame_);
-	}
+    if (start_frame_ != -1)
+    {
+        if (getPointCloud(start_frame_) != NULL)
+            showPointCloud(start_frame_);
+    }
 
-	MainWindow::getInstance()->getSceneWidget()->centerScene();
+    MainWindow::getInstance()->getSceneWidget()->centerScene();
 
-	return index;
+    return index;
 }
 
 bool PointsFileSystem::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-	bool is_point_cloud = (filePath(index).right(3) == "pcd");
-	if(role == Qt::CheckStateRole)
-	{
-		if (is_point_cloud)
-		{
-			if(value == Qt::Checked)
-				showPointCloud(index);
-			else
-				hidePointCloud(index);
-		}
+    bool is_point_cloud = (filePath(index).right(3) == "pcd");
+    if(role == Qt::CheckStateRole)
+    {
+        if (is_point_cloud)
+        {
+            if(value == Qt::Checked)
+                showPointCloud(index);
+            else
+                hidePointCloud(index);
+        }
 
-		if(hasChildren(index) == true)
-			recursiveCheck(index, value);
+        if(hasChildren(index) == true)
+            recursiveCheck(index, value);
 
-		emit dataChanged(index, index);
+        emit dataChanged(index, index);
 
-		return true;
-	}
+        return true;
+    }
 
-	return FileSystemModel::setData(index, value, role);
+    return FileSystemModel::setData(index, value, role);
 }
 
 bool PointsFileSystem::isShown(const std::string& filename) const
 {
-	QModelIndex index = this->index(filename.c_str());
-	return (checked_indexes_.contains(index)) ? (true) : (false);
+    QModelIndex index = this->index(filename.c_str());
+    return (checked_indexes_.contains(index)) ? (true) : (false);
 }
 
 
@@ -109,203 +109,203 @@ bool PointsFileSystem::isShown(const std::string& filename) const
 
 static void extractStartEndFrame(const QStringList& entries, int& start_frame, int& end_frame)
 {
-	start_frame = std::numeric_limits<int>::max();
-	end_frame = std::numeric_limits<int>::min();
+    start_frame = std::numeric_limits<int>::max();
+    end_frame = std::numeric_limits<int>::min();
 
-	for (QStringList::const_iterator entries_it = entries.begin();
-	entries_it != entries.end(); ++ entries_it)
-	{
-	if (!entries_it->contains("frame_"))
-		continue;
+    for (QStringList::const_iterator entries_it = entries.begin();
+    entries_it != entries.end(); ++ entries_it)
+    {
+    if (!entries_it->contains("frame_"))
+        continue;
 
-	int index = entries_it->right(4).toInt();
-	if (start_frame > index)
-		start_frame = index;
-	if (end_frame < index)
-		end_frame = index;
-	}
+    int index = entries_it->right(4).toInt();
+    if (start_frame > index)
+        start_frame = index;
+    if (end_frame < index)
+        end_frame = index;
+    }
 
-	return;
+    return;
 }
 
 void PointsFileSystem::computeFrameRange(void)
 {
-	start_frame_ = end_frame_ = -1;
+    start_frame_ = end_frame_ = -1;
 
-	QString root_path = rootPath();
-	QModelIndex root_index = index(root_path);
+    QString root_path = rootPath();
+    QModelIndex root_index = index(root_path);
 
-	if (root_path.contains("frame_")) {
-		start_frame_ = end_frame_ = root_path.right(4).toInt();
-		return;
-	}
+    if (root_path.contains("frame_")) {
+        start_frame_ = end_frame_ = root_path.right(4).toInt();
+        return;
+    }
 
-	if (root_path.contains("points"))
-	{
-		QStringList points_entries = QDir(root_path).entryList();
-		extractStartEndFrame(points_entries, start_frame_, end_frame_);
-		return;
-	}
+    if (root_path.contains("points"))
+    {
+        QStringList points_entries = QDir(root_path).entryList();
+        extractStartEndFrame(points_entries, start_frame_, end_frame_);
+        return;
+    }
 
-	return;
+    return;
 }
 
 void PointsFileSystem::getFrameRange(int &start, int &end)
 {
-	start = start_frame_;
-	end = end_frame_;
+    start = start_frame_;
+    end = end_frame_;
 }
 
 osg::ref_ptr<PointCloud> PointsFileSystem::getPointCloud(const std::string& filename)
 {
-	QMutexLocker locker(&mutex_);
+    QMutexLocker locker(&mutex_);
 
-	//limitPointCloudCacheSize();
+    //limitPointCloudCacheSize();
 
-	QFileInfo fileinfo(filename.c_str());
-	if (!fileinfo.exists() || !fileinfo.isFile())
-		return NULL;
+    QFileInfo fileinfo(filename.c_str());
+    if (!fileinfo.exists() || !fileinfo.isFile())
+        return NULL;
 
-	PointCloudCacheMap::iterator it = point_cloud_cache_map_.find(filename);
-	if (it != point_cloud_cache_map_.end())
-		return it->second.get();
+    PointCloudCacheMap::iterator it = point_cloud_cache_map_.find(filename);
+    if (it != point_cloud_cache_map_.end())
+        return it->second.get();
 
-	osg::ref_ptr<PointCloud> point_cloud = new PointCloud;
-	if (!point_cloud->open(filename))
-		return NULL;
+    osg::ref_ptr<PointCloud> point_cloud = new PointCloud;
+    if (!point_cloud->open(filename))
+        return NULL;
 
-	if (point_cloud->thread() != qApp->thread())
-		point_cloud->moveToThread(qApp->thread());
+    if (point_cloud->thread() != qApp->thread())
+        point_cloud->moveToThread(qApp->thread());
 
-	point_cloud_cache_map_[filename] = point_cloud;
+    point_cloud_cache_map_[filename] = point_cloud;
 
-	return point_cloud;
+    return point_cloud;
 }
 
 osg::ref_ptr<PointCloud> PointsFileSystem::getPointCloud(int frame)
 {
-	return getPointCloud(getPointsFilename(frame));
+    return getPointCloud(getPointsFilename(frame));
 }
 
 
 std::string PointsFileSystem::getPointsFolder(int frame)
 {
-	QModelIndex root_index = index(rootPath());
+    QModelIndex root_index = index(rootPath());
 
-	int start, end;
-	getFrameRange(start, end);
-	if (start < 0 || end < 0)
-		return std::string();
+    int start, end;
+    getFrameRange(start, end);
+    if (start < 0 || end < 0)
+        return std::string();
 
-	std::string folder;
+    std::string folder;
 
-	QString root_path = rootPath();
-	if (root_path.contains("frame_"))
-	{
-		folder =  root_path.toStdString();
-	}
-	else if (root_path.contains("points"))
-	{
-		// not work ??
-		/*std::cout << root_path.toStdString() << std::endl;
-		QModelIndex frame_index = index(frame-start, 0, root_index);
-		folder = filePath(frame_index).toStdString();*/
+    QString root_path = rootPath();
+    if (root_path.contains("frame_"))
+    {
+        folder =  root_path.toStdString();
+    }
+    else if (root_path.contains("points"))
+    {
+        // not work ??
+        /*std::cout << root_path.toStdString() << std::endl;
+        QModelIndex frame_index = index(frame-start, 0, root_index);
+        folder = filePath(frame_index).toStdString();*/
 
-		QString frame_name(QString("frame_%1").arg(frame, 5, 10, QChar('0')));
-		QStringList root_entries = QDir(root_path).entryList();
-		for (QStringList::const_iterator root_entries_it = root_entries.begin();
-			root_entries_it != root_entries.end(); ++ root_entries_it)
-		{
-			if (root_entries_it->compare(frame_name) == 0)
-			{
-				folder = (root_path + QString("/%1").arg(*root_entries_it)).toStdString();
-				break;
-			}
-		}
-	}
+        QString frame_name(QString("frame_%1").arg(frame, 5, 10, QChar('0')));
+        QStringList root_entries = QDir(root_path).entryList();
+        for (QStringList::const_iterator root_entries_it = root_entries.begin();
+            root_entries_it != root_entries.end(); ++ root_entries_it)
+        {
+            if (root_entries_it->compare(frame_name) == 0)
+            {
+                folder = (root_path + QString("/%1").arg(*root_entries_it)).toStdString();
+                break;
+            }
+        }
+    }
 
-	return folder;
+    return folder;
 }
 
 std::string PointsFileSystem::getPointsFilename(int frame)
 {
-	std::string folder = getPointsFolder(frame);
-	if (folder.empty())
-		return folder;
+    std::string folder = getPointsFolder(frame);
+    if (folder.empty())
+        return folder;
 
-	return folder+"/points.pcd";
+    return folder+"/points.pcd";
 }
 
 void PointsFileSystem::showPointCloud(int frame)
 {
-	showPointCloud(getPointsFilename(frame));
+    showPointCloud(getPointsFilename(frame));
 }
 
 void PointsFileSystem::showPointCloud(const std::string& filename)
 {
-	QModelIndex index = this->index(QString(filename.c_str()));
-	if (!index.isValid())
-		return;
+    QModelIndex index = this->index(QString(filename.c_str()));
+    if (!index.isValid())
+        return;
 
-	showPointCloud(index);
+    showPointCloud(index);
 
-	return;
+    return;
 }
 
 void PointsFileSystem::showPointCloud(const QPersistentModelIndex& index)
 {
-	checked_indexes_.insert(index);
+    checked_indexes_.insert(index);
 
-	osg::ref_ptr<PointCloud> point_cloud(getPointCloud(filePath(index).toStdString()));
-	if (!point_cloud.valid())
-		return;
+    osg::ref_ptr<PointCloud> point_cloud(getPointCloud(filePath(index).toStdString()));
+    if (!point_cloud.valid())
+        return;
 
-	PointCloudMap::iterator point_cloud_map_it = point_cloud_map_.find(index);
-	if (point_cloud_map_it != point_cloud_map_.end())
-		return;
+    PointCloudMap::iterator point_cloud_map_it = point_cloud_map_.find(index);
+    if (point_cloud_map_it != point_cloud_map_.end())
+        return;
 
-	MainWindow::getInstance()->getSceneWidget()->addSceneChild(point_cloud);
-	point_cloud_map_[index] = point_cloud;
+    MainWindow::getInstance()->getSceneWidget()->addSceneChild(point_cloud);
+    point_cloud_map_[index] = point_cloud;
 
-	return;
+    return;
 }
 
 void PointsFileSystem::hidePointCloud(int frame)
 {
-	hidePointCloud(getPointsFilename(frame));
+    hidePointCloud(getPointsFilename(frame));
 }
 
 void PointsFileSystem::hidePointCloud(const std::string& filename)
 {
-	QModelIndex index = this->index(QString(filename.c_str()));
-	if (!index.isValid())
-		return;
+    QModelIndex index = this->index(QString(filename.c_str()));
+    if (!index.isValid())
+        return;
 
-	hidePointCloud(index);
+    hidePointCloud(index);
 }
 
 
 void PointsFileSystem::hidePointCloud(const QPersistentModelIndex& index)
 {
-	checked_indexes_.remove(index);
+    checked_indexes_.remove(index);
 
-	PointCloudMap::iterator point_cloud_map_it = point_cloud_map_.find(index);
-	if (point_cloud_map_it == point_cloud_map_.end())
-		return;
+    PointCloudMap::iterator point_cloud_map_it = point_cloud_map_.find(index);
+    if (point_cloud_map_it == point_cloud_map_.end())
+        return;
 
-	MainWindow::getInstance()->getSceneWidget()->removeSceneChild(point_cloud_map_it.value().get());
-	point_cloud_map_.erase(point_cloud_map_it);
+    MainWindow::getInstance()->getSceneWidget()->removeSceneChild(point_cloud_map_it.value().get());
+    point_cloud_map_.erase(point_cloud_map_it);
 
-	return;
+    return;
 }
 
 void PointsFileSystem::hideAndShowPointCloud(int hide_frame, int show_frame)
 {
-	bool to_hide = true;
-	bool to_show = true;
+    bool to_hide = true;
+    bool to_show = true;
 
-	osg::ref_ptr<PointCloud> show_cloud = getPointCloud(show_frame);
-	osg::ref_ptr<PointCloud> hide_cloud = getPointCloud(hide_frame);
+    osg::ref_ptr<PointCloud> show_cloud = getPointCloud(show_frame);
+    osg::ref_ptr<PointCloud> hide_cloud = getPointCloud(hide_frame);
 
     QModelIndex show_index = this->index(QString(getPointsFilename(show_frame).c_str()));
     checked_indexes_.insert(show_index);
@@ -328,26 +328,26 @@ void PointsFileSystem::hideAndShowPointCloud(int hide_frame, int show_frame)
     else
         to_hide = false;
 
-	SceneWidget* scene_widget = MainWindow::getInstance()->getSceneWidget();
-	if (to_hide && to_show)
-	    scene_widget->replaceSceneChild(hide_cloud, show_cloud);
-	else if (to_hide)
-	scene_widget->removeSceneChild(getPointCloud(hide_frame));
-	else if (to_show)
-	scene_widget->addSceneChild(getPointCloud(show_frame));
+    SceneWidget* scene_widget = MainWindow::getInstance()->getSceneWidget();
+    if (to_hide && to_show)
+        scene_widget->replaceSceneChild(hide_cloud, show_cloud);
+    else if (to_hide)
+    scene_widget->removeSceneChild(getPointCloud(hide_frame));
+    else if (to_show)
+    scene_widget->addSceneChild(getPointCloud(show_frame));
 
-	return;
+    return;
 }
 
 void PointsFileSystem::updatePointCloud(int frame)
 {
-	std::string filename = getPointsFilename(frame);
-	if (point_cloud_cache_map_.find(filename) == point_cloud_cache_map_.end())
-		return;
+    std::string filename = getPointsFilename(frame);
+    if (point_cloud_cache_map_.find(filename) == point_cloud_cache_map_.end())
+        return;
 
-	getPointCloud(frame)->reload();
+    getPointCloud(frame)->reload();
 
-	return;
+    return;
 }
 
 
@@ -402,18 +402,26 @@ void PointsFileSystem::navigateToNextFrame()
     return;
 }
 
-void PointsFileSystem::segmentPointCloud(int frame)
+void PointsFileSystem::segmentPointCloudByKmeans(int frame)
 {
     PointCloud* point_cloud = getPointCloud(frame);
-    point_cloud->petal_segmentation();
+    point_cloud->kmeans_segmentation();
 
     return;
 }
 
-void PointsFileSystem::segmentation()
+void PointsFileSystem::segmentPointCloudByTemplate(int frame)
+{
+    PointCloud* point_cloud = getPointCloud(frame);
+    point_cloud->template_segmentation();
+
+    return;
+}
+
+void PointsFileSystem::kmeans_segmentation()
 {
     int frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
-    SegmentThread* seg_thread = new SegmentThread(this, frame);
+    KmeansSegmentThread* seg_thread = new KmeansSegmentThread(this, frame);
     connect(seg_thread, SIGNAL(finished()), seg_thread, SLOT(quit()));
 
     seg_thread->start();
@@ -423,7 +431,7 @@ void PointsFileSystem::segmentation()
 void PointsFileSystem::template_segmentation()
 {
     int frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
-    SegmentThread* seg_thread = new SegmentThread(this, frame);
+    TemplateSegmentThread* seg_thread = new TemplateSegmentThread(this, frame);
     connect(seg_thread, SIGNAL(finished()), seg_thread, SLOT(quit()));
 
     seg_thread->start();

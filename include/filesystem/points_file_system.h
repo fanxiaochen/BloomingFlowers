@@ -45,12 +45,6 @@ public:
 
     void updatePointCloud(int frame);
 
-    /*void showMeshModel(const std::string& filename);
-    void hideMeshModel(const std::string& filename);
-
-    void showMeshModel(const QPersistentModelIndex& index);
-    void hideMeshModel(const QPersistentModelIndex& index);*/
-
 
     PointCloud* getDisplayFirstFrame(void);
 
@@ -59,24 +53,16 @@ public:
 
     void hideAndShowPointCloud(int hide_frame, int show_frame);
 
-    void segmentPointCloud(int frame);
+    void segmentPointCloudByKmeans(int frame);
+    void segmentPointCloudByTemplate(int frame);
 
     public slots:
-        void segmentation();
+        void kmeans_segmentation();
         void template_segmentation();
 private:
 
     //void limitPointCloudCacheSize(void);
     void computeFrameRange(void);
-
-    /* void getDisplayFirstFrameFirstView(int& frame, int& view);
-    void getDisplayFirstFrameLastView(int& frame, int& view);
-    void getDisplayLastFrameLastView(int& frame, int& view);*/
-
-    
-signals:
-    /*void timeToHideAndShowPointCloud(int hide_frame, int hide_view, int show_frame, int show_view);
-    void timeToShowPointCloud(int show_frame, int show_view);*/
 
 private:
     typedef QHash<QPersistentModelIndex, osg::ref_ptr<PointCloud> > PointCloudMap;

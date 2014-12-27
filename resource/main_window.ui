@@ -59,6 +59,7 @@
     <addaction name="separator"/>
     <addaction name="actionTrajectoryTracking"/>
     <addaction name="separator"/>
+    <addaction name="actionPetalTracking"/>
     <addaction name="actionFlowerTracking"/>
    </widget>
    <widget class="QMenu" name="menuVisualization">
@@ -68,13 +69,11 @@
     <addaction name="actionKMeansForFlower"/>
     <addaction name="actionKMeansForTrajectories"/>
     <addaction name="separator"/>
-    <addaction name="actionPropagateSegments"/>
-    <addaction name="separator"/>
     <addaction name="actionSegmentationByTemplate"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuAlgorithms"/>
    <addaction name="menuVisualization"/>
+   <addaction name="menuAlgorithms"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">
@@ -153,6 +152,11 @@
   <action name="actionSegmentationByTemplate">
    <property name="text">
     <string>Segmentation By Template</string>
+   </property>
+  </action>
+  <action name="actionPetalTracking">
+   <property name="text">
+    <string>Petal Tracking</string>
    </property>
   </action>
  </widget>
