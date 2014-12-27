@@ -46,6 +46,11 @@ void Renderable::expire(void)
   return;
 }
 
+void Renderable::clear(void)
+{
+    content_root_->removeChildren(0, content_root_->getNumChildren());
+}
+
 void Renderable::update(void)
 {
   if (!read_write_lock_.tryLockForRead())

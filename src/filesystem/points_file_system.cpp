@@ -419,3 +419,13 @@ void PointsFileSystem::segmentation()
     seg_thread->start();
     return;
 }
+
+void PointsFileSystem::template_segmentation()
+{
+    int frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
+    SegmentThread* seg_thread = new SegmentThread(this, frame);
+    connect(seg_thread, SIGNAL(finished()), seg_thread, SLOT(quit()));
+
+    seg_thread->start();
+    return;
+}

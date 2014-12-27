@@ -196,9 +196,12 @@ void FlowerTrackThread::run()
 
     flower->show();
 
-    flower->determineVisibility();
-    flower->update();
- //   flower->buildHardCtrs(2);
+    PointCloud* point_cloud = points_file_system->getPointCloud(250);
+    point_cloud->segmentation_by_flower(flower);
+    point_cloud->expire();
+//    flower->determineVisibility();
+//    flower->update();
+//    flower->buildHardCtrs(2);
 //
 //    Flower* forward_flower = flower;
 //    Flower* backward_flower = flower;

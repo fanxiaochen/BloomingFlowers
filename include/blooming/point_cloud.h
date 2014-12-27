@@ -15,6 +15,7 @@
 typedef  pcl::PointXYZRGB  Point;
 typedef  pcl::PointCloud<Point>  PclPointCloud;
 
+class Flower;
 
 class PointCloud : public QObject, public Renderable, public PclPointCloud
 {
@@ -141,6 +142,8 @@ public:
   // using idx vector of this point cloud to build a new cloud
   void reordering(osg::ref_ptr<PointCloud> point_cloud, const std::vector<int>& idx);
 
+  void segmentation_by_flower(Flower* flower);
+
 protected:
   virtual void clearData();
   virtual void updateImpl();
@@ -149,8 +152,14 @@ protected:
   PointCloud* getPrevFrame(void);
   PointCloud* getNextFrame(void);
 
+  // source is this point cloud, target is mesh_model, knn_idx is based on mesh_model
+  void searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_idx, std::vector<float>& knn_dists);
+
+
 protected:
   std::string                    filename_;
+
+  std::vector<int>               segment_flags_;
 };
 
 #endif // POINTCLOUD_H

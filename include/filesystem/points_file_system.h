@@ -63,6 +63,7 @@ public:
 
     public slots:
         void segmentation();
+        void template_segmentation();
 private:
 
     //void limitPointCloudCacheSize(void);

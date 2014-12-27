@@ -8,12 +8,15 @@
 #include <osg/ShapeDrawable>
 #include <osg/Point>
 
+#include <pcl/kdtree/kdtree_flann.h>
+
 #include "main_window.h"
 #include "points_file_system.h"
 #include "osg_viewer_widget.h"
 #include "tracking_system.h"
 #include "color_map.h"
 #include "point_cloud.h"
+#include "flower.h"
 
 PointCloud::PointCloud(void)
     :segmented_(false)
@@ -49,10 +52,7 @@ void PointCloud::reload(void)
 
 void PointCloud::clearData()
 {
-
-  //Renderable::clear();
-    PointCloud::clear();
-
+    Renderable::clear();
     return;
 }
 
@@ -78,9 +78,14 @@ void PointCloud::visualizePoints()
         }
         else 
         {
-            const FlowerPoint& point = flower_points_.at(i);
+            /*const FlowerPoint& point = flower_points_.at(i);
             vertices->push_back(osg::Vec3(point._pt.x, point._pt.y, point._pt.z));
             osg::Vec4 color = ColorMap::getInstance().getDiscreteColor(point._label + 1);
+            colors->push_back(color);*/
+
+            const Point& point = at(i);
+            vertices->push_back(osg::Vec3(point.x, point.y, point.z));
+            osg::Vec4 color = ColorMap::getInstance().getDiscreteColor(segment_flags_[i] + 1);
             colors->push_back(color);
         }
     }
@@ -348,4 +353,82 @@ void PointCloud::reordering(osg::ref_ptr<PointCloud> point_cloud, const std::vec
     {
         point_cloud->push_back(this->at(idx[i]));
     }
+}
+
+void PointCloud::searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_idx, std::vector<float>& knn_dists)
+{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+
+    for (size_t i = 0, i_end = mesh_model->getVertices()->size(); i < i_end; ++ i)
+    {
+        const osg::Vec3& point = mesh_model->getVertices()->at(i);
+
+        pcl::PointXYZ pcl_point(point.x(), point.y(), point.z());
+        cloud->push_back(pcl_point);
+    }
+
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+
+    kdtree.setInputCloud (cloud);
+
+    int K = 1;
+
+    // K nearest neighbor search
+
+    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+    {
+        pcl::PointXYZ searchPoint;
+        std::vector<int> pointIdxNKNSearch(K);
+        std::vector<float> pointNKNSquaredDistance(K);
+
+        Point& point = this->at(i);
+
+        searchPoint.x = point.x;
+        searchPoint.y = point.y;
+        searchPoint.z = point.z;
+
+        if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+        {
+            knn_idx.push_back(pointIdxNKNSearch[0]);
+            knn_dists.push_back(pointNKNSquaredDistance[0]);
+        }
+    }
+}
+
+void PointCloud::segmentation_by_flower(Flower* flower)
+{
+    std::vector<std::vector<int> > knns_idx;
+    std::vector<std::vector<float> > knns_dists;
+
+    for (size_t i = 0, i_end = flower->getPetals().size(); i < i_end; ++ i)
+    {
+        std::vector<int> knn_idx;
+        std::vector<float> knn_dists;
+
+        Petal& petal = flower->getPetals().at(i);
+        searchNearestIdx(&petal, knn_idx, knn_dists);
+
+        knns_idx.push_back(knn_idx);
+        knns_dists.push_back(knn_dists);
+    }
+
+
+    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+    {
+        float min_dist = std::numeric_limits<float>::max();
+        int min_j = std::numeric_limits<int>::max();
+
+        for (size_t j = 0, j_end = knns_idx.size(); j < j_end; ++ j)
+        {
+            if (min_dist > knns_dists[j][i])
+            {
+                min_j = j;
+                min_dist = knns_dists[j][i];
+            }
+        }
+
+        segment_flags_.push_back(min_j);
+    }
+
+    segmented_ = true;
 }

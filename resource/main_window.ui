@@ -69,6 +69,8 @@
     <addaction name="actionKMeansForTrajectories"/>
     <addaction name="separator"/>
     <addaction name="actionPropagateSegments"/>
+    <addaction name="separator"/>
+    <addaction name="actionSegmentationByTemplate"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuAlgorithms"/>
@@ -146,6 +148,11 @@
   <action name="actionLoadAxis">
    <property name="text">
     <string>Load Axis</string>
+   </property>
+  </action>
+  <action name="actionSegmentationByTemplate">
+   <property name="text">
+    <string>Segmentation By Template</string>
    </property>
   </action>
  </widget>

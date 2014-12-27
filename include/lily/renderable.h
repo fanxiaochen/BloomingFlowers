@@ -24,6 +24,8 @@ public:
 
     void expire(void);
 
+    void clear(void);
+
     inline bool isHidden(void) const {return hidden_;}
     virtual void toggleHidden(void);
 
