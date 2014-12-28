@@ -412,3 +412,19 @@ void PointCloud::searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_i
         }
     }
 }
+
+osg::ref_ptr<PointCloud> PointCloud::getPetalCloud(int id)
+{
+    osg::ref_ptr<PointCloud> petal_cloud = new PointCloud;
+
+    for (size_t i = 0, i_end = segment_flags_.size(); i < i_end; ++ i)
+    {
+        if (segment_flags_[i] == id)
+            petal_cloud->push_back(this->at(i));
+    }
+
+    if (petal_cloud->size() == 0)
+        return NULL;
+
+    return petal_cloud;
+}

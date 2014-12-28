@@ -45,18 +45,6 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     this->getHardCtrsIndex() = mesh_model.getHardCtrsIndex();
 }
 
-MeshModel::MeshModel(const MeshModel* mesh_model)
-    ::vertices_(new osg::Vec3Array),
-    texcoords_(new osg::Vec2Array),
-    vertex_normals_(new osg::Vec3Array),
-    colors_(new osg::Vec4Array),
-    /*face_normals_(new osg::Vec3Array),*/
-    smoothing_visitor_(new osgUtil::SmoothingVisitor),
-    hard_ctrs_(new osg::Vec3Array)
-{
-    this = mesh_model;
-}
-
 MeshModel::~MeshModel(void)
 {
 }

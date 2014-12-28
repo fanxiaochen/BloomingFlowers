@@ -28,15 +28,14 @@ class PointCloud;
 class MeshModel : public Renderable
 {
 public:
-	MeshModel();
+    MeshModel();
     MeshModel(const MeshModel& mesh_model);  // deep copy
-    MeshModel(const MeshModel* mesh_model);
-	virtual ~MeshModel(void);
+    virtual ~MeshModel(void);
 
-	bool load(const std::string& filename);
-	bool save(const std::string& filename);
+    bool load(const std::string& filename);
+    bool save(const std::string& filename);
   
-	bool empty(void) const {return vertices_->empty();}
+    bool empty(void) const {return vertices_->empty();}
 
     const std::string& getObjName() { return obj_name_; }
     const std::string& getObjFile() { return obj_file_; }
@@ -89,11 +88,11 @@ public:
     void rotate(const osg::Matrix& rot_matrix);
 
 protected:
-	virtual void updateImpl(void);
+    virtual void updateImpl(void);
     virtual void visualizeMesh(void);
 
 private:
-	bool readObjFile(const std::string& filename);
+    bool readObjFile(const std::string& filename);
     void recoverAdjList();
     void buildDeformModel();
 
@@ -109,11 +108,11 @@ protected:
     std::string                         obj_file_;
     std::string                         mtl_file_;
 
-	osg::ref_ptr<osg::Vec3Array>        vertices_;
+    osg::ref_ptr<osg::Vec3Array>        vertices_;
     osg::ref_ptr<osg::Vec2Array>        texcoords_;
     osg::ref_ptr<osg::Vec3Array>        vertex_normals_;
-	osg::ref_ptr<osg::Vec4Array>        colors_;
-	std::vector<std::vector<int> >      faces_;
+    osg::ref_ptr<osg::Vec4Array>        colors_;
+    std::vector<std::vector<int> >      faces_;
 //	osg::ref_ptr<osg::Vec3Array>        face_normals_;
     std::vector<std::vector<int> >      adj_list_;
 

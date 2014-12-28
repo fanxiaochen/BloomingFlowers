@@ -135,6 +135,8 @@ public:
   // template segmentation
   void template_segmentation(Flower* flower);
 
+  osg::ref_ptr<PointCloud> getPetalCloud(int id);
+
   void resetSegmentation();
 
 protected:
