@@ -373,12 +373,16 @@ void PointCloud::reordering(osg::ref_ptr<PointCloud> point_cloud, const std::vec
     }
 }
 
+// with visibility
 void PointCloud::searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_idx, std::vector<float>& knn_dists)
 {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
     for (size_t i = 0, i_end = mesh_model->getVertices()->size(); i < i_end; ++ i)
     {
+        if (mesh_model->getVisibility().size() != 0 && mesh_model->getVisibility()[i] == 0)
+            continue;
+
         const osg::Vec3& point = mesh_model->getVertices()->at(i);
 
         pcl::PointXYZ pcl_point(point.x(), point.y(), point.z());

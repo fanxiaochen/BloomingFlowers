@@ -126,7 +126,7 @@ void PetalTrackThread::run()
     
         PointCloud* forward_cloud = points_file_system->getPointCloud(i);
     
-        tracking_system_->cpd_registration(*forward_cloud, *petal);
+        tracking_system_->cpd_petal(*forward_cloud, *petal);
     
         osg::ref_ptr<osg::Vec3Array>& hard_ctrs = petal->getHardCtrs();
         std::vector<int>& hard_idx = petal->getHardCtrsIndex();
@@ -201,10 +201,14 @@ void FlowerTrackThread::run()
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
 
+        forward_flower->determineVisibility();
+//
         PointCloud* forward_cloud = points_file_system->getPointCloud(i);
         forward_cloud->template_segmentation(forward_flower);
 
-        //tracking_system_->cpd_registration(*forward_cloud, *forward_flower);
+        forward_flower->buildHardCtrs(2);
+
+//        tracking_system_->cpd_registration(*forward_cloud, *forward_flower);
 
         std::vector<osg::ref_ptr<osg::Vec3Array> > hard_ctrs;
         std::vector<std::vector<int> > hard_idx;
@@ -212,13 +216,13 @@ void FlowerTrackThread::run()
         {
             osg::ref_ptr<PointCloud> petal_cloud = forward_cloud->getPetalCloud(j);
             Petal& petal = forward_flower->getPetals().at(j);
-            tracking_system_->cpd_registration(*petal_cloud, petal);
+            tracking_system_->cpd_petal(*petal_cloud, petal);
 
-           // hard_ctrs.push_back(petals[j].getHardCtrs());
-           // hard_idx.push_back(petals[j].getHardCtrsIndex());
+            hard_ctrs.push_back(petal.getHardCtrs());
+            hard_idx.push_back(petal.getHardCtrsIndex());
         }
 
-        //forward_flower->deform(hard_ctrs, hard_idx);
+        forward_flower->deform(hard_ctrs, hard_idx);
 
         QString frame_path = mesh_dir.absolutePath() + "/meshes";
         QDir mesh_frame(frame_path);
@@ -228,7 +232,7 @@ void FlowerTrackThread::run()
         forward_flower->save(mesh_path.toStdString());
 
         forward_flower->update();
-//        flowers->push_back(*flower);
+////        flowers->push_back(*flower);
 
         points_file_system->hidePointCloud(i - 1);
         points_file_system->showPointCloud(i);

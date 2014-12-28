@@ -354,6 +354,8 @@ MeshModel MeshModel::simplify(int scale)
 
 void MeshModel::buildHardCtrsIdx(int scale)
 {
+    hard_index_.clear();
+
     std::vector<int> hard_idx_vec;
     std::set<int> hard_idx_set; // for unique index 
 
@@ -361,10 +363,26 @@ void MeshModel::buildHardCtrsIdx(int scale)
     searchNearestIdx(sim_mesh, hard_idx_vec);
 
     for (size_t i = 0, i_end = hard_idx_vec.size(); i < i_end; ++ i)
-        hard_idx_set.insert(hard_idx_vec[i]);
+    {
+        if (visibility_.size() == 0)
+            hard_idx_set.insert(hard_idx_vec[i]);
+        else
+        {
+            if (visibility_[hard_idx_vec[i]] == 1)
+                hard_idx_set.insert(hard_idx_vec[i]);
+        }
+    }
 
     for (size_t i = 0, i_end = edge_index_.size(); i < i_end; ++ i)
-        hard_idx_set.insert(edge_index_[i]);
+    {
+        if (visibility_.size() == 0)
+            hard_idx_set.insert(edge_index_[i]);
+        else
+        {
+            if (visibility_[hard_idx_vec[i]] == 1)
+                hard_idx_set.insert(edge_index_[i]);
+        }
+    }
 
     std::copy(hard_idx_set.begin(), hard_idx_set.end(), back_inserter(hard_index_));
 }
@@ -709,8 +727,10 @@ int MeshModel::searchNearestIdx(osg::Vec3 point)
 
 void MeshModel::initializeVisibility()
 {
+    visibility_.resize(this->getVertices()->size());
     for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
-        visibility_.push_back(0);
+        visibility_[i] = 0;
+
     return;
 }
 

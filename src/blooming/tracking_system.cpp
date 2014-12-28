@@ -181,7 +181,7 @@ void TrackingSystem::cpd_registration(const PointCloud& source_frame, const Poin
     }    
 }
 
-void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, Flower& tracking_template)
+void TrackingSystem::cpd_flower(const PointCloud& tracked_frame, Flower& tracking_template)
 {	
     PointMatrix tracked_pm = POINTCLOUD_TO_MATRIX(tracked_frame);
     PointMatrix tracking_pm = FLOWER_TO_MATRIX(tracking_template);
@@ -201,4 +201,26 @@ void TrackingSystem::cpd_registration(const PointCloud& tracked_frame, Flower& t
     reg->run();
 
     MATRIX_TO_FLOWER(reg->getModel(), tracking_template);
+}
+
+void TrackingSystem::cpd_petal(const PointCloud& tracked_frame, Petal& tracking_template)
+{	
+    PointMatrix tracked_pm = POINTCLOUD_TO_MATRIX(tracked_frame);
+    PointMatrix tracking_pm = PETAL_TO_MATRIX(tracking_template);
+
+    cpd::CPDNRigid<float, 3>* reg = new cpd::CPDNRigid<float, 3>();
+
+    reg->setInputData(tracking_pm, tracked_pm);
+    reg->setVision(false);
+    reg->setIterativeNumber(50);
+    reg->setVarianceTolerance(1e-5);
+    reg->setEnergyTolerance(1e-3);
+    reg->setOutlierWeight(0.1);
+    reg->setFgtFlag(true);
+    reg->setFgtEpsilon(1e-3);
+    //    reg->setLowRankFlag(true);
+    //    reg->setKLowRank(40);
+    reg->run();
+
+    MATRIX_TO_PETAL(reg->getModel(), tracking_template);
 }

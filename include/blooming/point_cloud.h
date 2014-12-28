@@ -132,7 +132,7 @@ public:
   // k-means segmentation
   void kmeans_segmentation();
 
-  // template segmentation
+  // template segmentation with visibility
   void template_segmentation(Flower* flower);
 
   osg::ref_ptr<PointCloud> getPetalCloud(int id);

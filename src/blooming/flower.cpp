@@ -183,7 +183,7 @@ void Flower::determineVisibility()
     {
         rotate(rotation);
         determineIntersection();
-//        update();
+        update();
     }
 }
 
