@@ -26,6 +26,7 @@ public:
 
     void clear(void);
 
+    void setHiddenState(bool is_hidden);
     inline bool isHidden(void) const {return hidden_;}
     virtual void toggleHidden(void);
 

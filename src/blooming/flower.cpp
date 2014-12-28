@@ -8,6 +8,13 @@ Flower::Flower()
 {
 }
 
+// deep copy
+Flower::Flower(const Flower& flower)
+{
+    for (size_t i = 0, i_end = flower.getPetals().size(); i < i_end; ++ i)
+        petals_.push_back(flower.getPetals()[i]);
+}
+
 Flower::~Flower()
 {}
 
@@ -45,8 +52,10 @@ void Flower::hide()
     for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
     {
         Petal& petal = petals_[i];
-        MainWindow::getInstance()->getSceneWidget()->removeSceneChild(&petal);
+        //MainWindow::getInstance()->getSceneWidget()->removeSceneChild(&petal);  // will cause error
+        petal.setHiddenState(true);
     }
+
 }
 
 void Flower::rotate(const osg::Matrix& rot_matrix)

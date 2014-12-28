@@ -11,9 +11,11 @@ class Flower
 {
 public:
     Flower();
-    virtual ~Flower();
+    Flower(const Flower& flower); // deep copy
+    virtual ~Flower(); 
 
-    inline Petals& getPetals(){ return petals_; }
+    inline const Petals& getPetals() const { return petals_; }
+    inline Petals& getPetals() { return petals_; }
 
     void save(const std::string& flower_path);
 

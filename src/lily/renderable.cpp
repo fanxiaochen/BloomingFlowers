@@ -46,6 +46,12 @@ void Renderable::expire(void)
   return;
 }
 
+void Renderable::setHiddenState(bool is_hidden)
+{
+    hidden_ = is_hidden;
+    return;
+}
+
 void Renderable::clear(void)
 {
     content_root_->removeChildren(0, content_root_->getNumChildren());
