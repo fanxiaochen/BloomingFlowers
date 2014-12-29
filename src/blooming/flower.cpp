@@ -217,11 +217,11 @@ void Flower::determineIntersection()
     osg::Vec3d z_start = bounding_sphere.center() - osg::Vec3d(0.0, 0.0, bounding_sphere.radius());
     osg::Vec3d z_end = bounding_sphere.center() + osg::Vec3d(0.0, 0.0, bounding_sphere.radius());
 
-    osg::Vec3d deltaRow(bounding_sphere.radius()*0.01, 0.0, 0.0);
-    osg::Vec3d deltaColumn(0.0, bounding_sphere.radius()*0.01, 0.0);
+    osg::Vec3d deltaRow(bounding_sphere.radius()*0.05, 0.0, 0.0);
+    osg::Vec3d deltaColumn(0.0, bounding_sphere.radius()*0.05, 0.0);
 
-    const int numRows = 100;
-    const int numColumns = 100;
+    const int numRows = 20;
+    const int numColumns = 20;
 
     osg::ref_ptr<osgUtil::IntersectorGroup> intersectorGroup = new osgUtil::IntersectorGroup();
 
@@ -265,8 +265,20 @@ void Flower::determineIntersection()
 
                 if (intersection_object != NULL)
                 {
+                    osg::Vec3d intersect_point = intersection.getWorldIntersectPoint();
+                    float min_dist = std::numeric_limits<float>::max();
+                    int min_idx = 0;
                     for (size_t k = 0, k_end = intersection.indexList.size(); k < k_end; ++ k)
-                        intersection_object->getVisibility().at(intersection.indexList[k]) = 1;
+                    {
+                        osg::Vec3 closest_point = intersection_object->getVertices()->at(intersection.indexList[k]);
+                        float dist = (intersect_point - closest_point).length();
+                        if (dist < min_dist)
+                        {
+                            min_dist = dist;
+                            min_idx = intersection.indexList[k];
+                        }
+                    }
+                    intersection_object->getVisibility().at(min_idx) = 1;
                 }
 
             }
