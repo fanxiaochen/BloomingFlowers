@@ -34,6 +34,7 @@ public:
     Flower simplifyMesh(int scale);
 
     void buildHardCtrs(int scale);
+    void buildHardCtrs();
 
     void determineVisibility();
 

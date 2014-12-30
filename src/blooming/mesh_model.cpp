@@ -352,6 +352,20 @@ MeshModel MeshModel::simplify(int scale)
     return sim_mesh;
 }
 
+// remove duplicated elements
+void MeshModel::buildHardCtrsIdx()
+{
+    std::set<int> hard_idx_set;
+    for (size_t i = 0, i_end = hard_index_.size(); i < i_end; ++ i)
+    {
+        hard_idx_set.insert(hard_index_[i]);
+    }
+
+    hard_index_.clear();
+    std::copy(hard_idx_set.begin(), hard_idx_set.end(), back_inserter(hard_index_));
+
+}
+
 void MeshModel::buildHardCtrsIdx(int scale)
 {
     hard_index_.clear();

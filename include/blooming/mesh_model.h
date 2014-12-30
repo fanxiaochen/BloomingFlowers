@@ -67,6 +67,7 @@ public:
     MeshModel simplify(int scale);
 
     void buildHardCtrsIdx(int scale);
+    void buildHardCtrsIdx();
 
     void deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx);
     void deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx,

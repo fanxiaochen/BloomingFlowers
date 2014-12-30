@@ -98,6 +98,15 @@ void Flower::buildHardCtrs(int scale)
     }
 }
 
+void Flower::buildHardCtrs()
+{
+    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+    {
+        Petal& petal = petals_[i];
+        petal.buildHardCtrsIdx();
+    }
+}
+
 void Flower::deform(const std::vector<osg::ref_ptr<osg::Vec3Array> >& pos, 
             const std::vector<std::vector<int> > idx)
 {
@@ -217,11 +226,11 @@ void Flower::determineIntersection()
     osg::Vec3d z_start = bounding_sphere.center() - osg::Vec3d(0.0, 0.0, bounding_sphere.radius());
     osg::Vec3d z_end = bounding_sphere.center() + osg::Vec3d(0.0, 0.0, bounding_sphere.radius());
 
-    osg::Vec3d deltaRow(bounding_sphere.radius()*0.05, 0.0, 0.0);
-    osg::Vec3d deltaColumn(0.0, bounding_sphere.radius()*0.05, 0.0);
+    osg::Vec3d deltaRow(bounding_sphere.radius()*0.01, 0.0, 0.0);
+    osg::Vec3d deltaColumn(0.0, bounding_sphere.radius()*0.01, 0.0);
 
-    const int numRows = 20;
-    const int numColumns = 20;
+    const int numRows = 100;
+    const int numColumns = 100;
 
     osg::ref_ptr<osgUtil::IntersectorGroup> intersectorGroup = new osgUtil::IntersectorGroup();
 

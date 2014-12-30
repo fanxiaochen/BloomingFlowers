@@ -196,12 +196,13 @@ void FlowerTrackThread::run()
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
 
-        forward_flower->determineVisibility();
+     //  forward_flower->determineVisibility();
 
         PointCloud* forward_cloud = points_file_system->getPointCloud(i);
         forward_cloud->template_segmentation(forward_flower);
+        forward_flower->buildHardCtrs();
 
-        forward_flower->buildHardCtrs(2);
+        /*forward_flower->buildHardCtrs(2);*/
 
      //   tracking_system_->cpd_flower(*forward_cloud, *forward_flower);
 

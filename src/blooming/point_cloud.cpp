@@ -198,6 +198,7 @@ void PointCloud::kmeans_segmentation()
     return;
 }
 
+// point cloud segmentation and mesh's hard constraints building
 void PointCloud::template_segmentation(Flower* flower)
 {
     std::vector<std::vector<int> > knns_idx;
@@ -209,6 +210,9 @@ void PointCloud::template_segmentation(Flower* flower)
         std::vector<float> knn_dists;
 
         Petal& petal = flower->getPetals().at(i);
+
+        petal.getHardCtrsIndex().clear(); // clear hard ctrs index
+
         searchNearestIdx(&petal, knn_idx, knn_dists);
 
         knns_idx.push_back(knn_idx);
@@ -234,6 +238,15 @@ void PointCloud::template_segmentation(Flower* flower)
     }
 
     segmented_ = true;
+
+
+    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+    {
+        int petal_id = segment_flags_[i];
+        Petal& petal = flower->getPetals().at(petal_id);
+        petal.getHardCtrsIndex().push_back(knns_idx[petal_id][i]);  // may have duplicate elements
+    }
+
 }
 
 
