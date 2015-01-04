@@ -135,10 +135,14 @@ public:
   // template segmentation with visibility
   void template_segmentation(Flower* flower);
 
+  // template segmentation for em tracking framework
+  void flower_segmentation(Flower* flower);
+
   osg::ref_ptr<PointCloud> getPetalCloud(int id);
 
   void resetSegmentation();
 
+  std::vector<int>& getSegmentFlags() { return segment_flags_; }
 protected:
   virtual void clearData();
   virtual void updateImpl();
