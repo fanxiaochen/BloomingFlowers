@@ -58,6 +58,8 @@ public:
     void cpd_petal(const PointCloud& tracked_frame, Petal& tracking_template);
     void cpd_flower(const PointCloud& tracked_frame, Flower& tracking_template);
 
+    void em_registration(const PointCloud& tracked_frame, Flower& tracking_template);
+
 private:
     PointsFileSystem*   points_file_system_;
     MeshFileSystem*     mesh_file_system_;
@@ -69,6 +71,9 @@ private:
     int                 key_frame_;
 
     Flowers*             flowers_;
+
+    // em tracking
+    
 };
 
 #endif

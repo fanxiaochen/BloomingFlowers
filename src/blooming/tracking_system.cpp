@@ -238,3 +238,8 @@ void TrackingSystem::em_tracking()
     track_thread->start();
     return;
 }
+
+void TrackingSystem::em_registration(const PointCloud& tracked_frame, Flower& tracking_template)
+{
+    
+}

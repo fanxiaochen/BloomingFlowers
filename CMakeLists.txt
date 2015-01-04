@@ -107,6 +107,7 @@ set(blooming_incs   ${blooming_inc}/point_cloud.h
                     ${blooming_inc}/trajectory_model.h
 					${blooming_inc}/flower.h
 					${blooming_inc}/mesh_simplify.h
+                    ${blooming_inc}/deform_model.h
                     )
 
 set(blooming_srcs	${blooming_src}/point_cloud.cpp
@@ -115,6 +116,7 @@ set(blooming_srcs	${blooming_src}/point_cloud.cpp
                     ${blooming_src}/task_thread.cpp
                     ${blooming_src}/trajectory_model.cpp
 					${blooming_src}/flower.cpp
+                    ${blooming_src}/deform_model.cpp
                     )
                     
 set(filesystem_incs	${filesystem_inc}/file_system_model.h
