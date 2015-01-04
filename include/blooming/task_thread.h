@@ -115,5 +115,18 @@ protected:
     TrackingSystem*  tracking_system_;
 };
 
+class EMTrackThread: public QThread
+{
+public:
+    EMTrackThread(TrackingSystem* tracking_system);
+    virtual ~EMTrackThread();
+
+protected:
+    void run();
+
+protected:
+    TrackingSystem*	tracking_system_;
+};
+
 
 #endif

@@ -211,7 +211,7 @@ void PointCloud::template_segmentation(Flower* flower)
 
         Petal& petal = flower->getPetals().at(i);
 
-        petal.getHardCtrsIndex().clear(); // clear hard ctrs index
+        petal.getHardCtrsIndex().clear();  // clear hard ctrs index
 
         searchNearestIdx(&petal, knn_idx, knn_dists);
 

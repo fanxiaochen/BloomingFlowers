@@ -47,6 +47,8 @@ public:
 
     void template_segmentation();
 
+    void em_tracking();
+
 public:
     void cpd_registration(const PointCloud& tracked_frame, PointCloud& tracking_template);
     void cpd_registration(const PointCloud& tracked_frame, MeshModel& tracking_template);

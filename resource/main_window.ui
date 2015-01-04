@@ -61,6 +61,8 @@
     <addaction name="separator"/>
     <addaction name="actionPetalTracking"/>
     <addaction name="actionFlowerTracking"/>
+    <addaction name="separator"/>
+    <addaction name="actionEMTracking"/>
    </widget>
    <widget class="QMenu" name="menuSegmentation">
     <property name="title">
@@ -81,7 +83,7 @@
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>true</bool>
+    <bool>false</bool>
    </attribute>
   </widget>
   <action name="actionLoadPoints">
@@ -157,6 +159,11 @@
   <action name="actionPetalTracking">
    <property name="text">
     <string>Petal Tracking</string>
+   </property>
+  </action>
+  <action name="actionEMTracking">
+   <property name="text">
+    <string>EM Tracking</string>
    </property>
   </action>
  </widget>

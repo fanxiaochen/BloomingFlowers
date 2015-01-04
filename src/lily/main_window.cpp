@@ -159,6 +159,7 @@ void MainWindow::init(void)
     connect(ui_.actionTrajectoryTracking, SIGNAL(triggered()), tracking_system_, SLOT(buildTrajectories()));
     connect(ui_.actionPetalTracking, SIGNAL(triggered()), tracking_system_, SLOT(petal_tracking()));
     connect(ui_.actionFlowerTracking, SIGNAL(triggered()), tracking_system_, SLOT(flower_tracking()));
+    connect(ui_.actionEMTracking, SIGNAL(triggered()), tracking_system_, SLOT(em_tracking()));
 
     // connect
 
