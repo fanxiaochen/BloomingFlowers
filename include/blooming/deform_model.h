@@ -15,6 +15,7 @@ private:
     typedef Eigen::Matrix3Xf CloudMatrix;
     typedef Eigen::Matrix3Xf PetalMatrix;
     typedef Eigen::Vector3f CovMatrix;
+
 public:
     DeformModel();
     DeformModel(PointCloud* point_cloud, Flower* flower);
@@ -35,10 +36,13 @@ protected:
     void e_step();
     void m_step();
 
+    void e_step(int petal_id);
+
     void visibility();
     void initialize();
 
-    float gaussian();
+    float gaussian(int petal_id, int m_id, int c_id);
+    void covariance(const CloudMatrix& cloud_mat, CovMatrix& cov_mat);
 
 private:
     PointCloud* point_cloud_;
@@ -54,5 +58,7 @@ private:
 
     int iter_num_;
     int eps_;
+
+    float noise_p_;
 };
 #endif
