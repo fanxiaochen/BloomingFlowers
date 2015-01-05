@@ -8,6 +8,7 @@ DeformModel::DeformModel()
     :petal_num_(0),
     iter_num_(50), 
     eps_(1e-3),
+    lambda_(2.0),
     noise_p_(0.05)
 {
 
@@ -17,6 +18,7 @@ DeformModel::DeformModel(PointCloud* point_cloud, Flower* flower)
     :petal_num_(0),
     iter_num_(50), 
     eps_(1e-3),
+    lambda_(2.0),
     noise_p_(0.05),
     point_cloud_(point_cloud),
     flower_(flower)
@@ -197,6 +199,23 @@ void DeformModel::initialize()
             face_list.push_back(Eigen::Vector3i(face[0], face[1], face[2]));
         }
     }
+
+    // init weight matrix
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        buildWeightMatrix(i);
+    }
+
+    // init rotation matrix
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        DeformPetal& deform_petal = deform_petals_[i];
+        RotList& R_list = deform_petal._R_list;
+        for (size_t j = 0, j_end = R_list.size(); j < j_end; ++ j)
+        {
+            R_list[j] = Eigen::Matrix3f::Identity();
+        }
+    }
 }
 
 void DeformModel::covariance(const CloudMatrix& cloud_mat, CovMatrix& cov_mat)
@@ -254,7 +273,61 @@ void DeformModel::buildWeightMatrix(int petal_id)
     weight_matrix.setFromTriplets(weight_list.begin(), weight_list.end());
 }
 
-void DeformModel::buildLinearSystem()
+void DeformModel::left_system()
+{
+    DeformPetal& deform_petal = deform_petals_[0];
+    CovMatrix& cov_matrix = deform_petal._cov_matrix;
+    CorresMatrix& corres_matrix = deform_petal._corres_matrix;
+    WeightMatrix& weight_matrix = deform_petal._weight_matrix;
+    int ver_num = deform_petal._petal_matrix.cols();
+
+    std::vector<Eigen::Triplet<float> > weight_sum;
+    weight_sum.reserve(ver_num);
+
+    for (int i = 0; i < ver_num; ++i) 
+    {
+        float wi = 0;
+        for (size_t j = 0, j_end = deform_petal._adj_list[i].size(); j < j_end; ++j)
+        {
+            int id_j = deform_petal._adj_list[i][j];
+            wi += weight_matrix.coeffRef(i, id_j);
+        }
+
+//        wi += 2*cov_matrix[0]*corres_matrix.row(i).sum();
+
+        weight_sum.push_back(Eigen::Triplet<float>(i, i, wi));
+    }
+
+    Eigen::SparseMatrix<float> Weight_sum(ver_num, ver_num);
+    Weight_sum.setFromTriplets(weight_sum.begin(), weight_sum.end());
+
+    L_ =  Weight_sum - weight_matrix;
+
+//    lu_solver_.analyzePattern(L_);
+//    lu_solver_.factorize(L_);
+}
+
+void DeformModel::right_system()
+{
+    DeformPetal& deform_petal = deform_petals_[0];
+    PetalMatrix& petal_matrix = deform_petal._petal_matrix;
+    AdjList& adj_list = deform_petal._adj_list;
+    WeightMatrix& weight_matrix = deform_petal._weight_matrix;
+    RotList& R_list = deform_petal._R_list;
+    int ver_num = petal_matrix.cols();
+
+    d = Eigen::MatrixX3f::Zero(ver_num, 3);
+    for (size_t i = 0; i < ver_num; ++i) 
+    {
+        for (size_t j = 0, j_end = adj_list.size(); j < j_end; ++j)
+        {
+            d.row(i) += ((weight_matrix.coeffRef(i, adj_list[i][j])/2)*
+                (R_list[i]+R_list[adj_list[i][j]])*(petal_matrix.col(i) - petal_matrix.col(adj_list[i][j]))).transpose();
+        }
+    }
+}
+
+void DeformModel::solve()
 {
 
 }

@@ -22,6 +22,7 @@ private:
     typedef std::vector<std::vector<int> > AdjList;
     typedef std::vector<Eigen::Vector3i > FaceList;
     typedef Eigen::SparseMatrix<float> WeightMatrix;
+    typedef std::vector<Eigen::Matrix3f> RotList;
 
     struct DeformPetal
     {
@@ -33,6 +34,7 @@ private:
         AdjList         _adj_list;
         FaceList        _face_list;
         WeightMatrix    _weight_matrix;
+        RotList         _R_list;
 
         void findSharedVertex(int pi, int pj, std::vector<int>& share_vertex)
         {
@@ -88,6 +90,7 @@ public:
 
     void setIterNum(int iter_num);
     void setEps(float eps);
+    void setLambda(float lambda);
     
     inline PointCloud* getPointCloud(){ return point_cloud_; }
     inline Flower* getFlower(){ return flower_; }
@@ -107,13 +110,19 @@ protected:
     void covariance(const CloudMatrix& cloud_mat, CovMatrix& cov_mat);
 
     void buildWeightMatrix(int petal_id);
-    void buildLinearSystem();
+
+    void left_system();
+    void right_system();
+    void solve();
 
 private:
     PointCloud* point_cloud_;
     Flower* flower_;
 
     std::vector<DeformPetal> deform_petals_;
+
+    Eigen::SparseMatrix<float> L_;
+    Eigen::SparseLU<Eigen::SparseMatrix<float>> lu_solver_;
 
     /*std::vector<CloudMatrix> cloud_mats_;
     std::vector<PetalMatrix> petal_mats_;
@@ -130,6 +139,7 @@ private:
     int iter_num_;
     int eps_;
 
+    float lambda_;
     float noise_p_;
 };
 #endif
