@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 class PointCloud;
 class Flower;
@@ -16,6 +17,19 @@ private:
     typedef Eigen::Matrix3Xf PetalMatrix;
     typedef Eigen::Vector3f CovMatrix;
     typedef std::vector<int> VisList;
+    typedef std::vector<std::vector<int> > AdjList;
+    typedef std::vector<std::vector<int> > FaceList;
+
+    struct DeformPetal
+    {
+        PetalMatrix     _petal_matrix;
+        CloudMatrix     _cloud_matrix;
+        CorresMatrix    _corres_matrix;
+        CovMatrix       _cov_matrix;
+        VisList         _vis_list;
+        AdjList         _adj_list;
+        FaceList        _face_list;
+    };
 
 public:
     DeformModel();
@@ -45,16 +59,23 @@ protected:
     float gaussian(int petal_id, int m_id, int c_id);
     void covariance(const CloudMatrix& cloud_mat, CovMatrix& cov_mat);
 
+    void buildWeightMatrix();
+
 private:
     PointCloud* point_cloud_;
     Flower* flower_;
 
-    std::vector<CloudMatrix> cloud_mats_;
+    std::vector<DeformPetal> deform_petals_;
+
+    /*std::vector<CloudMatrix> cloud_mats_;
     std::vector<PetalMatrix> petal_mats_;
 
     std::vector<CorresMatrix> corres_mats_;
     std::vector<CovMatrix> cov_mats_;
     std::vector<VisList> vis_lists_;
+
+    std::vector<AdjList> adj_lists_;
+    std::vector<FaceList> face_lists_;*/
 
     int petal_num_;
 

@@ -80,8 +80,8 @@ void DeformModel::m_step()
 
 void DeformModel::e_step(int petal_id)
 {
-    CorresMatrix& corres_mat = corres_mats_[petal_id];
-    VisList& vis_list = vis_lists_[petal_id];
+    CorresMatrix& corres_mat = deform_petals_[petal_id]._corres_matrix;
+    VisList& vis_list = deform_petals_[petal_id]._vis_list;
 
     for (size_t i = 0, i_end = corres_mat.rows(); i < i_end; ++ i)
     {
@@ -113,6 +113,8 @@ void DeformModel::initialize()
     Petals& petals = flower_->getPetals();
     petal_num_ = petals.size();
 
+    deform_petals_.resize(petal_num_);
+
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         Petal& petal = petals.at(i);
@@ -127,7 +129,8 @@ void DeformModel::initialize()
         {
             pm.col(j) << point_cloud_->at(knn_idx[j]).x, point_cloud_->at(knn_idx[j]).y, point_cloud_->at(knn_idx[j]).z;
         }
-        petal_mats_.push_back(pm);
+
+        deform_petals_[i]._petal_matrix = pm;
     }
 
     // init cloud matrix
@@ -144,32 +147,47 @@ void DeformModel::initialize()
                 cm.col(j) << petal_cloud->at(j).x, petal_cloud->at(j).y, petal_cloud->at(j).z;
             }
         }
-        cloud_mats_.push_back(cm);
+
+        deform_petals_[i]._cloud_matrix = cm;
     }
 
     // init covariance matrix 
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
-        CloudMatrix& cloud_mat = cloud_mats_[i];
+        CloudMatrix& cloud_mat = deform_petals_[i]._cloud_matrix;
         CovMatrix cov_mat;
         covariance(cloud_mat, cov_mat);
-        cov_mats_.push_back(cov_mat);
+        deform_petals_[i]._cov_matrix = cov_mat;
     }
 
     // init correspondence matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
-        CloudMatrix& cloud_mat = cloud_mats_[i];
-        PetalMatrix& petal_mat = petal_mats_[i];
+        CloudMatrix& cloud_mat = deform_petals_[i]._cloud_matrix;
+        PetalMatrix& petal_mat = deform_petals_[i]._petal_matrix;
         CorresMatrix corres_mat(petal_mat.cols(), cloud_mat.cols());
-        corres_mats_.push_back(corres_mat);
+        deform_petals_[i]._corres_matrix = corres_mat;
     }
 
     // init visibility list
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         Petal& petal = petals.at(i);
-        vis_lists_.push_back(petal.getVisibility());
+        deform_petals_[i]._vis_list = petal.getVisibility();
+    }
+
+    // init adjacent list
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals.at(i);
+        deform_petals_[i]._adj_list = petal.getAdjList();
+    }
+
+    // init face list
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals.at(i);
+        deform_petals_[i]._face_list = petal.getFaces();
     }
 }
 
@@ -190,9 +208,9 @@ float DeformModel::gaussian(int petal_id, int m_id, int c_id)
 {
     float p;
 
-    CovMatrix cov_mat = cov_mats_[petal_id];
-    CloudMatrix cloud_mat = cloud_mats_[petal_id];
-    PetalMatrix petal_mat = petal_mats_[petal_id];
+    CovMatrix cov_mat = deform_petals_[petal_id]._cov_matrix;
+    CloudMatrix cloud_mat = deform_petals_[petal_id]._cloud_matrix;
+    PetalMatrix petal_mat = deform_petals_[petal_id]._petal_matrix;
 
     Eigen::Vector3f xu = cloud_mat.col(c_id) - petal_mat.col(m_id);
     p = pow(2*M_PI, -3/2.0) * pow(cov_mat.determinant(), -1/2.0) * exp((-1/2.0)*xu.transpose()*cov_mat.asDiagonal()*xu);
