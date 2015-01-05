@@ -187,7 +187,15 @@ void DeformModel::initialize()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         Petal& petal = petals.at(i);
-        deform_petals_[i]._face_list = petal.getFaces();
+        std::vector<std::vector<int> >& triangle_list = petal.getFaces(); 
+        std::vector<Eigen::Vector3i>& face_list = deform_petals_[i]._face_list;
+        for (size_t i = 0, i_end = triangle_list.size(); i < i_end; ++ i)
+        {
+            std::vector<int> face = triangle_list[i];
+            std::sort(face.begin(), face.end());
+            assert(face.size() == 3);
+            face_list.push_back(Eigen::Vector3i(face[0], face[1], face[2]));
+        }
     }
 }
 
@@ -216,4 +224,37 @@ float DeformModel::gaussian(int petal_id, int m_id, int c_id)
     p = pow(2*M_PI, -3/2.0) * pow(cov_mat.determinant(), -1/2.0) * exp((-1/2.0)*xu.transpose()*cov_mat.asDiagonal()*xu);
 
     return p;
+}
+
+void DeformModel::buildWeightMatrix(int petal_id)
+{
+    std::vector<Eigen::Triplet<float> > weight_list;
+    DeformPetal& deform_petal = deform_petals_[petal_id];
+    WeightMatrix& weight_matrix = deform_petal._weight_matrix;
+    int ver_num = deform_petal._petal_matrix.cols();
+
+    for (size_t i = 0; i != ver_num; ++i) 
+    {
+        for (size_t j = 0, j_end = deform_petal._adj_list[i].size(); j != j_end; ++j) 
+        {
+            int id_j = deform_petal._adj_list[i][j];
+
+            std::vector<int> share_vertex;
+            deform_petal.findSharedVertex(i, id_j, share_vertex);
+
+            float wij = 0;
+            if (share_vertex.size()==2) wij = deform_petal.wij(i, id_j, share_vertex[0], share_vertex[1]);
+            else wij = deform_petal.wij(i, id_j, share_vertex[0]);
+
+            weight_list.push_back(Eigen::Triplet<float>(i, id_j, wij));
+        }
+    }
+
+    weight_matrix.resize(ver_num, ver_num);
+    weight_matrix.setFromTriplets(weight_list.begin(), weight_list.end());
+}
+
+void DeformModel::buildLinearSystem()
+{
+
 }
