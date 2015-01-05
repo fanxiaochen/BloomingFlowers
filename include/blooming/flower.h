@@ -36,6 +36,7 @@ public:
     void buildHardCtrs(int scale);
     void buildHardCtrs();
 
+    void initVisibility();
     void determineVisibility();
 
 private:

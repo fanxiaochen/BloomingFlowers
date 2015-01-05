@@ -483,4 +483,13 @@ void PointCloud::flower_segmentation(Flower* flower)
     }
 
     segmented_ = true;
+
+    // determine visibility
+    flower->initVisibility();
+    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+    {
+        int petal_id = segment_flags_[i];
+        Petal& petal = flower->getPetals().at(petal_id);
+        petal.getVisibility()[knns_idx[petal_id][i]] = 1;
+    }
 }

@@ -81,12 +81,13 @@ void DeformModel::m_step()
 void DeformModel::e_step(int petal_id)
 {
     CorresMatrix& corres_mat = corres_mats_[petal_id];
+    VisList& vis_list = vis_lists_[petal_id];
 
     for (size_t i = 0, i_end = corres_mat.rows(); i < i_end; ++ i)
     {
         for (size_t j = 0, j_end = corres_mat.cols(); j < j_end; ++ j)
         {
-            corres_mat(i, j) = gaussian(petal_id, i, j);
+            corres_mat(i, j) = gaussian(petal_id, i, j) * vis_list[i];
         }
     }
 
@@ -130,7 +131,7 @@ void DeformModel::initialize()
     }
 
     // init cloud matrix
-    point_cloud_->flower_segmentation(flower_); // using knn to segment the point cloud to petals
+    point_cloud_->flower_segmentation(flower_); // using knn to segment the point cloud to petals, and along with visibility determination
 
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
@@ -160,8 +161,15 @@ void DeformModel::initialize()
     {
         CloudMatrix& cloud_mat = cloud_mats_[i];
         PetalMatrix& petal_mat = petal_mats_[i];
-        CorresMatrix corres_mat(cloud_mat.cols(), petal_mat.cols());
+        CorresMatrix corres_mat(petal_mat.cols(), cloud_mat.cols());
         corres_mats_.push_back(corres_mat);
+    }
+
+    // init visibility list
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals.at(i);
+        vis_lists_.push_back(petal.getVisibility());
     }
 }
 

@@ -15,6 +15,7 @@ private:
     typedef Eigen::Matrix3Xf CloudMatrix;
     typedef Eigen::Matrix3Xf PetalMatrix;
     typedef Eigen::Vector3f CovMatrix;
+    typedef std::vector<int> VisList;
 
 public:
     DeformModel();
@@ -53,6 +54,7 @@ private:
 
     std::vector<CorresMatrix> corres_mats_;
     std::vector<CovMatrix> cov_mats_;
+    std::vector<VisList> vis_lists_;
 
     int petal_num_;
 

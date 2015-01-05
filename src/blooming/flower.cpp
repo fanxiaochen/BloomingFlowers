@@ -299,3 +299,8 @@ void Flower::determineIntersection()
     }
 }
 
+void Flower::initVisibility()
+{
+    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+        petals_[i].initializeVisibility();
+}
