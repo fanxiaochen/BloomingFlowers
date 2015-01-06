@@ -343,11 +343,22 @@ void DeformModel::left_system(int petal_id)
     L_[1].resize(L_[1].rows()+ver_num, L_[1].cols()+ver_num);
     L_[2].resize(L_[2].rows()+ver_num, L_[2].cols()+ver_num);
 
-    L_[0].bottomRightCorner(ver_num, ver_num) =  diag_coeff_x - weight_matrix;
-    L_[1].bottomRightCorner(ver_num, ver_num) =  diag_coeff_y - weight_matrix;
-    L_[2].bottomRightCorner(ver_num, ver_num) =  diag_coeff_z - weight_matrix;
+    // block assignment is not supported by SparseMatrix...I have to update one by one
+    Eigen::SparseMatrix<float> L_p_x = diag_coeff_x - weight_matrix;
+    Eigen::SparseMatrix<float> L_p_y = diag_coeff_y - weight_matrix;
+    Eigen::SparseMatrix<float> L_p_z = diag_coeff_z - weight_matrix;
 
+    int row_idx = L_[0].rows(), col_idx = L_[0].cols();  // rows and cols should be the same for x, y, z
 
+    for (size_t i = 0; i < ver_num; ++ i)
+    {
+        for (size_t j = 0; j < ver_num; ++ j)
+        {
+            L_[0].coeffRef(row_idx+i, col_idx+j) = L_p_x.coeffRef(i, j);
+            L_[1].coeffRef(row_idx+i, col_idx+j) = L_p_y.coeffRef(i, j);
+            L_[2].coeffRef(row_idx+i, col_idx+j) = L_p_z.coeffRef(i, j);
+        }
+    }
 }
 
 void DeformModel::right_system(int petal_id)
