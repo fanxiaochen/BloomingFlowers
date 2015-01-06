@@ -100,7 +100,7 @@ public:
 
 protected:
     void e_step();
-    void m_step();
+    float m_step();
 
     void e_step(int petal_id);
 
@@ -112,15 +112,17 @@ protected:
 
     void buildWeightMatrix(int petal_id);
 
-    void left_system();
-    void right_system();
-    void solve();
+    void updateLeftSys();
+    void updateRightSys();
+    float solve();
 
-    void left_system(int petal_id);
-    void right_system(int petal_id);
+    void updateLeftSys(int petal_id);
+    void updateRightSys(int petal_id);
 
     void updateRotation(int petal_id);
     void updateRotation();
+
+    float energy();
 
 private:
     PointCloud* point_cloud_;

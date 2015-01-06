@@ -56,30 +56,64 @@ void DeformModel::setFlower(Flower* flower)
 void DeformModel::deform()
 {
     // initial step
+    initialize();
 
     int iter_num = 0;
+    float eps = 1;
+
+    float e = 0;
+
+    std::cout << "Start EM Iteration..." << std::endl;
 
     do 
     {
         e_step();
 
-        m_step();
+        float e_n = m_step();
 
-    } while (iter_num < iter_num_);
+        eps = std::fabs(e_n - e / e_n);
+        e = e_n;
+
+        std::cout << "In EM Iteration\t" << "iter: " << ++ iter_num << "\tdelta: " << eps << std::endl;
+
+    } while (iter_num < iter_num_ && eps > eps_ );
 }
 
 
 void DeformModel::e_step()
 {
+    std::cout << "E-Step: No explicit output" << std::endl;
+
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         e_step(i);
     }
 }
 
-void DeformModel::m_step()
+float DeformModel::m_step()
 {
+    std::cout << "M-Step:" << std::endl;
 
+    int iter = 0;
+    float eps = 0;
+    
+    float e = 0;
+
+    updateLeftSys();
+    updateRightSys();
+
+    do {
+        float e_n = solve();
+        eps = std::fabs(e_n - e / e_n);
+        e = e_n;
+
+        updateRotation();
+        updateRightSys();
+        std::cout << "In M-Step Iteration\t" << "iter: " << ++ iter << "\tdelta: " << eps << std::endl;
+
+    }while(eps > eps_ && iter < iter_num_);
+
+    return energy();
 }
 
 void DeformModel::e_step(int petal_id)
@@ -290,17 +324,17 @@ void DeformModel::buildWeightMatrix(int petal_id)
     weight_matrix.setFromTriplets(weight_list.begin(), weight_list.end());
 }
 
-void DeformModel::left_system()
+void DeformModel::updateLeftSys()
 {
     L_.resize(3); // x, y, z
 
     for (size_t i = 0; i < petal_num_; ++ i)
     {
-        left_system(i);
+        updateLeftSys(i);
     }
 }
 
-void DeformModel::left_system(int petal_id)
+void DeformModel::updateLeftSys(int petal_id)
 {
     DeformPetal& deform_petal = deform_petals_[petal_id];
     CovMatrix& cov_matrix = deform_petal._cov_matrix;
@@ -361,7 +395,7 @@ void DeformModel::left_system(int petal_id)
     }
 }
 
-void DeformModel::right_system(int petal_id)
+void DeformModel::updateRightSys(int petal_id)
 {
     DeformPetal& deform_petal = deform_petals_[petal_id];
     PetalMatrix& petal_matrix = deform_petal._petal_matrix;
@@ -392,15 +426,15 @@ void DeformModel::right_system(int petal_id)
     }
 }
 
-void DeformModel::right_system()
+void DeformModel::updateRightSys()
 {
     for (size_t i = 0; i < petal_num_; ++ i)
     {
-        right_system(i);
+        updateRightSys(i);
     }
 }
 
-void DeformModel::solve()
+float DeformModel::solve()
 {
     // solve x, y ,z independently
     for (size_t i = 0; i < 3; ++ i)
@@ -420,6 +454,8 @@ void DeformModel::solve()
             start_idx += petal_size;
         }
     }
+
+    return energy();
 }
 
 void DeformModel::updateRotation(int petal_id)
@@ -467,4 +503,10 @@ void DeformModel::updateRotation()
     {
         updateRotation(i);
     }
+}
+
+float DeformModel::energy()
+{
+    // to do
+    return 1;
 }
