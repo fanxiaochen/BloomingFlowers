@@ -111,12 +111,27 @@ void DeformModel::visibility()
 
 void DeformModel::initialize()
 {
-    // init petal matrix
     Petals& petals = flower_->getPetals();
     petal_num_ = petals.size();
 
     deform_petals_.resize(petal_num_);
 
+    // init origin petal
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals.at(i);
+        int petal_size = petal.getVertices()->size();
+        PetalMatrix pm(3, petal_size);
+
+        for (size_t j = 0, j_end = petal_size; j < j_end; ++ j)
+        {
+            pm.col(j) << petal.getVertices()->at(j).x(), petal.getVertices()->at(j).y(), petal.getVertices()->at(j).z();
+        }
+
+        deform_petals_[i]._origin_petal = pm;
+    }
+
+    // init petal matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         Petal& petal = petals.at(i);
@@ -240,7 +255,7 @@ float DeformModel::gaussian(int petal_id, int m_id, int c_id)
     PetalMatrix petal_mat = deform_petals_[petal_id]._petal_matrix;
 
     Eigen::Vector3f xu = cloud_mat.col(c_id) - petal_mat.col(m_id);
-    p = pow(2*M_PI, -3/2.0) * pow(cov_mat.determinant(), -1/2.0) * exp((-1/2.0)*xu.transpose()*cov_mat.asDiagonal()*xu);
+    p = pow(2*M_PI, -3/2.0) * pow(cov_mat.determinant(), -1/2.0) * exp((-1/2.0)*xu.transpose()*cov_mat.asDiagonal().inverse()*xu);
 
     return p;
 }
@@ -275,59 +290,121 @@ void DeformModel::buildWeightMatrix(int petal_id)
 
 void DeformModel::left_system()
 {
-    DeformPetal& deform_petal = deform_petals_[0];
+    L_.resize(3); // x, y, z
+
+    for (size_t i = 0; i < petal_num_; ++ i)
+    {
+        left_system(i);
+    }
+}
+
+void DeformModel::left_system(int petal_id)
+{
+    DeformPetal& deform_petal = deform_petals_[petal_id];
     CovMatrix& cov_matrix = deform_petal._cov_matrix;
     CorresMatrix& corres_matrix = deform_petal._corres_matrix;
     WeightMatrix& weight_matrix = deform_petal._weight_matrix;
     int ver_num = deform_petal._petal_matrix.cols();
 
-    std::vector<Eigen::Triplet<float> > weight_sum;
-    weight_sum.reserve(ver_num);
+    std::vector<std::vector<Eigen::Triplet<float> > > weight_sums;
+    weight_sums.resize(3); // for x,y,z coordinates
 
     for (int i = 0; i < ver_num; ++i) 
     {
-        float wi = 0;
+        float wi_x = 0, wi_y = 0, wi_z = 0;
         for (size_t j = 0, j_end = deform_petal._adj_list[i].size(); j < j_end; ++j)
         {
             int id_j = deform_petal._adj_list[i][j];
-            wi += weight_matrix.coeffRef(i, id_j);
+            wi_x += weight_matrix.coeffRef(i, id_j);
+            wi_y += weight_matrix.coeffRef(i, id_j);
+            wi_z += weight_matrix.coeffRef(i, id_j);
         }
 
-//        wi += 2*cov_matrix[0]*corres_matrix.row(i).sum();
+        wi_x += 2/cov_matrix[0]*corres_matrix.row(i).sum();
+        wi_y += 2/cov_matrix[1]*corres_matrix.row(i).sum();
+        wi_z += 2/cov_matrix[2]*corres_matrix.row(i).sum();
 
-        weight_sum.push_back(Eigen::Triplet<float>(i, i, wi));
+        weight_sums[0].push_back(Eigen::Triplet<float>(i, i, wi_x));
+        weight_sums[1].push_back(Eigen::Triplet<float>(i, i, wi_y));
+        weight_sums[2].push_back(Eigen::Triplet<float>(i, i, wi_z));
     }
 
-    Eigen::SparseMatrix<float> Weight_sum(ver_num, ver_num);
-    Weight_sum.setFromTriplets(weight_sum.begin(), weight_sum.end());
+    Eigen::SparseMatrix<float> diag_coeff_x(ver_num, ver_num);
+    Eigen::SparseMatrix<float> diag_coeff_y(ver_num, ver_num);
+    Eigen::SparseMatrix<float> diag_coeff_z(ver_num, ver_num);
+    diag_coeff_x.setFromTriplets(weight_sums[0].begin(), weight_sums[0].end());
+    diag_coeff_y.setFromTriplets(weight_sums[1].begin(), weight_sums[1].end());
+    diag_coeff_z.setFromTriplets(weight_sums[2].begin(), weight_sums[2].end());
 
-    L_ =  Weight_sum - weight_matrix;
+    // expand L to fill in new petal vertices
+    L_[0].resize(L_[0].rows()+ver_num, L_[0].cols()+ver_num);
+    L_[1].resize(L_[1].rows()+ver_num, L_[1].cols()+ver_num);
+    L_[2].resize(L_[2].rows()+ver_num, L_[2].cols()+ver_num);
 
-//    lu_solver_.analyzePattern(L_);
-//    lu_solver_.factorize(L_);
+    L_[0].bottomRightCorner(ver_num, ver_num) =  diag_coeff_x - weight_matrix;
+    L_[1].bottomRightCorner(ver_num, ver_num) =  diag_coeff_y - weight_matrix;
+    L_[2].bottomRightCorner(ver_num, ver_num) =  diag_coeff_z - weight_matrix;
+
+
 }
 
-void DeformModel::right_system()
+void DeformModel::right_system(int petal_id)
 {
-    DeformPetal& deform_petal = deform_petals_[0];
+    DeformPetal& deform_petal = deform_petals_[petal_id];
     PetalMatrix& petal_matrix = deform_petal._petal_matrix;
+    CloudMatrix& cloud_matrix = deform_petal._cloud_matrix;
+    CorresMatrix& corres_matrix = deform_petal._corres_matrix;
+    CovMatrix& cov_matrix = deform_petal._cov_matrix;
     AdjList& adj_list = deform_petal._adj_list;
     WeightMatrix& weight_matrix = deform_petal._weight_matrix;
     RotList& R_list = deform_petal._R_list;
     int ver_num = petal_matrix.cols();
 
-    d = Eigen::MatrixX3f::Zero(ver_num, 3);
+    d_.resize(3, d_.cols()+ver_num);
+
     for (size_t i = 0; i < ver_num; ++i) 
     {
         for (size_t j = 0, j_end = adj_list.size(); j < j_end; ++j)
         {
-            d.row(i) += ((weight_matrix.coeffRef(i, adj_list[i][j])/2)*
+            d_.bottomRightCorner(3, ver_num).col(i) += ((weight_matrix.coeffRef(i, adj_list[i][j])/2)*
                 (R_list[i]+R_list[adj_list[i][j]])*(petal_matrix.col(i) - petal_matrix.col(adj_list[i][j]))).transpose();
         }
+
+        Eigen::Vector3f weight_cloud;
+        weight_cloud.setZero();
+        for (size_t n = 0, n_end = corres_matrix.cols(); n < n_end; ++ n)
+            weight_cloud += corres_matrix(i, n)*cloud_matrix.col(i);
+
+        d_.bottomRightCorner(3, ver_num).col(i) += 2*cov_matrix.asDiagonal().inverse()*weight_cloud;
+    }
+}
+
+void DeformModel::right_system()
+{
+    for (size_t i = 0; i < petal_num_; ++ i)
+    {
+        right_system(i);
     }
 }
 
 void DeformModel::solve()
 {
+    // solve x, y ,z independently
+    for (size_t i = 0; i < 3; ++ i)
+    {
+        lu_solver_.analyzePattern(L_[i]);
+        lu_solver_.factorize(L_[i]);
 
+        Eigen::VectorXf next_pos = lu_solver_.solve(d_.row(i));
+        int start_idx = 0;
+
+        for (size_t j = 0, j_end = petal_num_; j < j_end; ++ j)
+        {
+            PetalMatrix& petal_matrix = deform_petals_[j]._petal_matrix;
+            int petal_size = petal_matrix.cols();
+            petal_matrix.row(i) = next_pos.segment(start_idx, petal_size);
+
+            start_idx += petal_size;
+        }
+    }
 }

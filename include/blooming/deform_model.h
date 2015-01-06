@@ -26,6 +26,7 @@ private:
 
     struct DeformPetal
     {
+        PetalMatrix     _origin_petal;
         PetalMatrix     _petal_matrix;
         CloudMatrix     _cloud_matrix;
         CorresMatrix    _corres_matrix;
@@ -115,24 +116,18 @@ protected:
     void right_system();
     void solve();
 
+    void left_system(int petal_id);
+    void right_system(int petal_id);
+
 private:
     PointCloud* point_cloud_;
     Flower* flower_;
 
     std::vector<DeformPetal> deform_petals_;
 
-    Eigen::SparseMatrix<float> L_;
+    std::vector<Eigen::SparseMatrix<float> > L_;
+    Eigen::Matrix3Xf d_;
     Eigen::SparseLU<Eigen::SparseMatrix<float>> lu_solver_;
-
-    /*std::vector<CloudMatrix> cloud_mats_;
-    std::vector<PetalMatrix> petal_mats_;
-
-    std::vector<CorresMatrix> corres_mats_;
-    std::vector<CovMatrix> cov_mats_;
-    std::vector<VisList> vis_lists_;
-
-    std::vector<AdjList> adj_lists_;
-    std::vector<FaceList> face_lists_;*/
 
     int petal_num_;
 
