@@ -1,4 +1,6 @@
 
+#include "WunderSVD3x3.h"
+
 #include "point_cloud.h"
 #include "flower.h"
 
@@ -406,5 +408,52 @@ void DeformModel::solve()
 
             start_idx += petal_size;
         }
+    }
+}
+
+void DeformModel::updateRotation(int petal_id)
+{
+    DeformPetal& deform_petal = deform_petals_[petal_id];
+    PetalMatrix& origin_petal = deform_petal._origin_petal;
+    PetalMatrix& petal_matrix = deform_petal._petal_matrix;
+    RotList& rot_list = deform_petal._R_list;
+    AdjList& adj_list = deform_petal._adj_list;
+    WeightMatrix& weight_matrix = deform_petal._weight_matrix;
+
+    Eigen::Matrix3f Si;
+    Eigen::MatrixXf Di;
+
+    Eigen::Matrix3Xf Pi_Prime;
+    Eigen::Matrix3Xf Pi;
+
+    for (size_t i = 0, i_end = rot_list.size(); i < i_end; ++i) 
+    {
+        Di = Eigen::MatrixXf::Zero(adj_list[i].size(), adj_list[i].size());
+        Pi_Prime.resize(3, adj_list[i].size());
+        Pi.resize(3, adj_list[i].size());
+
+        for (size_t j = 0, j_end = adj_list[i].size(); j < j_end; ++j) 
+        {
+            Di(j, j) = weight_matrix.coeffRef(i, adj_list[i][j]);
+            Pi.col(j) = origin_petal.col(i) - origin_petal.col(adj_list[i][j]);
+            Pi_Prime.col(j) = petal_matrix.col(i) - petal_matrix.col(adj_list[i][j]);
+        }
+        Si = Pi * Di * Pi_Prime.transpose();
+        Eigen::Matrix3f Ui;
+        Eigen::Vector3f Wi;
+        Eigen::Matrix3f Vi;
+        wunderSVD3x3(Si, Ui, Wi, Vi);
+        rot_list[i] = Vi * Ui.transpose();
+
+        if (rot_list[i].determinant() < 0)
+            std::cout << "determinant is negative!" << std::endl;
+    }
+}
+
+void DeformModel::updateRotation()
+{
+    for (size_t i = 0; i < petal_num_; ++ i)
+    {
+        updateRotation(i);
     }
 }

@@ -119,6 +119,9 @@ protected:
     void left_system(int petal_id);
     void right_system(int petal_id);
 
+    void updateRotation(int petal_id);
+    void updateRotation();
+
 private:
     PointCloud* point_cloud_;
     Flower* flower_;
