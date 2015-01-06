@@ -262,9 +262,10 @@ void DeformModel::initialize()
     {
         DeformPetal& deform_petal = deform_petals_[i];
         RotList& R_list = deform_petal._R_list;
-        for (size_t j = 0, j_end = R_list.size(); j < j_end; ++ j)
+        PetalMatrix& origin_petal = deform_petal._origin_petal;
+        for (size_t j = 0, j_end = origin_petal.cols(); j < j_end; ++ j)
         {
-            R_list[j] = Eigen::Matrix3f::Identity();
+            R_list.push_back(Eigen::Matrix3f::Identity());
         }
     }
 }
@@ -277,7 +278,7 @@ void DeformModel::covariance(const CloudMatrix& cloud_mat, CovMatrix& cov_mat)
     {
         es[i] = cm.row(i).mean();
         cm.row(i).array() -= es[i];
-        cov_mat[i] += cm.row(i).squaredNorm() / cm.rows();
+        cov_mat[i] = cm.row(i).squaredNorm() / cm.cols();
     }
 
 }
@@ -291,7 +292,8 @@ float DeformModel::gaussian(int petal_id, int m_id, int c_id)
     PetalMatrix petal_mat = deform_petals_[petal_id]._petal_matrix;
 
     Eigen::Vector3f xu = cloud_mat.col(c_id) - petal_mat.col(m_id);
-    p = pow(2*M_PI, -3/2.0) * pow(cov_mat.determinant(), -1/2.0) * exp((-1/2.0)*xu.transpose()*cov_mat.asDiagonal().inverse()*xu);
+    p = pow(2*M_PI, -3/2.0) * pow((cov_mat.asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
+        exp((-1/2.0)*xu.transpose()*cov_mat.asDiagonal().inverse()*xu);
 
     return p;
 }
@@ -332,6 +334,10 @@ void DeformModel::updateLeftSys()
     {
         updateLeftSys(i);
     }
+
+    L_[0].makeCompressed();
+    L_[1].makeCompressed();
+    L_[2].makeCompressed();
 }
 
 void DeformModel::updateLeftSys(int petal_id)
@@ -373,16 +379,17 @@ void DeformModel::updateLeftSys(int petal_id)
     diag_coeff_z.setFromTriplets(weight_sums[2].begin(), weight_sums[2].end());
 
     // expand L to fill in new petal vertices
-    L_[0].resize(L_[0].rows()+ver_num, L_[0].cols()+ver_num);
-    L_[1].resize(L_[1].rows()+ver_num, L_[1].cols()+ver_num);
-    L_[2].resize(L_[2].rows()+ver_num, L_[2].cols()+ver_num);
+    int row_idx = L_[0].rows(), col_idx = L_[0].cols();  // rows and cols should be the same for x, y, z
+
+    L_[0].resize(row_idx+ver_num, col_idx+ver_num);
+    L_[1].resize(row_idx+ver_num, col_idx+ver_num);
+    L_[2].resize(row_idx+ver_num, col_idx+ver_num);
 
     // block assignment is not supported by SparseMatrix...I have to update one by one
     Eigen::SparseMatrix<float> L_p_x = diag_coeff_x - weight_matrix;
     Eigen::SparseMatrix<float> L_p_y = diag_coeff_y - weight_matrix;
     Eigen::SparseMatrix<float> L_p_z = diag_coeff_z - weight_matrix;
 
-    int row_idx = L_[0].rows(), col_idx = L_[0].cols();  // rows and cols should be the same for x, y, z
 
     for (size_t i = 0; i < ver_num; ++ i)
     {
@@ -411,7 +418,7 @@ void DeformModel::updateRightSys(int petal_id)
 
     for (size_t i = 0; i < ver_num; ++i) 
     {
-        for (size_t j = 0, j_end = adj_list.size(); j < j_end; ++j)
+        for (size_t j = 0, j_end = adj_list[i].size(); j < j_end; ++j)
         {
             d_.bottomRightCorner(3, ver_num).col(i) += ((weight_matrix.coeffRef(i, adj_list[i][j])/2)*
                 (R_list[i]+R_list[adj_list[i][j]])*(petal_matrix.col(i) - petal_matrix.col(adj_list[i][j]))).transpose();
@@ -439,8 +446,11 @@ float DeformModel::solve()
     // solve x, y ,z independently
     for (size_t i = 0; i < 3; ++ i)
     {
-        lu_solver_.analyzePattern(L_[i]);
-        lu_solver_.factorize(L_[i]);
+        Eigen::SparseMatrix<float> L = L_[i];
+//        lu_solver_.analyzePattern(L_[i]);
+//        lu_solver_.factorize(L_[i]);
+        lu_solver_.analyzePattern(L);
+        lu_solver_.factorize(L);
 
         Eigen::VectorXf next_pos = lu_solver_.solve(d_.row(i));
         int start_idx = 0;

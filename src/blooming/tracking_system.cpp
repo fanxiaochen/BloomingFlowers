@@ -8,6 +8,7 @@
 #include "task_thread.h"
 #include "trajectory_model.h"
 #include "tracking_system.h"
+#include "deform_model.h"
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system)
     :trajectories_(new Trajectories(points_file_system)), key_frame_(-1), flowers_(new Flowers)
@@ -239,7 +240,8 @@ void TrackingSystem::em_tracking()
     return;
 }
 
-void TrackingSystem::em_registration(const PointCloud& tracked_frame, Flower& tracking_template)
+void TrackingSystem::em_registration(PointCloud& tracked_frame, Flower& tracking_template)
 {
-    
+    DeformModel deform_model(&tracked_frame, &tracking_template);
+    deform_model.deform();
 }

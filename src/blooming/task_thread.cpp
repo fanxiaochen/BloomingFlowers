@@ -12,6 +12,7 @@
 #include "tracking_system.h"
 #include "trajectory_model.h"
 #include "task_thread.h"
+#include "deform_model.h"
 
 
 PointsTrackThread::PointsTrackThread(TrackingSystem* tracking_system)
@@ -484,6 +485,8 @@ void EMTrackThread::run()
         std::cout << "tracking [frame " << i << "]" << std::endl;
 
         // EM tracking 
+        PointCloud* forward_cloud = points_file_system->getPointCloud(i);
+        tracking_system_->em_registration(*forward_cloud, *forward_flower);
 
         QString frame_path = mesh_dir.absolutePath() + "/meshes";
         QDir mesh_frame(frame_path);
