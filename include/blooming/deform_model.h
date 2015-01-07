@@ -62,21 +62,24 @@ private:
 
         float wij(int pi, int pj, int si, int sj = -1)
         {
-            Eigen::Vector3f p1 = _petal_matrix.col(pi);
-            Eigen::Vector3f p2 = _petal_matrix.col(pj);
-            Eigen::Vector3f p3 = _petal_matrix.col(si);
+            Eigen::Vector3f p1 = _origin_petal.col(pi);
+            Eigen::Vector3f p2 = _origin_petal.col(pj);
+            Eigen::Vector3f p3 = _origin_petal.col(si);
 
-            float e1 = sqrt((p1[0]-p2[0])*(p1[0]-p2[0])+(p1[1]-p2[1])*(p1[1]-p2[1])+(p1[2]-p2[2])*(p1[2]-p2[2]));
-            float e2 = sqrt((p1[0]-p3[0])*(p1[0]-p3[0])+(p1[1]-p3[1])*(p1[1]-p3[1])+(p1[2]-p3[2])*(p1[2]-p3[2]));
-            float e3 = sqrt((p3[0]-p2[0])*(p3[0]-p2[0])+(p3[1]-p2[1])*(p3[1]-p2[1])+(p3[2]-p2[2])*(p3[2]-p2[2]));
-            float alpha_cos = (e3*e3+e2*e2-e1*e1)/(2*e3*e2);
+            float e12 = (p1 - p2).norm();
+            float e13 = (p1 - p3).norm();
+            float e23 = (p2 - p3).norm();
+            float alpha_cos = (e23*e23 + e13*e13 - e12*e12) / (2*e23*e13);
+
             float beta_cos = 0;
-            if (sj != -1) {
-                Eigen::Vector3f p4 = _petal_matrix.col(sj);
-                float e4 = sqrt((p1[0]-p4[0])*(p1[0]-p4[0])+(p1[1]-p4[1])*(p1[1]-p4[1])+(p1[2]-p4[2])*(p1[2]-p4[2]));
-                float e5 = sqrt((p4[0]-p2[0])*(p4[0]-p2[0])+(p4[1]-p2[1])*(p4[1]-p2[1])+(p4[2]-p2[2])*(p4[2]-p2[2]));
-                beta_cos = (e4*e4+e5*e5-e1*e1)/(2*e4*e5);
+            if (sj != -1)
+            {
+                Eigen::Vector3f p4 = _origin_petal.col(sj);
+                float e14 = (p1 - p4).norm();
+                float e24 = (p2 - p4).norm();
+                beta_cos = (e14*e14+e24*e24-e12*e12)/(2*e14*e24);
             }
+            
             return ((alpha_cos/sqrt(1-alpha_cos*alpha_cos))+(beta_cos/sqrt(1-beta_cos*beta_cos)))/2;
         }
     };
@@ -132,7 +135,8 @@ private:
 
     std::vector<Eigen::SparseMatrix<float> > L_;
     Eigen::Matrix3Xf d_;
-    Eigen::SparseLU<Eigen::SparseMatrix<float>> lu_solver_;
+//    Eigen::SparseLU<Eigen::SparseMatrix<float>> lu_solver_;
+    Eigen::SimplicialCholesky<Eigen::SparseMatrix<float> > lu_solver_;
 
     int petal_num_;
 
