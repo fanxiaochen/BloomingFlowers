@@ -143,7 +143,7 @@ private:
     int petal_num_;
 
     int iter_num_;
-    int eps_;
+    float eps_;
 
     float lambda_;
     float noise_p_;

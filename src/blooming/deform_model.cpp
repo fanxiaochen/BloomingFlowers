@@ -8,8 +8,8 @@
 
 DeformModel::DeformModel()
     :petal_num_(0),
-    iter_num_(1), 
-    eps_(1e-3),
+    iter_num_(10), 
+    eps_(1e-2),
     lambda_(2.0),
     noise_p_(0.05)
 {
@@ -18,8 +18,8 @@ DeformModel::DeformModel()
 
 DeformModel::DeformModel(PointCloud* point_cloud, Flower* flower)
     :petal_num_(0),
-    iter_num_(1), 
-    eps_(1e-3),
+    iter_num_(10), 
+    eps_(1e-2),
     lambda_(2.0),
     noise_p_(0.05),
     point_cloud_(point_cloud),
@@ -71,12 +71,12 @@ void DeformModel::deform()
 
         float e_n = m_step();
 
-        eps = std::fabs(e_n - e / e_n);
+        eps = std::fabs((e_n - e) / e_n);
         e = e_n;
 
         std::cout << "In EM Iteration\t" << "iter: " << ++ iter_num << "\tdelta: " << eps << std::endl;
 
-    } while (iter_num < 1 /*&& eps > eps_ */);
+    } while (iter_num < 5 && eps > eps_ );
 
     // flower deformed
     deforming();
@@ -109,16 +109,16 @@ float DeformModel::m_step()
 
     do {
         float e_n = solve();
-        eps = std::fabs(e_n - e / e_n);
+        eps = std::fabs((e_n - e) / e_n);
         e = e_n;
 
         updateRotation();
         updateRightSys();
         std::cout << "In M-Step Iteration\t" << "iter: " << ++ iter << "\tdelta: " << eps << std::endl;
 
-    }while(/*eps > eps_ && */iter < 1);
+    }while(eps > eps_ && iter < iter_num_);
 
-    return energy();
+    return e;
 }
 
 void DeformModel::e_step(int petal_id)
@@ -362,10 +362,10 @@ void DeformModel::updateLeftSys(int petal_id)
         float wi_x = 0, wi_y = 0, wi_z = 0;
         for (size_t j = 0, j_end = deform_petal._adj_list[i].size(); j < j_end; ++j)
         {
-            /*int id_j = deform_petal._adj_list[i][j];
+            int id_j = deform_petal._adj_list[i][j];
             wi_x += weight_matrix.coeffRef(i, id_j);
             wi_y += weight_matrix.coeffRef(i, id_j);
-            wi_z += weight_matrix.coeffRef(i, id_j);*/
+            wi_z += weight_matrix.coeffRef(i, id_j);
         }
 
         wi_x += 2/cov_matrix[0]*corres_matrix.row(i).sum();
@@ -397,9 +397,9 @@ void DeformModel::updateLeftSys(int petal_id)
     L_[2].resize(row_idx+ver_num, col_idx+ver_num);
 
     // block assignment is not supported by SparseMatrix...I have to update one by one
-    Eigen::SparseMatrix<float> L_p_x = diag_coeff_x /*- weight_matrix*/;
-    Eigen::SparseMatrix<float> L_p_y = diag_coeff_y /*- weight_matrix*/;
-    Eigen::SparseMatrix<float> L_p_z = diag_coeff_z /*- weight_matrix*/;
+    Eigen::SparseMatrix<float> L_p_x = diag_coeff_x - weight_matrix;
+    Eigen::SparseMatrix<float> L_p_y = diag_coeff_y - weight_matrix;
+    Eigen::SparseMatrix<float> L_p_z = diag_coeff_z - weight_matrix;
 
 
     for (size_t i = 0; i < ver_num; ++ i)
@@ -432,8 +432,8 @@ void DeformModel::updateRightSys(int petal_id)
         d_.bottomRightCorner(3, ver_num).col(i) = Eigen::Vector3f::Zero();
         for (size_t j = 0, j_end = adj_list[i].size(); j < j_end; ++j)
         {
-            //d_.bottomRightCorner(3, ver_num).col(i) += ((weight_matrix.coeffRef(i, adj_list[i][j])/2)*
-            //    (R_list[i]+R_list[adj_list[i][j]])*(origin_petal.col(i) - origin_petal.col(adj_list[i][j]))).transpose();
+            d_.bottomRightCorner(3, ver_num).col(i) += ((weight_matrix.coeffRef(i, adj_list[i][j])/2)*
+                (R_list[i]+R_list[adj_list[i][j]])*(origin_petal.col(i) - origin_petal.col(adj_list[i][j]))).transpose();
         }
 
         Eigen::Vector3f weight_cloud;
@@ -556,9 +556,9 @@ float DeformModel::energy()
 
             for (size_t j = 0, j_end = adj_list[k].size(); j < j_end; ++ j)
             {
-                Eigen::Vector3f mkj = petal_matrix.col(k)-petal_matrix.col(j);
-                Eigen::Vector3f pre_mkj = origin_petal.col(k)-origin_petal.col(j);
-                e2 += weight_matrix.coeffRef(k, j) * (mkj-rot_list[k]*pre_mkj).squaredNorm();
+                Eigen::Vector3f mkj = petal_matrix.col(k)-petal_matrix.col(adj_list[k][j]);
+                Eigen::Vector3f pre_mkj = origin_petal.col(k)-origin_petal.col(adj_list[k][j]);
+                e2 += weight_matrix.coeffRef(k, adj_list[k][j]) * (mkj-rot_list[k]*pre_mkj).squaredNorm();
             }
         }
 
