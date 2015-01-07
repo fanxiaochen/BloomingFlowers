@@ -368,9 +368,9 @@ void DeformModel::updateLeftSys(int petal_id)
             wi_z += weight_matrix.coeffRef(i, id_j);
         }
 
-        wi_x += 2/cov_matrix[0]*corres_matrix.row(i).sum();
-        wi_y += 2/cov_matrix[1]*corres_matrix.row(i).sum();
-        wi_z += 2/cov_matrix[2]*corres_matrix.row(i).sum();
+        wi_x += lambda_*(2/cov_matrix[0])*corres_matrix.row(i).sum();
+        wi_y += lambda_*(2/cov_matrix[1])*corres_matrix.row(i).sum();
+        wi_z += lambda_*(2/cov_matrix[2])*corres_matrix.row(i).sum();
 
         weight_sums[0].push_back(Eigen::Triplet<float>(i, i, wi_x));
         weight_sums[1].push_back(Eigen::Triplet<float>(i, i, wi_y));
@@ -441,7 +441,7 @@ void DeformModel::updateRightSys(int petal_id)
         for (size_t n = 0, n_end = corres_matrix.cols(); n < n_end; ++ n)
             weight_cloud += corres_matrix(i, n)*cloud_matrix.col(i);
 
-        d_.bottomRightCorner(3, ver_num).col(i) += 2*cov_matrix.asDiagonal().inverse()*weight_cloud;
+        d_.bottomRightCorner(3, ver_num).col(i) += lambda_*2*cov_matrix.asDiagonal().inverse()*weight_cloud;
     }
 }
 
