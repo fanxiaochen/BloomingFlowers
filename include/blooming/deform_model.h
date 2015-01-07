@@ -69,7 +69,7 @@ private:
             float e12 = (p1 - p2).norm();
             float e13 = (p1 - p3).norm();
             float e23 = (p2 - p3).norm();
-            float alpha_cos = (e23*e23 + e13*e13 - e12*e12) / (2*e23*e13);
+            float alpha_cos = fabs((e23*e23 + e13*e13 - e12*e12)/(2*e23*e13));
 
             float beta_cos = 0;
             if (sj != -1)
@@ -77,7 +77,7 @@ private:
                 Eigen::Vector3f p4 = _origin_petal.col(sj);
                 float e14 = (p1 - p4).norm();
                 float e24 = (p2 - p4).norm();
-                beta_cos = (e14*e14+e24*e24-e12*e12)/(2*e14*e24);
+                beta_cos = fabs((e14*e14+e24*e24-e12*e12)/(2*e14*e24));
             }
             
             return ((alpha_cos/sqrt(1-alpha_cos*alpha_cos))+(beta_cos/sqrt(1-beta_cos*beta_cos)))/2;
@@ -126,6 +126,8 @@ protected:
     void updateRotation();
 
     float energy();
+
+    void deforming();
 
 private:
     PointCloud* point_cloud_;

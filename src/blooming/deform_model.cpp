@@ -8,7 +8,7 @@
 
 DeformModel::DeformModel()
     :petal_num_(0),
-    iter_num_(50), 
+    iter_num_(1), 
     eps_(1e-3),
     lambda_(2.0),
     noise_p_(0.05)
@@ -18,7 +18,7 @@ DeformModel::DeformModel()
 
 DeformModel::DeformModel(PointCloud* point_cloud, Flower* flower)
     :petal_num_(0),
-    iter_num_(50), 
+    iter_num_(1), 
     eps_(1e-3),
     lambda_(2.0),
     noise_p_(0.05),
@@ -76,7 +76,10 @@ void DeformModel::deform()
 
         std::cout << "In EM Iteration\t" << "iter: " << ++ iter_num << "\tdelta: " << eps << std::endl;
 
-    } while (iter_num < iter_num_ && eps > eps_ );
+    } while (iter_num < iter_num_ /*&& eps > eps_ */);
+
+    // flower deformed
+    deforming();
 }
 
 
@@ -111,7 +114,7 @@ float DeformModel::m_step()
         updateRightSys();
         std::cout << "In M-Step Iteration\t" << "iter: " << ++ iter << "\tdelta: " << eps << std::endl;
 
-    }while(eps > eps_ && iter < iter_num_);
+    }while(/*eps > eps_ && */iter < 50);
 
     return energy();
 }
@@ -218,7 +221,7 @@ void DeformModel::initialize()
     {
         CloudMatrix& cloud_mat = deform_petals_[i]._cloud_matrix;
         PetalMatrix& petal_mat = deform_petals_[i]._petal_matrix;
-        CorresMatrix corres_mat(petal_mat.cols(), cloud_mat.cols());
+        CorresMatrix corres_mat = CorresMatrix::Zero(petal_mat.cols(), cloud_mat.cols());
         deform_petals_[i]._corres_matrix = corres_mat;
     }
 
@@ -363,9 +366,9 @@ void DeformModel::updateLeftSys(int petal_id)
             wi_z += weight_matrix.coeffRef(i, id_j);
         }
 
-    //    wi_x += 2/cov_matrix[0]*corres_matrix.row(i).sum();
-    //    wi_y += 2/cov_matrix[1]*corres_matrix.row(i).sum();
-    //    wi_z += 2/cov_matrix[2]*corres_matrix.row(i).sum();
+        /*wi_x += 2/cov_matrix[0]*corres_matrix.row(i).sum();
+        wi_y += 2/cov_matrix[1]*corres_matrix.row(i).sum();
+        wi_z += 2/cov_matrix[2]*corres_matrix.row(i).sum();*/
 
         weight_sums[0].push_back(Eigen::Triplet<float>(i, i, wi_x));
         weight_sums[1].push_back(Eigen::Triplet<float>(i, i, wi_y));
@@ -379,46 +382,46 @@ void DeformModel::updateLeftSys(int petal_id)
     diag_coeff_y.setFromTriplets(weight_sums[1].begin(), weight_sums[1].end());
     diag_coeff_z.setFromTriplets(weight_sums[2].begin(), weight_sums[2].end());
 
-    L_[0] = diag_coeff_x - weight_matrix;
-    L_[1] = diag_coeff_y - weight_matrix;
-    L_[2] = diag_coeff_z - weight_matrix;
+    //L_[0] = diag_coeff_x - weight_matrix;
+    //L_[1] = diag_coeff_y - weight_matrix;
+    //L_[2] = diag_coeff_z - weight_matrix;
 
 
-    //// expand L to fill in new petal vertices
-    //int row_idx = L_[0].rows(), col_idx = L_[0].cols();  // rows and cols should be the same for x, y, z
+    // expand L to fill in new petal vertices
+    int row_idx = L_[0].rows(), col_idx = L_[0].cols();  // rows and cols should be the same for x, y, z
 
-    //L_[0].resize(row_idx+ver_num, col_idx+ver_num);
-    //L_[1].resize(row_idx+ver_num, col_idx+ver_num);
-    //L_[2].resize(row_idx+ver_num, col_idx+ver_num);
+    L_[0].resize(row_idx+ver_num, col_idx+ver_num);
+    L_[1].resize(row_idx+ver_num, col_idx+ver_num);
+    L_[2].resize(row_idx+ver_num, col_idx+ver_num);
 
-    //// block assignment is not supported by SparseMatrix...I have to update one by one
-    //Eigen::SparseMatrix<float> L_p_x = diag_coeff_x - weight_matrix;
-    //Eigen::SparseMatrix<float> L_p_y = diag_coeff_y - weight_matrix;
-    //Eigen::SparseMatrix<float> L_p_z = diag_coeff_z - weight_matrix;
+    // block assignment is not supported by SparseMatrix...I have to update one by one
+    Eigen::SparseMatrix<float> L_p_x = diag_coeff_x - weight_matrix;
+    Eigen::SparseMatrix<float> L_p_y = diag_coeff_y - weight_matrix;
+    Eigen::SparseMatrix<float> L_p_z = diag_coeff_z - weight_matrix;
 
 
-    //for (size_t i = 0; i < ver_num; ++ i)
-    //{
-    //    for (size_t j = 0; j < ver_num; ++ j)
-    //    {
-    //        L_[0].coeffRef(row_idx+i, col_idx+j) = L_p_x.coeffRef(i, j);
-    //        L_[1].coeffRef(row_idx+i, col_idx+j) = L_p_y.coeffRef(i, j);
-    //        L_[2].coeffRef(row_idx+i, col_idx+j) = L_p_z.coeffRef(i, j);
-    //    }
-    //}
+    for (size_t i = 0; i < ver_num; ++ i)
+    {
+        for (size_t j = 0; j < ver_num; ++ j)
+        {
+            L_[0].coeffRef(row_idx+i, col_idx+j) = L_p_x.coeffRef(i, j);
+            L_[1].coeffRef(row_idx+i, col_idx+j) = L_p_y.coeffRef(i, j);
+            L_[2].coeffRef(row_idx+i, col_idx+j) = L_p_z.coeffRef(i, j);
+        }
+    }
 }
 
 void DeformModel::updateRightSys(int petal_id)
 {
     DeformPetal& deform_petal = deform_petals_[petal_id];
-    PetalMatrix& petal_matrix = deform_petal._petal_matrix;
+    PetalMatrix& origin_petal = deform_petal._origin_petal;
     CloudMatrix& cloud_matrix = deform_petal._cloud_matrix;
     CorresMatrix& corres_matrix = deform_petal._corres_matrix;
     CovMatrix& cov_matrix = deform_petal._cov_matrix;
     AdjList& adj_list = deform_petal._adj_list;
     WeightMatrix& weight_matrix = deform_petal._weight_matrix;
     RotList& R_list = deform_petal._R_list;
-    int ver_num = petal_matrix.cols();
+    int ver_num = origin_petal.cols();
 
     d_.resize(3, d_.cols()+ver_num);
 
@@ -428,15 +431,15 @@ void DeformModel::updateRightSys(int petal_id)
         for (size_t j = 0, j_end = adj_list[i].size(); j < j_end; ++j)
         {
             d_.bottomRightCorner(3, ver_num).col(i) += ((weight_matrix.coeffRef(i, adj_list[i][j])/2)*
-                (R_list[i]+R_list[adj_list[i][j]])*(petal_matrix.col(i) - petal_matrix.col(adj_list[i][j]))).transpose();
+                (R_list[i]+R_list[adj_list[i][j]])*(origin_petal.col(i) - origin_petal.col(adj_list[i][j]))).transpose();
         }
 
-        Eigen::Vector3f weight_cloud;
-        weight_cloud.setZero();
-        for (size_t n = 0, n_end = corres_matrix.cols(); n < n_end; ++ n)
-            weight_cloud += corres_matrix(i, n)*cloud_matrix.col(i);
+        //Eigen::Vector3f weight_cloud;
+        //weight_cloud.setZero();
+        //for (size_t n = 0, n_end = corres_matrix.cols(); n < n_end; ++ n)
+        //    weight_cloud += corres_matrix(i, n)*cloud_matrix.col(i);
 
-       // d_.bottomRightCorner(3, ver_num).col(i) += 2*cov_matrix.asDiagonal().inverse()*weight_cloud;
+        //d_.bottomRightCorner(3, ver_num).col(i) += 2*cov_matrix.asDiagonal().inverse()*weight_cloud;
     }
 }
 
@@ -455,11 +458,8 @@ float DeformModel::solve()
     // solve x, y ,z independently
     for (size_t i = 0; i < 3; ++ i)
     {
-        Eigen::SparseMatrix<float> L = L_[i];
-//        lu_solver_.analyzePattern(L_[i]);
-//        lu_solver_.factorize(L_[i]);
-        lu_solver_.analyzePattern(L);
-        lu_solver_.factorize(L);
+        lu_solver_.analyzePattern(L_[i]);
+        lu_solver_.factorize(L_[i]);
 
         Eigen::VectorXf next_pos = lu_solver_.solve(d_.row(i).transpose());
         int start_idx = 0;
@@ -528,4 +528,22 @@ float DeformModel::energy()
 {
     // to do
     return 1;
+}
+
+void DeformModel::deforming()
+{
+    Petals& petals = flower_->getPetals();
+
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals.at(i);
+        PetalMatrix& pm = deform_petals_[i]._petal_matrix;
+
+        for (size_t j = 0, j_end = petal.getVertices()->size(); j < j_end; ++ j)
+        {
+            petal.getVertices()->at(j).x() = pm(0, j);
+            petal.getVertices()->at(j).y() = pm(1, j);
+            petal.getVertices()->at(j).z() = pm(2, j);
+        }
+    }
 }
