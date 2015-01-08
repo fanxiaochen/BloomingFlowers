@@ -479,7 +479,7 @@ void EMTrackThread::run()
 
     std::cout << "Forward Tracking..." << std::endl;
     forward_flower->show();
-    for (size_t i = key_frame, i_end = end_frame;
+    for (size_t i = key_frame , i_end = end_frame;
         i <= i_end; ++ i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
