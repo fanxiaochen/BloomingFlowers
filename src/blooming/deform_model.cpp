@@ -74,12 +74,11 @@ void DeformModel::deform()
         eps = std::fabs((e_n - e) / e_n);
         e = e_n;
 
-        std::cout << "In EM Iteration\t" << "iter: " << ++ iter_num << "\tdelta: " << eps << std::endl;
+        std::cout << "In EM Iteration \t" << "iter: " << ++ iter_num << "\tdelta: " << eps << std::endl;
 
     } while (iter_num < iter_num_ && eps > eps_ );
 
     // flower deformed
-   // e_step();
     deforming();
 }
 
@@ -115,7 +114,7 @@ float DeformModel::m_step()
 
         updateRotation();
         updateRightSys();
-        std::cout << "In M-Step Iteration\t" << "iter: " << ++ iter << "\tdelta: " << eps << std::endl;
+        std::cout << "In M-Step Iteration \t" << "iter: " << ++ iter << "\tdelta: " << eps << std::endl;
 
     }while(eps > eps_ && iter < iter_num_);
 
@@ -143,9 +142,6 @@ void DeformModel::e_step(int petal_id)
             corres_mat(j, i) = corres_mat(j, i) / sum_gaussian;
         }
     }
-
- //   std::cout << corres_mat.row(0) << std::endl;
-    float a = 0;
 }
 
 void DeformModel::visibility()
@@ -213,15 +209,6 @@ void DeformModel::initialize()
         deform_petals_[i]._cloud_matrix = cm;
     }
 
-    // init covariance matrix 
-    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
-    {
-        CloudMatrix& cloud_mat = deform_petals_[i]._cloud_matrix;
-        CovMatrix cov_mat;
-        covariance(cloud_mat, cov_mat);
-        deform_petals_[i]._cov_matrix = cov_mat;
-    }
-
     // init correspondence matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
@@ -277,20 +264,37 @@ void DeformModel::initialize()
             R_list.push_back(Eigen::Matrix3f::Identity());
         }
     }
-}
 
-void DeformModel::covariance(const CloudMatrix& cloud_mat, CovMatrix& cov_mat)
-{
-    Eigen::VectorXf es(3);
-    CloudMatrix cm(cloud_mat);
-    for (size_t i = 0; i < 3; ++ i)
+    // init covariance matrix 
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
-        es[i] = cm.row(i).mean();
-        cm.row(i).array() -= es[i];
-        cov_mat[i] = cm.row(i).squaredNorm() / cm.cols();
-    }
+        AdjList& adj_list = deform_petals_[i]._adj_list;
+        PetalMatrix& origin_petal = deform_petals_[i]._origin_petal;
+        CovMatrix& cov_matrix = deform_petals_[i]._cov_matrix;
+        cov_matrix.resize(3, origin_petal.cols());
 
+        for (size_t k = 0, k_end = adj_list.size(); k < k_end; ++ k)
+        {
+            Eigen::Vector3f c = origin_petal.col(k);
+            int adj_size = adj_list[k].size();
+            float s_x = 0, s_y = 0, s_z = 0;
+
+            for (size_t j = 0, j_end = adj_size; j < j_end; ++ j)
+            {
+                int id_j = adj_list[k][j];
+                Eigen::Vector3f v = origin_petal.col(id_j);
+
+                s_x += pow((c[0] - v[0]), 2.0);
+                s_y += pow((c[1] - v[1]), 2.0);
+                s_z += pow((c[2] - v[2]), 2.0);
+            }
+
+            cov_matrix.col(k) << s_x / adj_size, s_y / adj_size, s_z / adj_size; 
+        }
+    }
+    float a = 0;
 }
+
 
 float DeformModel::gaussian(int petal_id, int m_id, int c_id)
 {
@@ -301,8 +305,8 @@ float DeformModel::gaussian(int petal_id, int m_id, int c_id)
     PetalMatrix petal_mat = deform_petals_[petal_id]._petal_matrix;
 
     Eigen::Vector3f xu = cloud_mat.col(c_id) - petal_mat.col(m_id);
-    p = pow(2*M_PI, -3/2.0) * pow((cov_mat.asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
-        exp((-1/2.0)*xu.transpose()*cov_mat.asDiagonal().inverse()*xu);
+    p = pow(2*M_PI, -3/2.0) * pow((cov_mat.col(m_id).asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
+        exp((-1/2.0)*xu.transpose()*cov_mat.col(m_id).asDiagonal().inverse()*xu);
 
     return p;
 }
@@ -372,11 +376,11 @@ void DeformModel::updateLeftSys(int petal_id)
             wi_z += weight_matrix.coeffRef(i, id_j);
         }
 
-        wi_x += lambda_*(2/cov_matrix[0])*corres_matrix.row(i).sum();
+        wi_x += lambda_*(2/cov_matrix.col(i)[0])*corres_matrix.row(i).sum();
 //        std::cout << corres_matrix.row(i).sum();
 //        std::cout << lambda_*(2/cov_matrix[0])*corres_matrix.row(i).sum() << std::endl;
-        wi_y += lambda_*(2/cov_matrix[1])*corres_matrix.row(i).sum();
-        wi_z += lambda_*(2/cov_matrix[2])*corres_matrix.row(i).sum();
+        wi_y += lambda_*(2/cov_matrix.col(i)[1])*corres_matrix.row(i).sum();
+        wi_z += lambda_*(2/cov_matrix.col(i)[2])*corres_matrix.row(i).sum();
 
         weight_sums[0].push_back(Eigen::Triplet<float>(i, i, wi_x));
         weight_sums[1].push_back(Eigen::Triplet<float>(i, i, wi_y));
@@ -447,7 +451,7 @@ void DeformModel::updateRightSys(int petal_id)
         for (size_t n = 0, n_end = corres_matrix.cols(); n < n_end; ++ n)
             weight_cloud += corres_matrix(i, n)*cloud_matrix.col(n);
 
-        d_.bottomRightCorner(3, ver_num).col(i) += lambda_*2*cov_matrix.asDiagonal().inverse()*weight_cloud;
+        d_.bottomRightCorner(3, ver_num).col(i) += lambda_*2*cov_matrix.col(i).asDiagonal().inverse()*weight_cloud;
     }
 }
 
@@ -557,7 +561,7 @@ float DeformModel::energy()
             for (size_t n = 0, n_end = corres_matrix.cols(); n < n_end; ++ n)
             {
                 Eigen::Vector3f cm = cloud_matrix.col(n) - petal_matrix.col(k);
-                e1 += corres_matrix(k, n) * cm.transpose() * cov_matrix.asDiagonal().inverse() * cm;
+                e1 += corres_matrix(k, n) * cm.transpose() * cov_matrix.col(k).asDiagonal().inverse() * cm;
             }
 
             for (size_t j = 0, j_end = adj_list[k].size(); j < j_end; ++ j)

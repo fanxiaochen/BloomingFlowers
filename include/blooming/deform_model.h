@@ -17,7 +17,7 @@ private:
     typedef Eigen::MatrixXf CorresMatrix;
     typedef Eigen::Matrix3Xf CloudMatrix;
     typedef Eigen::Matrix3Xf PetalMatrix;
-    typedef Eigen::Vector3f CovMatrix;
+    typedef Eigen::Matrix3Xf CovMatrix;
     typedef std::vector<int> VisList;
     typedef std::vector<std::vector<int> > AdjList;
     typedef std::vector<Eigen::Vector3i > FaceList;
@@ -111,7 +111,6 @@ protected:
     void initialize();
 
     float gaussian(int petal_id, int m_id, int c_id);
-    void covariance(const CloudMatrix& cloud_mat, CovMatrix& cov_mat);
 
     void buildWeightMatrix(int petal_id);
 
