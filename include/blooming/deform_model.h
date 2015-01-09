@@ -123,6 +123,7 @@ protected:
 
     void updateRotation(int petal_id);
     void updateRotation();
+    void initRotation();
 
     float energy();
 

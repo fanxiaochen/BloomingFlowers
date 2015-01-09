@@ -20,7 +20,7 @@ DeformModel::DeformModel(PointCloud* point_cloud, Flower* flower)
     :petal_num_(0),
     iter_num_(10), 
     eps_(1e-2),
-    lambda_(0.1),
+    lambda_(1),
     noise_p_(0.0),
     point_cloud_(point_cloud),
     flower_(flower)
@@ -102,17 +102,20 @@ float DeformModel::m_step()
     
     float e = 0;
 
+    initRotation();
     updateLeftSys();
-//    std::cout << L_[0].row(0) << std::endl;
+    std::cout << "Left System" << std::endl;
     updateRightSys();
-//    std::cout << d_.row(0) << std::endl;
+    std::cout << "Right System" << std::endl;
 
     do {
         float e_n = solve();
+        std::cout << "Solved" << std::endl;
         eps = std::fabs((e_n - e) / e_n);
         e = e_n;
 
         updateRotation();
+        std::cout << "Update Rotation" << std::endl;
         updateRightSys();
         std::cout << "In M-Step Iteration \t" << "iter: " << ++ iter << "\tdelta: " << eps << std::endl;
 
@@ -253,17 +256,17 @@ void DeformModel::initialize()
         buildWeightMatrix(i);
     }
 
-    // init rotation matrix
-    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
-    {
-        DeformPetal& deform_petal = deform_petals_[i];
-        RotList& R_list = deform_petal._R_list;
-        PetalMatrix& origin_petal = deform_petal._origin_petal;
-        for (size_t j = 0, j_end = origin_petal.cols(); j < j_end; ++ j)
-        {
-            R_list.push_back(Eigen::Matrix3f::Identity());
-        }
-    }
+    //// init rotation matrix
+    //for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    //{
+    //    DeformPetal& deform_petal = deform_petals_[i];
+    //    RotList& R_list = deform_petal._R_list;
+    //    PetalMatrix& origin_petal = deform_petal._origin_petal;
+    //    for (size_t j = 0, j_end = origin_petal.cols(); j < j_end; ++ j)
+    //    {
+    //        R_list.push_back(Eigen::Matrix3f::Identity());
+    //    }
+    //}
 
     // init covariance matrix 
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
@@ -494,8 +497,11 @@ float DeformModel::solve()
         lu_solver_.analyzePattern(L_[i]);
         lu_solver_.factorize(L_[i]);
 
+        std::cout << "Computing..." << std::endl;
         Eigen::VectorXf next_pos = lu_solver_.solve(d_.row(i).transpose());
      //   std::cout << next_pos << std::endl;
+        std::cout << "Computation Finished" << std::endl;
+
         int start_idx = 0;
 
         for (size_t j = 0, j_end = petal_num_; j < j_end; ++ j)
@@ -507,7 +513,6 @@ float DeformModel::solve()
             start_idx += petal_size;
         }
     }
-
     return energy();
 }
 
@@ -614,5 +619,23 @@ void DeformModel::deforming()
             petal.getVertices()->at(j).y() = pm(1, j);
             petal.getVertices()->at(j).z() = pm(2, j);
         }
+    }
+}
+
+void DeformModel::initRotation()
+{
+    // init rotation matrix
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        DeformPetal& deform_petal = deform_petals_[i];
+        PetalMatrix& origin_petal = deform_petal._origin_petal;
+        RotList R_list;
+
+        for (size_t j = 0, j_end = origin_petal.cols(); j < j_end; ++ j)
+        {
+            R_list.push_back(Eigen::Matrix3f::Identity());
+        }
+
+        deform_petal._R_list = R_list;
     }
 }
