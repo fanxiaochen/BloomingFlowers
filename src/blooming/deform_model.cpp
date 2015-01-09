@@ -103,7 +103,7 @@ float DeformModel::m_step()
     float e = 0;
 
     updateLeftSys();
-//    std::cout << L_[0] << std::endl;
+//    std::cout << L_[0].row(0) << std::endl;
     updateRightSys();
 //    std::cout << d_.row(0) << std::endl;
 
@@ -300,9 +300,9 @@ float DeformModel::gaussian(int petal_id, int m_id, int c_id)
 {
     float p;
 
-    CovMatrix cov_mat = deform_petals_[petal_id]._cov_matrix;
-    CloudMatrix cloud_mat = deform_petals_[petal_id]._cloud_matrix;
-    PetalMatrix petal_mat = deform_petals_[petal_id]._petal_matrix;
+    CovMatrix& cov_mat = deform_petals_[petal_id]._cov_matrix;
+    CloudMatrix& cloud_mat = deform_petals_[petal_id]._cloud_matrix;
+    PetalMatrix& petal_mat = deform_petals_[petal_id]._petal_matrix;
 
     Eigen::Vector3f xu = cloud_mat.col(c_id) - petal_mat.col(m_id);
     p = pow(2*M_PI, -3/2.0) * pow((cov_mat.col(m_id).asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
@@ -360,6 +360,7 @@ void DeformModel::updateLeftSys(int petal_id)
     CovMatrix& cov_matrix = deform_petal._cov_matrix;
     CorresMatrix& corres_matrix = deform_petal._corres_matrix;
     WeightMatrix& weight_matrix = deform_petal._weight_matrix;
+    AdjList& adj_list = deform_petal._adj_list;
     int ver_num = deform_petal._petal_matrix.cols();
 
     std::vector<std::vector<Eigen::Triplet<float> > > weight_sums;
@@ -402,9 +403,9 @@ void DeformModel::updateLeftSys(int petal_id)
     // expand L to fill in new petal vertices
     int row_idx = L_[0].rows(), col_idx = L_[0].cols();  // rows and cols should be the same for x, y, z
 
-    L_[0].resize(row_idx+ver_num, col_idx+ver_num);
-    L_[1].resize(row_idx+ver_num, col_idx+ver_num);
-    L_[2].resize(row_idx+ver_num, col_idx+ver_num);
+    L_[0].conservativeResize(row_idx+ver_num, col_idx+ver_num);
+    L_[1].conservativeResize(row_idx+ver_num, col_idx+ver_num);
+    L_[2].conservativeResize(row_idx+ver_num, col_idx+ver_num);
 
     // block assignment is not supported by SparseMatrix...I have to update one by one
     Eigen::SparseMatrix<float> L_p_x = diag_coeff_x - weight_matrix;
@@ -414,13 +415,33 @@ void DeformModel::updateLeftSys(int petal_id)
 
     for (size_t i = 0; i < ver_num; ++ i)
     {
-        for (size_t j = 0; j < ver_num; ++ j)
+        L_[0].coeffRef(row_idx+i, col_idx+i) = L_p_x.coeffRef(i, i);
+        L_[1].coeffRef(row_idx+i, col_idx+i) = L_p_y.coeffRef(i, i);
+        L_[2].coeffRef(row_idx+i, col_idx+i) = L_p_z.coeffRef(i, i);
+
+        for (size_t j = 0, j_end = adj_list[i].size(); j < j_end; ++ j)
         {
-            L_[0].coeffRef(row_idx+i, col_idx+j) = L_p_x.coeffRef(i, j);
-            L_[1].coeffRef(row_idx+i, col_idx+j) = L_p_y.coeffRef(i, j);
-            L_[2].coeffRef(row_idx+i, col_idx+j) = L_p_z.coeffRef(i, j);
+            int id_j = adj_list[i][j];
+            L_[0].coeffRef(row_idx+i, col_idx+id_j) = L_p_x.coeffRef(i, id_j);
+            L_[1].coeffRef(row_idx+i, col_idx+id_j) = L_p_y.coeffRef(i, id_j);
+            L_[2].coeffRef(row_idx+i, col_idx+id_j) = L_p_z.coeffRef(i, id_j);
         }
     }
+
+    //for (size_t i = 0; i < ver_num; ++ i)
+    //{
+    //    //L_[0].coeffRef(row_idx+i, col_idx+i) = L_p_x.coeffRef(i, i);
+    //    //L_[1].coeffRef(row_idx+i, col_idx+i) = L_p_x.coeffRef(i, i);
+    //    //L_[2].coeffRef(row_idx+i, col_idx+i) = L_p_x.coeffRef(i, i);
+
+    //    for (size_t j = 0; j < ver_num; ++ j)
+    //    {
+    //        L_[0].coeffRef(row_idx+i, col_idx+j) = L_p_x.coeffRef(i, j);
+    //        L_[1].coeffRef(row_idx+i, col_idx+j) = L_p_y.coeffRef(i, j);
+    //        L_[2].coeffRef(row_idx+i, col_idx+j) = L_p_z.coeffRef(i, j);
+    //    }
+    //}
+    
 }
 
 void DeformModel::updateRightSys(int petal_id)
@@ -435,7 +456,7 @@ void DeformModel::updateRightSys(int petal_id)
     RotList& R_list = deform_petal._R_list;
     int ver_num = origin_petal.cols();
 
-    d_.resize(3, d_.cols()+ver_num);
+    d_.conservativeResize(3, d_.cols()+ver_num);
 
     for (size_t i = 0; i < ver_num; ++i) 
     {

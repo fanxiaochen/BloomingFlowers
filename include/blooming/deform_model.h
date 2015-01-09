@@ -136,8 +136,8 @@ private:
 
     std::vector<Eigen::SparseMatrix<float> > L_;
     Eigen::Matrix3Xf d_;
-//    Eigen::SparseLU<Eigen::SparseMatrix<float>> lu_solver_;
-    Eigen::SimplicialCholesky<Eigen::SparseMatrix<float> > lu_solver_;
+    Eigen::SparseLU<Eigen::SparseMatrix<float>> lu_solver_;
+//    Eigen::SimplicialCholesky<Eigen::SparseMatrix<float> > lu_solver_;
 
     int petal_num_;
 

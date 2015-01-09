@@ -32,7 +32,7 @@ bool ObjWriter::save(const std::string& obj_file)
 
     fs << "\n\n";
 
-//    fs << "mtllib petal.mtl" << "\n";
+    fs << "mtllib petal.mtl" << "\n";
 
     fs << "\n\n";
 
