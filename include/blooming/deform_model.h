@@ -14,15 +14,15 @@ class Flower;
 class DeformModel
 {
 private:
-    typedef Eigen::MatrixXf CorresMatrix;
-    typedef Eigen::Matrix3Xf CloudMatrix;
-    typedef Eigen::Matrix3Xf PetalMatrix;
-    typedef Eigen::Matrix3Xf CovMatrix;
+    typedef Eigen::MatrixXd CorresMatrix;
+    typedef Eigen::Matrix3Xd CloudMatrix;
+    typedef Eigen::Matrix3Xd PetalMatrix;
+    typedef Eigen::Matrix3Xd CovMatrix;
     typedef std::vector<int> VisList;
     typedef std::vector<std::vector<int> > AdjList;
     typedef std::vector<Eigen::Vector3i > FaceList;
-    typedef Eigen::SparseMatrix<float> WeightMatrix;
-    typedef std::vector<Eigen::Matrix3f> RotList;
+    typedef Eigen::SparseMatrix<double> WeightMatrix;
+    typedef std::vector<Eigen::Matrix3d> RotList;
 
     struct DeformPetal
     {
@@ -60,23 +60,23 @@ private:
             }
         }
 
-        float wij(int pi, int pj, int si, int sj = -1)
+        double wij(int pi, int pj, int si, int sj = -1)
         {
-            Eigen::Vector3f p1 = _origin_petal.col(pi);
-            Eigen::Vector3f p2 = _origin_petal.col(pj);
-            Eigen::Vector3f p3 = _origin_petal.col(si);
+            Eigen::Vector3d p1 = _origin_petal.col(pi);
+            Eigen::Vector3d p2 = _origin_petal.col(pj);
+            Eigen::Vector3d p3 = _origin_petal.col(si);
 
-            float e12 = (p1 - p2).norm();
-            float e13 = (p1 - p3).norm();
-            float e23 = (p2 - p3).norm();
-            float alpha_cos = fabs((e23*e23 + e13*e13 - e12*e12)/(2*e23*e13));
+            double e12 = (p1 - p2).norm();
+            double e13 = (p1 - p3).norm();
+            double e23 = (p2 - p3).norm();
+            double alpha_cos = fabs((e23*e23 + e13*e13 - e12*e12)/(2*e23*e13));
 
-            float beta_cos = 0;
+            double beta_cos = 0;
             if (sj != -1)
             {
-                Eigen::Vector3f p4 = _origin_petal.col(sj);
-                float e14 = (p1 - p4).norm();
-                float e24 = (p2 - p4).norm();
+                Eigen::Vector3d p4 = _origin_petal.col(sj);
+                double e14 = (p1 - p4).norm();
+                double e24 = (p2 - p4).norm();
                 beta_cos = fabs((e14*e14+e24*e24-e12*e12)/(2*e14*e24));
             }
             
@@ -93,8 +93,8 @@ public:
     void setFlower(Flower* flower);
 
     void setIterNum(int iter_num);
-    void setEps(float eps);
-    void setLambda(float lambda);
+    void setEps(double eps);
+    void setLambda(double lambda);
     
     inline PointCloud* getPointCloud(){ return point_cloud_; }
     inline Flower* getFlower(){ return flower_; }
@@ -103,20 +103,20 @@ public:
 
 protected:
     void e_step();
-    float m_step();
+    double m_step();
 
     void e_step(int petal_id);
 
     void visibility();
     void initialize();
 
-    float gaussian(int petal_id, int m_id, int c_id);
+    double gaussian(int petal_id, int m_id, int c_id);
 
     void buildWeightMatrix(int petal_id);
 
     void updateLeftSys();
     void updateRightSys();
-    float solve();
+    double solve();
 
     void updateLeftSys(int petal_id);
     void updateRightSys(int petal_id);
@@ -125,7 +125,9 @@ protected:
     void updateRotation();
     void initRotation();
 
-    float energy();
+    double energy();
+
+    double zero_correction(double value);
 
     void deforming();
 
@@ -135,17 +137,17 @@ private:
 
     std::vector<DeformPetal> deform_petals_;
 
-    std::vector<Eigen::SparseMatrix<float> > L_;
-    Eigen::Matrix3Xf d_;
-    Eigen::SparseLU<Eigen::SparseMatrix<float>> lu_solver_;
-//    Eigen::SimplicialCholesky<Eigen::SparseMatrix<float> > lu_solver_;
+    std::vector<Eigen::SparseMatrix<double> > L_;
+    Eigen::Matrix3Xd d_;
+    Eigen::SparseLU<Eigen::SparseMatrix<double> > lu_solver_;
+//    Eigen::SimplicialCholesky<Eigen::SparseMatrix<double> > lu_solver_;
 
     int petal_num_;
 
     int iter_num_;
-    float eps_;
+    double eps_;
 
-    float lambda_;
-    float noise_p_;
+    double lambda_;
+    double noise_p_;
 };
 #endif
