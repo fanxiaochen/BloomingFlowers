@@ -104,25 +104,15 @@ double DeformModel::m_step()
 
     initRotation();
     updateLeftSys();
-    std::cout << "Left System" << std::endl;
-    Eigen::VectorXd mat = L_[0].diagonal();
-    std::sort(mat.data(), mat.data()+mat.size());
-//    std::cout << mat.transpose() << std::endl;
-//    std::cout << L_[0].rows() << " " << L_[0].toDense().determinant() << std::endl;
     updateRightSys();
-    std::cout << "Right System" << std::endl;
-//    std::cout << d_.transpose() << std::endl;
 
     do {
         double e_n = solve();
-        std::cout << "Solved" << std::endl;
         eps = std::fabs((e_n - e) / e_n);
         e = e_n;
 
         updateRotation();
-        std::cout << "Update Rotation" << std::endl;
         updateRightSys();
-        std::cout << "In M-Step Iteration \t" << "iter: " << ++ iter << "\tdelta: " << eps << std::endl;
 
     }while(eps > eps_ && iter < iter_num_);
 
@@ -146,29 +136,11 @@ void DeformModel::e_step(int petal_id)
     {
         double sum_gaussian = corres_mat.col(i).sum() + noise_p_;
 
-        /*if (petal_id == 0 )
-        {
-            std::cout << sum_gaussian << "  ";
-        }*/
-
-
         for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
         {
-        corres_mat(j, i) = corres_mat(j, i) / sum_gaussian;
+            corres_mat(j, i) = corres_mat(j, i) / zero_correction(sum_gaussian);
         }
     }
-
-    /*if (petal_id == 0)
-    {
-        std::cout << deform_petals_[petal_id]._cloud_matrix << std::endl;
-    }*/
-
- //   std::cout << std::endl << std::endl;
-
-    /*if (petal_id == 0)
-    {
-    std::cout << corres_mat.row(0) << std::endl;
-    }*/
 }
 
 void DeformModel::visibility()
@@ -279,18 +251,6 @@ void DeformModel::initialize()
     {
         buildWeightMatrix(i);
     }
-
-    //// init rotation matrix
-    //for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
-    //{
-    //    DeformPetal& deform_petal = deform_petals_[i];
-    //    RotList& R_list = deform_petal._R_list;
-    //    PetalMatrix& origin_petal = deform_petal._origin_petal;
-    //    for (size_t j = 0, j_end = origin_petal.cols(); j < j_end; ++ j)
-    //    {
-    //        R_list.push_back(Eigen::Matrix3d::Identity());
-    //    }
-    //}
 
     // init covariance matrix 
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
@@ -405,8 +365,6 @@ void DeformModel::updateLeftSys(int petal_id)
         }
 
         wi_x += zero_correction(lambda_*(2/cov_matrix.col(i)[0])*corres_matrix.row(i).sum());
-//        std::cout << corres_matrix.row(i).sum();
-//        std::cout << lambda_*(2/cov_matrix[0])*corres_matrix.row(i).sum() << std::endl;
         wi_y += zero_correction(lambda_*(2/cov_matrix.col(i)[1])*corres_matrix.row(i).sum());
         wi_z += zero_correction(lambda_*(2/cov_matrix.col(i)[2])*corres_matrix.row(i).sum());
 
@@ -421,11 +379,6 @@ void DeformModel::updateLeftSys(int petal_id)
     diag_coeff_x.setFromTriplets(weight_sums[0].begin(), weight_sums[0].end());
     diag_coeff_y.setFromTriplets(weight_sums[1].begin(), weight_sums[1].end());
     diag_coeff_z.setFromTriplets(weight_sums[2].begin(), weight_sums[2].end());
-
-    //L_[0] = diag_coeff_x - weight_matrix;
-    //L_[1] = diag_coeff_y - weight_matrix;
-    //L_[2] = diag_coeff_z - weight_matrix;
-
 
     // expand L to fill in new petal vertices
     int row_idx = L_[0].rows(), col_idx = L_[0].cols();  // rows and cols should be the same for x, y, z
@@ -454,21 +407,6 @@ void DeformModel::updateLeftSys(int petal_id)
             L_[2].coeffRef(row_idx+i, col_idx+id_j) = L_p_z.coeffRef(i, id_j);
         }
     }
-
-    //for (size_t i = 0; i < ver_num; ++ i)
-    //{
-    //    //L_[0].coeffRef(row_idx+i, col_idx+i) = L_p_x.coeffRef(i, i);
-    //    //L_[1].coeffRef(row_idx+i, col_idx+i) = L_p_x.coeffRef(i, i);
-    //    //L_[2].coeffRef(row_idx+i, col_idx+i) = L_p_x.coeffRef(i, i);
-
-    //    for (size_t j = 0; j < ver_num; ++ j)
-    //    {
-    //        L_[0].coeffRef(row_idx+i, col_idx+j) = L_p_x.coeffRef(i, j);
-    //        L_[1].coeffRef(row_idx+i, col_idx+j) = L_p_y.coeffRef(i, j);
-    //        L_[2].coeffRef(row_idx+i, col_idx+j) = L_p_z.coeffRef(i, j);
-    //    }
-    //}
-    
 }
 
 void DeformModel::updateRightSys(int petal_id)
@@ -499,22 +437,10 @@ void DeformModel::updateRightSys(int petal_id)
         for (size_t n = 0, n_end = corres_matrix.cols(); n < n_end; ++ n)
         {
             weight_cloud += corres_matrix(i, n)*cloud_matrix.col(n);
-            /*if (petal_id == 0)
-            {
-                std::cout << corres_matrix(i, n) << "  ";
-
-            }*/
         }
 
         d_.bottomRightCorner(3, ver_num).col(i) += lambda_*2*cov_matrix.col(i).asDiagonal().inverse()*weight_cloud;
     }
-
-    /*if (petal_id == 0)
-    {
-        std::cout << "petal_id: 0" << std::endl;
-        std::cout << d_.row(0) << std::endl;
-        
-    }*/
 }
 
 void DeformModel::updateRightSys()
@@ -535,10 +461,7 @@ double DeformModel::solve()
         lu_solver_.analyzePattern(L_[i]);
         lu_solver_.factorize(L_[i]);
 
-        std::cout << "Computing..." << std::endl;
         Eigen::VectorXd next_pos = lu_solver_.solve(d_.row(i).transpose());
-     //   std::cout << next_pos << std::endl;
-        std::cout << "Computation Finished" << std::endl;
 
         int start_idx = 0;
 
