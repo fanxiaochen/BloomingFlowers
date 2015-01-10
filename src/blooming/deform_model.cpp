@@ -414,7 +414,9 @@ void DeformModel::updateLeftSys(int petal_id)
 
     for (size_t i = 0; i < ver_num; ++ i)
     {
-        if (deform_petal.isHardCtrs(i) != -1)
+        int hc_id = deform_petal.isHardCtrs(i);
+
+        if ( hc_id != -1)
         {
             L_[0].coeffRef(row_idx+i, col_idx+i) = 1;
             L_[1].coeffRef(row_idx+i, col_idx+i) = 1;
@@ -447,27 +449,35 @@ void DeformModel::updateRightSys(int petal_id)
     AdjList& adj_list = deform_petal._adj_list;
     WeightMatrix& weight_matrix = deform_petal._weight_matrix;
     RotList& R_list = deform_petal._R_list;
+    HardCtrsPos& hc_pos = deform_petal._hc_pos;
     int ver_num = origin_petal.cols();
 
     d_.conservativeResize(3, d_.cols()+ver_num);
 
     for (size_t i = 0; i < ver_num; ++i) 
     {
-        d_.bottomRightCorner(3, ver_num).col(i) = Eigen::Vector3d::Zero();
-        for (size_t j = 0, j_end = adj_list[i].size(); j < j_end; ++j)
-        {
-            d_.bottomRightCorner(3, ver_num).col(i) += ((weight_matrix.coeffRef(i, adj_list[i][j])/2)*
-                (R_list[i]+R_list[adj_list[i][j]])*(origin_petal.col(i) - origin_petal.col(adj_list[i][j]))).transpose();
-        }
+        int hc_id = deform_petal.isHardCtrs(i);
 
-        Eigen::Vector3d weight_cloud;
-        weight_cloud.setZero();
-        for (size_t n = 0, n_end = corres_matrix.cols(); n < n_end; ++ n)
+        if ( hc_id != -1)
+            d_.bottomRightCorner(3, ver_num).col(i) << hc_pos[hc_id];
+        else
         {
-            weight_cloud += corres_matrix(i, n)*cloud_matrix.col(n);
-        }
+            d_.bottomRightCorner(3, ver_num).col(i) = Eigen::Vector3d::Zero();
+            for (size_t j = 0, j_end = adj_list[i].size(); j < j_end; ++j)
+            {
+                d_.bottomRightCorner(3, ver_num).col(i) += ((weight_matrix.coeffRef(i, adj_list[i][j])/2)*
+                    (R_list[i]+R_list[adj_list[i][j]])*(origin_petal.col(i) - origin_petal.col(adj_list[i][j]))).transpose();
+            }
 
-        d_.bottomRightCorner(3, ver_num).col(i) += lambda_*2*cov_matrix.col(i).asDiagonal().inverse()*weight_cloud;
+            Eigen::Vector3d weight_cloud;
+            weight_cloud.setZero();
+            for (size_t n = 0, n_end = corres_matrix.cols(); n < n_end; ++ n)
+            {
+                weight_cloud += corres_matrix(i, n)*cloud_matrix.col(n);
+            }
+
+            d_.bottomRightCorner(3, ver_num).col(i) += lambda_*2*cov_matrix.col(i).asDiagonal().inverse()*weight_cloud;
+        }
     }
 }
 
