@@ -20,7 +20,7 @@ DeformModel::DeformModel(PointCloud* point_cloud, Flower* flower)
     :petal_num_(0),
     iter_num_(10), 
     eps_(1e-2),
-    lambda_(0.5),
+    lambda_(0.05),
     noise_p_(0.0),
     point_cloud_(point_cloud),
     flower_(flower)
@@ -279,7 +279,24 @@ void DeformModel::initialize()
             cov_matrix.col(k) << s_x / adj_size, s_y / adj_size, s_z / adj_size; 
         }
     }
-    double a = 0;
+
+    // init hard constraints
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals[i];
+        HardCtrsPos& hc_pos = deform_petals_[i]._hc_pos;
+        HardCtrsIdx& hc_idx = deform_petals_[i]._hc_idx;
+
+        osg::ref_ptr<osg::Vec3Array> pos_ptr = petal.getHardCtrs();
+        for (size_t j = 0, j_end = pos_ptr->size(); j < j_end; ++ j)
+        {
+            Eigen::Vector3d hc(pos_ptr->at(j).x(), pos_ptr->at(j).y(), pos_ptr->at(j).z());
+            hc_pos.push_back(hc);
+        }
+        hc_idx = petal.getHardCtrsIndex();
+
+        assert(hc_pos.size() == hc_idx.size());
+    }
 }
 
 
@@ -348,6 +365,7 @@ void DeformModel::updateLeftSys(int petal_id)
     CorresMatrix& corres_matrix = deform_petal._corres_matrix;
     WeightMatrix& weight_matrix = deform_petal._weight_matrix;
     AdjList& adj_list = deform_petal._adj_list;
+    HardCtrsIdx& hc_idx = deform_petal._hc_idx;
     int ver_num = deform_petal._petal_matrix.cols();
 
     std::vector<std::vector<Eigen::Triplet<double> > > weight_sums;
@@ -356,6 +374,7 @@ void DeformModel::updateLeftSys(int petal_id)
     for (int i = 0; i < ver_num; ++i) 
     {
         double wi_x = 0, wi_y = 0, wi_z = 0;
+
         for (size_t j = 0, j_end = deform_petal._adj_list[i].size(); j < j_end; ++j)
         {
             int id_j = deform_petal._adj_list[i][j];
@@ -367,7 +386,7 @@ void DeformModel::updateLeftSys(int petal_id)
         wi_x += zero_correction(lambda_*(2/cov_matrix.col(i)[0])*corres_matrix.row(i).sum());
         wi_y += zero_correction(lambda_*(2/cov_matrix.col(i)[1])*corres_matrix.row(i).sum());
         wi_z += zero_correction(lambda_*(2/cov_matrix.col(i)[2])*corres_matrix.row(i).sum());
-
+        
         weight_sums[0].push_back(Eigen::Triplet<double>(i, i, wi_x));
         weight_sums[1].push_back(Eigen::Triplet<double>(i, i, wi_y));
         weight_sums[2].push_back(Eigen::Triplet<double>(i, i, wi_z));
@@ -395,16 +414,25 @@ void DeformModel::updateLeftSys(int petal_id)
 
     for (size_t i = 0; i < ver_num; ++ i)
     {
-        L_[0].coeffRef(row_idx+i, col_idx+i) = L_p_x.coeffRef(i, i);
-        L_[1].coeffRef(row_idx+i, col_idx+i) = L_p_y.coeffRef(i, i);
-        L_[2].coeffRef(row_idx+i, col_idx+i) = L_p_z.coeffRef(i, i);
-
-        for (size_t j = 0, j_end = adj_list[i].size(); j < j_end; ++ j)
+        if (deform_petal.isHardCtrs(i) != -1)
         {
-            int id_j = adj_list[i][j];
-            L_[0].coeffRef(row_idx+i, col_idx+id_j) = L_p_x.coeffRef(i, id_j);
-            L_[1].coeffRef(row_idx+i, col_idx+id_j) = L_p_y.coeffRef(i, id_j);
-            L_[2].coeffRef(row_idx+i, col_idx+id_j) = L_p_z.coeffRef(i, id_j);
+            L_[0].coeffRef(row_idx+i, col_idx+i) = 1;
+            L_[1].coeffRef(row_idx+i, col_idx+i) = 1;
+            L_[2].coeffRef(row_idx+i, col_idx+i) = 1;
+        }
+        else
+        {
+            L_[0].coeffRef(row_idx+i, col_idx+i) = L_p_x.coeffRef(i, i);
+            L_[1].coeffRef(row_idx+i, col_idx+i) = L_p_y.coeffRef(i, i);
+            L_[2].coeffRef(row_idx+i, col_idx+i) = L_p_z.coeffRef(i, i);
+
+            for (size_t j = 0, j_end = adj_list[i].size(); j < j_end; ++ j)
+            {
+                int id_j = adj_list[i][j];
+                L_[0].coeffRef(row_idx+i, col_idx+id_j) = L_p_x.coeffRef(i, id_j);
+                L_[1].coeffRef(row_idx+i, col_idx+id_j) = L_p_y.coeffRef(i, id_j);
+                L_[2].coeffRef(row_idx+i, col_idx+id_j) = L_p_z.coeffRef(i, id_j);
+            }
         }
     }
 }

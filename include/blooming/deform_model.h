@@ -23,6 +23,8 @@ private:
     typedef std::vector<Eigen::Vector3i > FaceList;
     typedef Eigen::SparseMatrix<double> WeightMatrix;
     typedef std::vector<Eigen::Matrix3d> RotList;
+    typedef std::vector<Eigen::Vector3d> HardCtrsPos;
+    typedef std::vector<int> HardCtrsIdx;
 
     struct DeformPetal
     {
@@ -36,6 +38,8 @@ private:
         FaceList        _face_list;
         WeightMatrix    _weight_matrix;
         RotList         _R_list;
+        HardCtrsPos     _hc_pos;
+        HardCtrsIdx     _hc_idx;
 
         void findSharedVertex(int pi, int pj, std::vector<int>& share_vertex)
         {
@@ -82,6 +86,29 @@ private:
             
             return ((alpha_cos/sqrt(1-alpha_cos*alpha_cos))+(beta_cos/sqrt(1-beta_cos*beta_cos)))/2;
         }
+
+        int isHardCtrs(int id)
+        {
+            // binary search
+            int k = 0, k_end = _hc_idx.size();
+
+            if (k_end == 0)
+                return -1;
+
+            while (k <= k_end)
+            {
+                int m = (k + k_end) / 2;
+
+                if (id == _hc_idx[m])
+                    return m;
+                else if (id < _hc_idx[m])
+                    k_end = m - 1;
+                else 
+                    k = m + 1;
+            }
+
+            return -1;
+        }
     };
 
 public:
@@ -91,6 +118,8 @@ public:
 
     void setPointCloud(PointCloud* point_cloud);
     void setFlower(Flower* flower);
+
+    //void setHardCtrs(HardCtrsPos hc_pos, HardCtrsIdx hc_idx);
 
     void setIterNum(int iter_num);
     void setEps(double eps);
@@ -126,7 +155,6 @@ protected:
     void initRotation();
 
     double energy();
-
     double zero_correction(double value);
 
     void deforming();
