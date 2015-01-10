@@ -34,9 +34,9 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapte
             osgUtil::LineSegmentIntersector::Intersection intersection;
             osg::NodePath node_path;
             Renderable* renderable = NULL;
-//            if (ea.getButtonMask() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
-//                renderable = computeIntersection<Renderable>(view, ea, intersection, node_path);
-            if (ea.getButtonMask() == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON)
+            if (ea.getButtonMask() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
+                renderable = computeIntersection<Renderable>(view, ea, intersection, node_path);
+            else if (ea.getButtonMask() == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON)
                 renderable = computePointIntersection<Renderable>(view, ea, intersection, node_path);
             else if(renderable == NULL)
                 return false;

@@ -759,3 +759,41 @@ void MeshModel::rotate(const osg::Matrix& rot_matrix)
     return;
 }
 
+void MeshModel::pickEvent(int pick_mode, osg::Vec3 position)
+{
+    switch (pick_mode)
+    {
+    case (osgGA::GUIEventAdapter::MODKEY_CTRL):
+        {
+            const float eps = 1e-3;
+
+            for (auto& it = picked_points_.begin(); it != picked_points_.end(); ++ it)
+            {
+                if (fabs(it->x() - position.x()) < eps &&
+                    fabs(it->y() - position.y()) < eps &&
+                    fabs(it->z() - position.z()) < eps)
+                    return;
+            }
+
+
+            std::cout << "pick a point: " << std::endl;
+            std::cout << position.x() << " " << position.y() << " " << position.z() << std::endl << std::endl;
+
+
+            /*for (auto& it = this->begin(); it != this->end(); it ++)
+            {
+                if (fabs(it->x - position.x()) < eps &&
+                    fabs(it->y - position.y()) < eps &&
+                    fabs(it->z - position.z()) < eps)
+                    picked_indices_.push_back(it - this->begin());
+            }
+
+            picked_points_.push_back(position);
+
+            expire();*/
+
+        }
+    default:
+        break;
+    }
+}

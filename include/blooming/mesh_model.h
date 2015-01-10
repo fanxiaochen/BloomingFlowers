@@ -88,6 +88,8 @@ public:
     // change mesh position truly, not by MatrixTransform in the graph scene
     void rotate(const osg::Matrix& rot_matrix);
 
+    void pickEvent(int pick_mode, osg::Vec3 position);
+
 protected:
     virtual void updateImpl(void);
     virtual void visualizeMesh(void);
@@ -127,6 +129,10 @@ protected:
     std::vector<int>                    hard_index_; // hard constraints 
 
     std::vector<int>                    visibility_; // the same size of vertices
+
+    std::vector<int>                    picked_indices_;
+    std::vector<osg::Vec3>              picked_points_;
+
 };
 
 // A modifier creating a triangle with the incremental builder.
