@@ -23,7 +23,6 @@ private:
     typedef std::vector<Eigen::Vector3i > FaceList;
     typedef Eigen::SparseMatrix<double> WeightMatrix;
     typedef std::vector<Eigen::Matrix3d> RotList;
-    typedef std::vector<Eigen::Vector3d> HardCtrsPos;
     typedef std::vector<int> HardCtrsIdx;
 
     struct DeformPetal
@@ -38,7 +37,6 @@ private:
         FaceList        _face_list;
         WeightMatrix    _weight_matrix;
         RotList         _R_list;
-        HardCtrsPos     _hc_pos;
         HardCtrsIdx     _hc_idx;
 
         void findSharedVertex(int pi, int pj, std::vector<int>& share_vertex)
@@ -118,8 +116,6 @@ public:
 
     void setPointCloud(PointCloud* point_cloud);
     void setFlower(Flower* flower);
-
-    //void setHardCtrs(HardCtrsPos hc_pos, HardCtrsIdx hc_idx);
 
     void setIterNum(int iter_num);
     void setEps(double eps);

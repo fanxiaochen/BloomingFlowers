@@ -110,6 +110,30 @@ void MeshModel::visualizeMesh(void)
         content_root_->addChild(vis_geo);
     }
 
+    if (!hard_index_.empty())
+    {
+        osg::ref_ptr<osg::Geode> hc_geo(new osg::Geode);
+        osg::ref_ptr<osg::Geometry> hc_geometry = new osg::Geometry;
+        osg::ref_ptr<osg::Vec3Array> hc_vetices = new osg::Vec3Array;
+        osg::ref_ptr<osg::Vec4Array> hc_colors = new osg::Vec4Array;
+        hc_colors->push_back(osg::Vec4(0.0f, 0.0f, 1.0f, 0.0f));
+
+        for (size_t i = 0, i_end = hard_index_.size(); i < i_end; ++ i)
+        {
+            hc_vetices->push_back(vertices_->at(hard_index_[i]));
+        }
+
+        hc_geometry->setUseDisplayList(true);
+        hc_geometry->setVertexArray(hc_vetices);
+        hc_geometry->setColorArray(hc_colors);
+        hc_colors->setBinding(osg::Array::BIND_OVERALL);
+        hc_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, hc_vetices->size()));
+        hc_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
+
+        hc_geo->addDrawable(hc_geometry);
+        content_root_->addChild(hc_geo);
+    }
+
     return;
 }
 
@@ -765,33 +789,21 @@ void MeshModel::pickEvent(int pick_mode, osg::Vec3 position)
     {
     case (osgGA::GUIEventAdapter::MODKEY_CTRL):
         {
-            const float eps = 1e-3;
+            hard_ctrs_->clear();
+            hard_index_.clear();
 
-            for (auto& it = picked_points_.begin(); it != picked_points_.end(); ++ it)
+            const float radius = 10;
+
+            for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
             {
-                if (fabs(it->x() - position.x()) < eps &&
-                    fabs(it->y() - position.y()) < eps &&
-                    fabs(it->z() - position.z()) < eps)
-                    return;
+                osg::Vec3 vertex = vertices_->at(i);
+                if ((position-vertex).length() < radius)
+                {
+                    hard_ctrs_->push_back(vertex);
+                    hard_index_.push_back(i);
+                }
             }
-
-
-            std::cout << "pick a point: " << std::endl;
-            std::cout << position.x() << " " << position.y() << " " << position.z() << std::endl << std::endl;
-
-
-            /*for (auto& it = this->begin(); it != this->end(); it ++)
-            {
-                if (fabs(it->x - position.x()) < eps &&
-                    fabs(it->y - position.y()) < eps &&
-                    fabs(it->z - position.z()) < eps)
-                    picked_indices_.push_back(it - this->begin());
-            }
-
-            picked_points_.push_back(position);
-
-            expire();*/
-
+            expire();
         }
     default:
         break;

@@ -284,18 +284,9 @@ void DeformModel::initialize()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         Petal& petal = petals[i];
-        HardCtrsPos& hc_pos = deform_petals_[i]._hc_pos;
         HardCtrsIdx& hc_idx = deform_petals_[i]._hc_idx;
-
-        osg::ref_ptr<osg::Vec3Array> pos_ptr = petal.getHardCtrs();
-        for (size_t j = 0, j_end = pos_ptr->size(); j < j_end; ++ j)
-        {
-            Eigen::Vector3d hc(pos_ptr->at(j).x(), pos_ptr->at(j).y(), pos_ptr->at(j).z());
-            hc_pos.push_back(hc);
-        }
         hc_idx = petal.getHardCtrsIndex();
-
-        assert(hc_pos.size() == hc_idx.size());
+        std::sort(hc_idx.begin(), hc_idx.end());
     }
 }
 
@@ -449,7 +440,6 @@ void DeformModel::updateRightSys(int petal_id)
     AdjList& adj_list = deform_petal._adj_list;
     WeightMatrix& weight_matrix = deform_petal._weight_matrix;
     RotList& R_list = deform_petal._R_list;
-    HardCtrsPos& hc_pos = deform_petal._hc_pos;
     int ver_num = origin_petal.cols();
 
     d_.conservativeResize(3, d_.cols()+ver_num);
@@ -459,7 +449,7 @@ void DeformModel::updateRightSys(int petal_id)
         int hc_id = deform_petal.isHardCtrs(i);
 
         if ( hc_id != -1)
-            d_.bottomRightCorner(3, ver_num).col(i) << hc_pos[hc_id];
+            d_.bottomRightCorner(3, ver_num).col(i) << origin_petal.col(i);
         else
         {
             d_.bottomRightCorner(3, ver_num).col(i) = Eigen::Vector3d::Zero();

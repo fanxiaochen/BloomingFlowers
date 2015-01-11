@@ -38,7 +38,10 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapte
                 renderable = computeIntersection<Renderable>(view, ea, intersection, node_path);
             else if (ea.getButtonMask() == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON)
                 renderable = computePointIntersection<Renderable>(view, ea, intersection, node_path);
-            else if(renderable == NULL)
+            else 
+                return false;
+
+            if (renderable == NULL)
                 return false;
 
             renderable->pickEvent(ea.getModKeyMask(), intersection.getWorldIntersectPoint());
