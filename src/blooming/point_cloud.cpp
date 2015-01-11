@@ -96,15 +96,15 @@ void PointCloud::visualizePoints()
     content_root_->addChild(geode);
 
 
-    for (auto& it = picked_points_.begin(); it != picked_points_.end(); it ++)
-    {
-        osg::Geode* picked_geode = new osg::Geode();
-        osg::Sphere* sphere = new osg::Sphere(*it, 5.0);
-        osg::ShapeDrawable* drawable = new osg::ShapeDrawable(sphere);
-        drawable->setColor(osg::Vec4(1.0,0.0,0.0,0.0));
-        picked_geode->addDrawable(drawable);
-        content_root_->addChild(picked_geode);
-    }
+    //for (auto& it = picked_points_.begin(); it != picked_points_.end(); it ++)
+    //{
+    //    osg::Geode* picked_geode = new osg::Geode();
+    //    osg::Sphere* sphere = new osg::Sphere(*it, 5.0);
+    //    osg::ShapeDrawable* drawable = new osg::ShapeDrawable(sphere);
+    //    drawable->setColor(osg::Vec4(1.0,0.0,0.0,0.0));
+    //    picked_geode->addDrawable(drawable);
+    //    content_root_->addChild(picked_geode);
+    //}
 
     return;
 }
@@ -139,253 +139,253 @@ bool PointCloud::isShown(void) const
   return model->isShown(filename_);
 }
 
-void PointCloud::resetSegmentation()
-{
-    /*picked_indices_.clear();
-    picked_points_.clear();
-    cluster_centers_.clear();
+//void PointCloud::resetSegmentation()
+//{
+//    /*picked_indices_.clear();
+//    picked_points_.clear();
+//    cluster_centers_.clear();
+//
+//    for (auto& it = flower_points_.begin(); it != flower_points_.end(); ++ it)
+//    {
+//    it->_label = -1;
+//    }
+//
+//    segmented_ = false;*/
+//}
 
-    for (auto& it = flower_points_.begin(); it != flower_points_.end(); ++ it)
-    {
-    it->_label = -1;
-    }
+//void PointCloud::pickEvent(int pick_mode, osg::Vec3 position)
+//{
+//    switch (pick_mode)
+//    {
+//    case (osgGA::GUIEventAdapter::MODKEY_CTRL):
+//        {
+//            const float eps = 1e-3;
+//
+//            for (auto& it = picked_points_.begin(); it != picked_points_.end(); ++ it)
+//            {
+//                if (fabs(it->x() - position.x()) < eps &&
+//                    fabs(it->y() - position.y()) < eps &&
+//                    fabs(it->z() - position.z()) < eps)
+//                    return;
+//            }
+//
+//
+//            std::cout << "pick a point: " << std::endl;
+//            std::cout << position.x() << " " << position.y() << " " << position.z() << std::endl << std::endl;
+//
+//
+//            for (auto& it = this->begin(); it != this->end(); it ++)
+//            {
+//                if (fabs(it->x - position.x()) < eps &&
+//                    fabs(it->y - position.y()) < eps &&
+//                    fabs(it->z - position.z()) < eps)
+//                    picked_indices_.push_back(it - this->begin());
+//            }
+//
+//            picked_points_.push_back(position);
+//
+//            expire();
+//
+//        }
+//    default:
+//        break;
+//    }
+//}
 
-    segmented_ = false;*/
-}
-
-void PointCloud::pickEvent(int pick_mode, osg::Vec3 position)
-{
-    switch (pick_mode)
-    {
-    case (osgGA::GUIEventAdapter::MODKEY_CTRL):
-        {
-            const float eps = 1e-3;
-
-            for (auto& it = picked_points_.begin(); it != picked_points_.end(); ++ it)
-            {
-                if (fabs(it->x() - position.x()) < eps &&
-                    fabs(it->y() - position.y()) < eps &&
-                    fabs(it->z() - position.z()) < eps)
-                    return;
-            }
-
-
-            std::cout << "pick a point: " << std::endl;
-            std::cout << position.x() << " " << position.y() << " " << position.z() << std::endl << std::endl;
-
-
-            for (auto& it = this->begin(); it != this->end(); it ++)
-            {
-                if (fabs(it->x - position.x()) < eps &&
-                    fabs(it->y - position.y()) < eps &&
-                    fabs(it->z - position.z()) < eps)
-                    picked_indices_.push_back(it - this->begin());
-            }
-
-            picked_points_.push_back(position);
-
-            expire();
-
-        }
-    default:
-        break;
-    }
-}
-
-void PointCloud::kmeans_segmentation()
-{
-    k_means();
-    return;
-}
-
-// point cloud segmentation and mesh's hard constraints building
-void PointCloud::template_segmentation(Flower* flower)
-{
-    std::vector<std::vector<int> > knns_idx;
-    std::vector<std::vector<float> > knns_dists;
-
-    for (size_t i = 0, i_end = flower->getPetals().size(); i < i_end; ++ i)
-    {
-        std::vector<int> knn_idx;
-        std::vector<float> knn_dists;
-
-        Petal& petal = flower->getPetals().at(i);
-
-        petal.getHardCtrsIndex().clear();  // clear hard ctrs index
-
-        searchNearestIdx(&petal, knn_idx, knn_dists);
-
-        knns_idx.push_back(knn_idx);
-        knns_dists.push_back(knn_dists);
-    }
-
-
-    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
-    {
-        float min_dist = std::numeric_limits<float>::max();
-        int min_j = std::numeric_limits<int>::max();
-
-        for (size_t j = 0, j_end = knns_idx.size(); j < j_end; ++ j)
-        {
-            if (min_dist > knns_dists[j][i])
-            {
-                min_j = j;
-                min_dist = knns_dists[j][i];
-            }
-        }
-
-        segment_flags_.push_back(min_j);
-    }
-
-    segmented_ = true;
-
-
-    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
-    {
-        int petal_id = segment_flags_[i];
-        Petal& petal = flower->getPetals().at(petal_id);
-        petal.getHardCtrsIndex().push_back(knns_idx[petal_id][i]);  // may have duplicate elements
-    }
-
-}
-
-
-void PointCloud::k_means()
-{
-    int cluster_num = picked_indices_.size();
-
-    if (cluster_num == 0)
-        return;
-
-    segmented_ = true;
-
-    segment_flags_.resize(this->size());
-
-    setCenters();
-
-    std::vector<Point> next_centers;
-
-    do 
-    {
-        if (!next_centers.empty())
-        {
-            cluster_centers_ = next_centers;
-            next_centers.clear();
-        }
-
-        size_t points_num = this->size();
-        for (size_t i = 0; i < points_num; i ++)
-        {
-            int cluster_id = determineCluster(this->at(i));
-            segment_flags_[i] = cluster_id;
-        }
-
-        for (size_t i = 0; i < cluster_num; i ++)
-        {
-            std::vector<int> ids;
-            for (size_t j = 0; j < points_num; j ++)
-            {
-                if (segment_flags_[j] == i)
-                    ids.push_back(j);
-            }
-
-            Point next_center = mean_center(ids);
-            next_centers.push_back(next_center);
-        }
-
-        updateCenters();
-        expire();
-
-    } while (!terminal(cluster_centers_, next_centers));
-}
-
-
-void PointCloud::setCenters()
-{
-    for (size_t i = 0, i_end = picked_indices_.size(); i < i_end; ++ i)
-    {
-        cluster_centers_.push_back(this->at(picked_indices_[i]));
-    }
-}
-
-void PointCloud::updateCenters()
-{
-    for (size_t i = 0, i_end = picked_points_.size(); i < i_end; ++i)
-    {
-        Point p = cluster_centers_.at(i);
-        picked_points_[i].x() = p.x;
-        picked_points_[i].y() = p.y;
-        picked_points_[i].z() = p.z;
-    }
-}
-
-float PointCloud::distance(const Point& p1, const Point& p2)
-{
-
-    float euc_dist = pow(p1.x - p2.x, 2.0) + pow(p1.y - p2.y, 2.0) +
-        pow(p1.z - p2.z, 2.0);
-
-    return euc_dist;
-}
-
-int PointCloud::determineCluster(const Point& point)
-{
-    int cluster_num = cluster_centers_.size();
-
-    float min = std::numeric_limits<float>::max();
-    int cluster_id = -1;
-
-    for (size_t i = 0, i_end = cluster_num; i < i_end; i ++)
-    {
-        float temp_dist = distance(point, cluster_centers_[i]);
-        if (min > temp_dist)
-        {
-            min = temp_dist;
-            cluster_id = i;
-        }
-    }
-
-    return cluster_id;
-}
-
-Point PointCloud::mean_center(const std::vector<int>& ids)
-{
-    Point p;
-
-    for (size_t i = 0, i_end = ids.size(); i < i_end; i ++)
-    {
-        Point tmp_p = this->at(ids[i]);
-
-        p = p + tmp_p;
-    }
-
-    p = p / ids.size();
-
-    return p;
-}
-
-bool PointCloud::terminal(const std::vector<Point>& cluster_centers, const std::vector<Point>& next_centers)
-{
-    int cluster_num = cluster_centers_.size();
-
-    for (size_t i = 0; i < cluster_num; i ++)
-    {
-        if (cluster_centers[i] != next_centers[i])
-            return false;
-    }
-
-    return true;
-}
+//void PointCloud::kmeans_segmentation()
+//{
+//    k_means();
+//    return;
+//}
+//
+//// point cloud segmentation and mesh's hard constraints building
+//void PointCloud::template_segmentation(Flower* flower)
+//{
+//    std::vector<std::vector<int> > knns_idx;
+//    std::vector<std::vector<float> > knns_dists;
+//
+//    for (size_t i = 0, i_end = flower->getPetals().size(); i < i_end; ++ i)
+//    {
+//        std::vector<int> knn_idx;
+//        std::vector<float> knn_dists;
+//
+//        Petal& petal = flower->getPetals().at(i);
+//
+//        petal.getHardCtrsIndex().clear();  // clear hard ctrs index
+//
+//        searchNearestIdx(&petal, knn_idx, knn_dists);
+//
+//        knns_idx.push_back(knn_idx);
+//        knns_dists.push_back(knn_dists);
+//    }
+//
+//
+//    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+//    {
+//        float min_dist = std::numeric_limits<float>::max();
+//        int min_j = std::numeric_limits<int>::max();
+//
+//        for (size_t j = 0, j_end = knns_idx.size(); j < j_end; ++ j)
+//        {
+//            if (min_dist > knns_dists[j][i])
+//            {
+//                min_j = j;
+//                min_dist = knns_dists[j][i];
+//            }
+//        }
+//
+//        segment_flags_.push_back(min_j);
+//    }
+//
+//    segmented_ = true;
+//
+//
+//    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+//    {
+//        int petal_id = segment_flags_[i];
+//        Petal& petal = flower->getPetals().at(petal_id);
+//        petal.getHardCtrsIndex().push_back(knns_idx[petal_id][i]);  // may have duplicate elements
+//    }
+//
+//}
+//
+//
+//void PointCloud::k_means()
+//{
+//    int cluster_num = picked_indices_.size();
+//
+//    if (cluster_num == 0)
+//        return;
+//
+//    segmented_ = true;
+//
+//    segment_flags_.resize(this->size());
+//
+//    setCenters();
+//
+//    std::vector<Point> next_centers;
+//
+//    do 
+//    {
+//        if (!next_centers.empty())
+//        {
+//            cluster_centers_ = next_centers;
+//            next_centers.clear();
+//        }
+//
+//        size_t points_num = this->size();
+//        for (size_t i = 0; i < points_num; i ++)
+//        {
+//            int cluster_id = determineCluster(this->at(i));
+//            segment_flags_[i] = cluster_id;
+//        }
+//
+//        for (size_t i = 0; i < cluster_num; i ++)
+//        {
+//            std::vector<int> ids;
+//            for (size_t j = 0; j < points_num; j ++)
+//            {
+//                if (segment_flags_[j] == i)
+//                    ids.push_back(j);
+//            }
+//
+//            Point next_center = mean_center(ids);
+//            next_centers.push_back(next_center);
+//        }
+//
+//        updateCenters();
+//        expire();
+//
+//    } while (!terminal(cluster_centers_, next_centers));
+//}
 
 
-void PointCloud::reordering(osg::ref_ptr<PointCloud> point_cloud, const std::vector<int>& idx)
-{    
-    for (size_t i = 0, i_end = idx.size(); i < i_end; ++ i)
-    {
-        point_cloud->push_back(this->at(idx[i]));
-    }
-}
-
+//void PointCloud::setCenters()
+//{
+//    for (size_t i = 0, i_end = picked_indices_.size(); i < i_end; ++ i)
+//    {
+//        cluster_centers_.push_back(this->at(picked_indices_[i]));
+//    }
+//}
+//
+//void PointCloud::updateCenters()
+//{
+//    for (size_t i = 0, i_end = picked_points_.size(); i < i_end; ++i)
+//    {
+//        Point p = cluster_centers_.at(i);
+//        picked_points_[i].x() = p.x;
+//        picked_points_[i].y() = p.y;
+//        picked_points_[i].z() = p.z;
+//    }
+//}
+//
+//float PointCloud::distance(const Point& p1, const Point& p2)
+//{
+//
+//    float euc_dist = pow(p1.x - p2.x, 2.0) + pow(p1.y - p2.y, 2.0) +
+//        pow(p1.z - p2.z, 2.0);
+//
+//    return euc_dist;
+//}
+//
+//int PointCloud::determineCluster(const Point& point)
+//{
+//    int cluster_num = cluster_centers_.size();
+//
+//    float min = std::numeric_limits<float>::max();
+//    int cluster_id = -1;
+//
+//    for (size_t i = 0, i_end = cluster_num; i < i_end; i ++)
+//    {
+//        float temp_dist = distance(point, cluster_centers_[i]);
+//        if (min > temp_dist)
+//        {
+//            min = temp_dist;
+//            cluster_id = i;
+//        }
+//    }
+//
+//    return cluster_id;
+//}
+//
+//Point PointCloud::mean_center(const std::vector<int>& ids)
+//{
+//    Point p;
+//
+//    for (size_t i = 0, i_end = ids.size(); i < i_end; i ++)
+//    {
+//        Point tmp_p = this->at(ids[i]);
+//
+//        p = p + tmp_p;
+//    }
+//
+//    p = p / ids.size();
+//
+//    return p;
+//}
+//
+//bool PointCloud::terminal(const std::vector<Point>& cluster_centers, const std::vector<Point>& next_centers)
+//{
+//    int cluster_num = cluster_centers_.size();
+//
+//    for (size_t i = 0; i < cluster_num; i ++)
+//    {
+//        if (cluster_centers[i] != next_centers[i])
+//            return false;
+//    }
+//
+//    return true;
+//}
+//
+//
+//void PointCloud::reordering(osg::ref_ptr<PointCloud> point_cloud, const std::vector<int>& idx)
+//{    
+//    for (size_t i = 0, i_end = idx.size(); i < i_end; ++ i)
+//    {
+//        point_cloud->push_back(this->at(idx[i]));
+//    }
+//}
+//
 // with visibility
 void PointCloud::searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_idx, std::vector<float>& knn_dists)
 {

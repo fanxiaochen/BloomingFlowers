@@ -60,7 +60,7 @@ private slots:
     void slotShowStatus(const QString& status, int timeout);
     bool slotLoadPoints();
     bool slotLoadMesh();
-    bool slotLoadTrajectories();
+    //bool slotLoadTrajectories();
     bool slotLoadParameters();
     bool slotSaveParameters();
     bool slotLoadAxis();

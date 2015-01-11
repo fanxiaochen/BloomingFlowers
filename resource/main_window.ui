@@ -43,8 +43,6 @@
     <addaction name="actionLoadPoints"/>
     <addaction name="actionLoadMesh"/>
     <addaction name="separator"/>
-    <addaction name="actionLoadTrajectories"/>
-    <addaction name="separator"/>
     <addaction name="actionLoadParameters"/>
     <addaction name="actionSaveParameters"/>
     <addaction name="separator"/>
@@ -54,27 +52,9 @@
     <property name="title">
      <string>Tracking</string>
     </property>
-    <addaction name="actionPointCloudTracking"/>
-    <addaction name="actionMeshTracking"/>
-    <addaction name="separator"/>
-    <addaction name="actionTrajectoryTracking"/>
-    <addaction name="separator"/>
-    <addaction name="actionPetalTracking"/>
-    <addaction name="actionFlowerTracking"/>
-    <addaction name="separator"/>
     <addaction name="actionEMTracking"/>
    </widget>
-   <widget class="QMenu" name="menuSegmentation">
-    <property name="title">
-     <string>Segmentation</string>
-    </property>
-    <addaction name="actionKMeansForFlower"/>
-    <addaction name="actionKMeansForTrajectories"/>
-    <addaction name="separator"/>
-    <addaction name="actionSegmentationByTemplate"/>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuSegmentation"/>
    <addaction name="menuTracking"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>

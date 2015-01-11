@@ -2,26 +2,26 @@
 #ifndef MESH_MODEL_H
 #define MESH_MODEL_H
 
-#define CGAL_EIGEN3_ENABLED
+//#define CGAL_EIGEN3_ENABLED
 
 #include <osgUtil/SmoothingVisitor>
 
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Polyhedron_3.h>
-#include <CGAL/Polyhedron_items_with_id_3.h>
-#include <CGAL/IO/Polyhedron_iostream.h>
-// HalfedgeGraph adapters for Polyhedron_3
-#include <CGAL/boost/graph/graph_traits_Polyhedron_3.h>
-#include <CGAL/boost/graph/properties_Polyhedron_3.h>
-#include <CGAL/Surface_mesh_deformation.h>
+//#include <CGAL/Simple_cartesian.h>
+//#include <CGAL/Polyhedron_3.h>
+//#include <CGAL/Polyhedron_items_with_id_3.h>
+//#include <CGAL/IO/Polyhedron_iostream.h>
+//// HalfedgeGraph adapters for Polyhedron_3
+//#include <CGAL/boost/graph/graph_traits_Polyhedron_3.h>
+//#include <CGAL/boost/graph/properties_Polyhedron_3.h>
+//#include <CGAL/Surface_mesh_deformation.h>
 
 #include "renderable.h"
 
-typedef CGAL::Simple_cartesian<double>                                   Kernel;
-typedef CGAL::Polyhedron_3<Kernel, CGAL::Polyhedron_items_with_id_3> Polyhedron;
-typedef boost::graph_traits<Polyhedron>::vertex_descriptor    vertex_descriptor;
-typedef boost::graph_traits<Polyhedron>::vertex_iterator        vertex_iterator;
-typedef CGAL::Surface_mesh_deformation<Polyhedron> Surface_mesh_deformation;
+//typedef CGAL::Simple_cartesian<double>                                   Kernel;
+//typedef CGAL::Polyhedron_3<Kernel, CGAL::Polyhedron_items_with_id_3> Polyhedron;
+//typedef boost::graph_traits<Polyhedron>::vertex_descriptor    vertex_descriptor;
+//typedef boost::graph_traits<Polyhedron>::vertex_iterator        vertex_iterator;
+//typedef CGAL::Surface_mesh_deformation<Polyhedron> Surface_mesh_deformation;
 
 class PointCloud;
 
@@ -47,7 +47,7 @@ public:
     inline const osg::ref_ptr<osg::Vec3Array> getVertexNormals() const { return vertex_normals_; }
     inline const std::vector<std::vector<int> >& getFaces() const { return faces_; }
     inline const std::vector<std::vector<int> >& getAdjList() const { return adj_list_; }
-    inline const Polyhedron& getDeformModel() const { return deform_model_; }
+    //inline const Polyhedron& getDeformModel() const { return deform_model_; }
     inline const std::vector<int>& getEdgeIndex() const { return edge_index_; }
     inline const std::vector<int>& getHardCtrsIndex() const { return hard_index_; }
     inline const std::vector<int>& getVisibility() const { return visibility_; }
@@ -57,25 +57,25 @@ public:
     inline osg::ref_ptr<osg::Vec3Array> getVertexNormals() { return vertex_normals_; }
     inline std::vector<std::vector<int> >& getFaces() { return faces_; }
     inline std::vector<std::vector<int> >& getAdjList() { return adj_list_; }
-    inline Polyhedron& getDeformModel() { return deform_model_; }
+    //inline Polyhedron& getDeformModel() { return deform_model_; }
     inline std::vector<int>& getEdgeIndex() { return edge_index_; }
     inline std::vector<int>& getHardCtrsIndex(){ return hard_index_; }
     inline std::vector<int>& getVisibility() { return visibility_; }
 
-    inline osg::ref_ptr<osg::Vec3Array>& getHardCtrs() { return hard_ctrs_; }
+    //inline osg::ref_ptr<osg::Vec3Array>& getHardCtrs() { return hard_ctrs_; }
 
-    MeshModel simplify(int scale);
+    //MeshModel simplify(int scale);
 
-    void buildHardCtrsIdx(int scale);
-    void buildHardCtrsIdx();
+    //void buildHardCtrsIdx(int scale);
+    //void buildHardCtrsIdx();
 
-    void deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx);
-    void deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx,
-        const osg::Vec3Array& soft_ctrs, const std::vector<int>& soft_idx);
+    //void deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx);
+    //void deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx,
+    //    const osg::Vec3Array& soft_ctrs, const std::vector<int>& soft_idx);
 
-    void deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx);
-    void deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx,
-        const std::vector<float>& soft_ctrs, const std::vector<int>& soft_idx);
+    //void deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx);
+    //void deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx,
+    //    const std::vector<float>& soft_ctrs, const std::vector<int>& soft_idx);
 
     // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
     void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
@@ -97,7 +97,7 @@ protected:
 private:
     bool readObjFile(const std::string& filename);
     void recoverAdjList();
-    void buildDeformModel();
+//    void buildDeformModel();
 
     void findSharedVertices(int pi, int pj, std::vector<int>& shared_vertices);
     void extractEdgeVertices();
@@ -121,55 +121,55 @@ protected:
 
     osg::ref_ptr<osgUtil::SmoothingVisitor>     smoothing_visitor_;
 
-    Polyhedron                          deform_model_;
+    //Polyhedron                          deform_model_;
 
     std::vector<int>                    edge_index_;
 
-    osg::ref_ptr<osg::Vec3Array>        hard_ctrs_;
+    //osg::ref_ptr<osg::Vec3Array>        hard_ctrs_;
     std::vector<int>                    hard_index_; // hard constraints 
 
     std::vector<int>                    visibility_; // the same size of vertices
 
-    std::vector<int>                    picked_indices_;
-    std::vector<osg::Vec3>              picked_points_;
+    //std::vector<int>                    picked_indices_;
+    //std::vector<osg::Vec3>              picked_points_;
 
 };
 
-// A modifier creating a triangle with the incremental builder.
-template <class HDS>
-class Build_triangle : public CGAL::Modifier_base<HDS> {
-public:
-    Build_triangle() {}
-    Build_triangle(MeshModel* mesh_model) { mesh_model_ = mesh_model; }
-    void operator()( HDS& hds) {
-        // Postcondition: hds is a valid polyhedral surface.
-        CGAL::Polyhedron_incremental_builder_3<HDS> B( hds, true);
-        B.begin_surface(mesh_model_->getVertices()->size(), mesh_model_->getFaces().size());
-        typedef typename HDS::Vertex   Vertex;
-        typedef typename Vertex::Point Point;
+//// A modifier creating a triangle with the incremental builder.
+//template <class HDS>
+//class Build_triangle : public CGAL::Modifier_base<HDS> {
+//public:
+//    Build_triangle() {}
+//    Build_triangle(MeshModel* mesh_model) { mesh_model_ = mesh_model; }
+//    void operator()( HDS& hds) {
+//        // Postcondition: hds is a valid polyhedral surface.
+//        CGAL::Polyhedron_incremental_builder_3<HDS> B( hds, true);
+//        B.begin_surface(mesh_model_->getVertices()->size(), mesh_model_->getFaces().size());
+//        typedef typename HDS::Vertex   Vertex;
+//        typedef typename Vertex::Point Point;
+//
+//        for (size_t i = 0, i_end = mesh_model_->getVertices()->size(); i < i_end; i ++)
+//        {
+//            const osg::Vec3& point = mesh_model_->getVertices()->at(i);
+//            B.add_vertex(Point(point.x(), point.y(), point.z()));
+//        }
+//
+//
+//        for (size_t i = 0, i_end = mesh_model_->getFaces().size(); i < i_end; i ++)
+//        {
+//            const std::vector<int> face = mesh_model_->getFaces().at(i);
+//            B.begin_facet();
+//            B.add_vertex_to_facet(face[0]);
+//            B.add_vertex_to_facet(face[1]);
+//            B.add_vertex_to_facet(face[2]);
+//            B.end_facet();
+//        }
+//
+//        B.end_surface();
+//    }
 
-        for (size_t i = 0, i_end = mesh_model_->getVertices()->size(); i < i_end; i ++)
-        {
-            const osg::Vec3& point = mesh_model_->getVertices()->at(i);
-            B.add_vertex(Point(point.x(), point.y(), point.z()));
-        }
-
-
-        for (size_t i = 0, i_end = mesh_model_->getFaces().size(); i < i_end; i ++)
-        {
-            const std::vector<int> face = mesh_model_->getFaces().at(i);
-            B.begin_facet();
-            B.add_vertex_to_facet(face[0]);
-            B.add_vertex_to_facet(face[1]);
-            B.add_vertex_to_facet(face[2]);
-            B.end_facet();
-        }
-
-        B.end_surface();
-    }
-
-private:
-    MeshModel* mesh_model_;
-};
+//private:
+//    MeshModel* mesh_model_;
+//};
 
 #endif // MESH_MODEL_H

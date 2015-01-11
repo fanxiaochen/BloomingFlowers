@@ -20,8 +20,8 @@ MeshModel::MeshModel()
     vertex_normals_(new osg::Vec3Array),
     colors_(new osg::Vec4Array),
     /*face_normals_(new osg::Vec3Array),*/
-    smoothing_visitor_(new osgUtil::SmoothingVisitor),
-    hard_ctrs_(new osg::Vec3Array)
+    smoothing_visitor_(new osgUtil::SmoothingVisitor)
+    //hard_ctrs_(new osg::Vec3Array)
 {
 }
 
@@ -31,8 +31,8 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     vertex_normals_(new osg::Vec3Array),
     colors_(new osg::Vec4Array),
     /*face_normals_(new osg::Vec3Array),*/
-    smoothing_visitor_(new osgUtil::SmoothingVisitor),
-    hard_ctrs_(new osg::Vec3Array)
+    smoothing_visitor_(new osgUtil::SmoothingVisitor)
+    //hard_ctrs_(new osg::Vec3Array)
 {
     *(this->getVertices()) = *(mesh_model.getVertices());
     *(this->getTexcoords()) = *(mesh_model.getTexcoords());
@@ -40,7 +40,7 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     *(this->getVertices()) = *(mesh_model.getVertices());
     this->getFaces() = mesh_model.getFaces();
     this->getAdjList() = mesh_model.getAdjList();
-    this->getDeformModel() = mesh_model.getDeformModel();
+    //this->getDeformModel() = mesh_model.getDeformModel();
     this->getEdgeIndex() = mesh_model.getEdgeIndex();
     this->getHardCtrsIndex() = mesh_model.getHardCtrsIndex();
 }
@@ -230,14 +230,14 @@ bool MeshModel::readObjFile(const std::string& filename)
     recoverAdjList();
     extractEdgeVertices();
 
-    buildDeformModel();
+//    buildDeformModel();
 
     return true;
 }
 
 void MeshModel::recoverAdjList()
 {
-    const size_t pre_ver_num = 10000;
+    const size_t pre_ver_num = 20000;
     const size_t ver_num = vertices_->size();
 
     if (pre_ver_num < ver_num)
@@ -274,13 +274,13 @@ void MeshModel::recoverAdjList()
     }
 }
 
-void MeshModel::buildDeformModel()
-{
-    Build_triangle<Polyhedron::HalfedgeDS> triangle(this);
-    deform_model_.delegate(triangle);
-//    CGAL_assertion( deform_model_.is_triangle(deform_model_.halfedges_begin()));
-    return;
-}
+//void MeshModel::buildDeformModel()
+//{
+//    Build_triangle<Polyhedron::HalfedgeDS> triangle(this);
+//    deform_model_.delegate(triangle);
+////    CGAL_assertion( deform_model_.is_triangle(deform_model_.halfedges_begin()));
+//    return;
+//}
 
 void MeshModel::extractEdgeVertices()
 {
@@ -320,110 +320,110 @@ void MeshModel::findSharedVertices(int pi, int pj, std::vector<int>& shared_vert
     }
 }
 
-MeshModel MeshModel::simplify(int scale)
-{
-    MeshModel sim_mesh(*this);
+//MeshModel MeshModel::simplify(int scale)
+//{
+//    MeshModel sim_mesh(*this);
+//
+//    Simplify::vertices.clear();
+//    Simplify::triangles.clear();
+//
+//    for (size_t i = 0, i_end = sim_mesh.getVertices()->size(); i < i_end; ++ i)
+//    {
+//        Simplify::Vertex v;
+//        const osg::Vec3& vertice = sim_mesh.getVertices()->at(i);
+//        v.p.x = vertice.x();
+//        v.p.y = vertice.y();
+//        v.p.z = vertice.z();
+//        Simplify::vertices.push_back(v);
+//    }
+//
+//    for (size_t i = 0, i_end = sim_mesh.getFaces().size(); i < i_end; ++ i)
+//    {
+//        Simplify::Triangle t;
+//        const std::vector<int>& face = sim_mesh.getFaces().at(i);
+//        t.v[0] = face[0];
+//        t.v[1] = face[1];
+//        t.v[2] = face[2];
+//        Simplify::triangles.push_back(t);
+//    }
+//
+//    Simplify::simplify_mesh(sim_mesh.getFaces().size() / scale);
+//
+//    sim_mesh.getVertices()->clear();
+//    sim_mesh.getFaces().clear();
+//
+//    for (size_t i = 0, i_end = Simplify::vertices.size(); i < i_end; ++ i)
+//    {
+//        osg::Vec3 vertice;
+//        const Simplify::Vertex& v = Simplify::vertices.at(i);
+//        vertice.x() = v.p.x;
+//        vertice.y() = v.p.y;
+//        vertice.z() = v.p.z;
+//        sim_mesh.getVertices()->push_back(vertice);
+//    }
+//
+//    for (size_t i = 0, i_end = Simplify::triangles.size(); i < i_end; ++ i)
+//    {
+//        std::vector<int> face;
+//        const Simplify::Triangle& t = Simplify::triangles.at(i);
+//        face.push_back(t.v[0]);
+//        face.push_back(t.v[1]);
+//        face.push_back(t.v[2]);
+//
+//        sim_mesh.getFaces().push_back(face);
+//    }
+//
+//    return sim_mesh;
+//}
 
-    Simplify::vertices.clear();
-    Simplify::triangles.clear();
-
-    for (size_t i = 0, i_end = sim_mesh.getVertices()->size(); i < i_end; ++ i)
-    {
-        Simplify::Vertex v;
-        const osg::Vec3& vertice = sim_mesh.getVertices()->at(i);
-        v.p.x = vertice.x();
-        v.p.y = vertice.y();
-        v.p.z = vertice.z();
-        Simplify::vertices.push_back(v);
-    }
-
-    for (size_t i = 0, i_end = sim_mesh.getFaces().size(); i < i_end; ++ i)
-    {
-        Simplify::Triangle t;
-        const std::vector<int>& face = sim_mesh.getFaces().at(i);
-        t.v[0] = face[0];
-        t.v[1] = face[1];
-        t.v[2] = face[2];
-        Simplify::triangles.push_back(t);
-    }
-
-    Simplify::simplify_mesh(sim_mesh.getFaces().size() / scale);
-
-    sim_mesh.getVertices()->clear();
-    sim_mesh.getFaces().clear();
-
-    for (size_t i = 0, i_end = Simplify::vertices.size(); i < i_end; ++ i)
-    {
-        osg::Vec3 vertice;
-        const Simplify::Vertex& v = Simplify::vertices.at(i);
-        vertice.x() = v.p.x;
-        vertice.y() = v.p.y;
-        vertice.z() = v.p.z;
-        sim_mesh.getVertices()->push_back(vertice);
-    }
-
-    for (size_t i = 0, i_end = Simplify::triangles.size(); i < i_end; ++ i)
-    {
-        std::vector<int> face;
-        const Simplify::Triangle& t = Simplify::triangles.at(i);
-        face.push_back(t.v[0]);
-        face.push_back(t.v[1]);
-        face.push_back(t.v[2]);
-
-        sim_mesh.getFaces().push_back(face);
-    }
-
-    return sim_mesh;
-}
-
-// remove duplicated elements
-void MeshModel::buildHardCtrsIdx()
-{
-    std::set<int> hard_idx_set;
-    for (size_t i = 0, i_end = hard_index_.size(); i < i_end; ++ i)
-    {
-        hard_idx_set.insert(hard_index_[i]);
-    }
-
-    hard_index_.clear();
-    std::copy(hard_idx_set.begin(), hard_idx_set.end(), back_inserter(hard_index_));
-
-}
-
-void MeshModel::buildHardCtrsIdx(int scale)
-{
-    hard_index_.clear();
-
-    std::vector<int> hard_idx_vec;
-    std::set<int> hard_idx_set; // for unique index 
-
-    MeshModel sim_mesh = simplify(scale);
-    searchNearestIdx(sim_mesh, hard_idx_vec);
-
-    for (size_t i = 0, i_end = hard_idx_vec.size(); i < i_end; ++ i)
-    {
-        if (visibility_.size() == 0)
-            hard_idx_set.insert(hard_idx_vec[i]);
-        else
-        {
-            if (visibility_[hard_idx_vec[i]] == 1)
-                hard_idx_set.insert(hard_idx_vec[i]);
-        }
-    }
-
-    for (size_t i = 0, i_end = edge_index_.size(); i < i_end; ++ i)
-    {
-        if (visibility_.size() == 0)
-            hard_idx_set.insert(edge_index_[i]);
-        else
-        {
-            if (visibility_[hard_idx_vec[i]] == 1)
-                hard_idx_set.insert(edge_index_[i]);
-        }
-    }
-
-    std::copy(hard_idx_set.begin(), hard_idx_set.end(), back_inserter(hard_index_));
-}
+//// remove duplicated elements
+//void MeshModel::buildHardCtrsIdx()
+//{
+//    std::set<int> hard_idx_set;
+//    for (size_t i = 0, i_end = hard_index_.size(); i < i_end; ++ i)
+//    {
+//        hard_idx_set.insert(hard_index_[i]);
+//    }
+//
+//    hard_index_.clear();
+//    std::copy(hard_idx_set.begin(), hard_idx_set.end(), back_inserter(hard_index_));
+//
+//}
+//
+//void MeshModel::buildHardCtrsIdx(int scale)
+//{
+//    hard_index_.clear();
+//
+//    std::vector<int> hard_idx_vec;
+//    std::set<int> hard_idx_set; // for unique index 
+//
+//    MeshModel sim_mesh = simplify(scale);
+//    searchNearestIdx(sim_mesh, hard_idx_vec);
+//
+//    for (size_t i = 0, i_end = hard_idx_vec.size(); i < i_end; ++ i)
+//    {
+//        if (visibility_.size() == 0)
+//            hard_idx_set.insert(hard_idx_vec[i]);
+//        else
+//        {
+//            if (visibility_[hard_idx_vec[i]] == 1)
+//                hard_idx_set.insert(hard_idx_vec[i]);
+//        }
+//    }
+//
+//    for (size_t i = 0, i_end = edge_index_.size(); i < i_end; ++ i)
+//    {
+//        if (visibility_.size() == 0)
+//            hard_idx_set.insert(edge_index_[i]);
+//        else
+//        {
+//            if (visibility_[hard_idx_vec[i]] == 1)
+//                hard_idx_set.insert(edge_index_[i]);
+//        }
+//    }
+//
+//    std::copy(hard_idx_set.begin(), hard_idx_set.end(), back_inserter(hard_index_));
+//}
 
 //void MeshModel::deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx)
 //{
@@ -473,186 +473,186 @@ void MeshModel::buildHardCtrsIdx(int scale)
 //    free(p);
 //}
 
-void MeshModel::deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx,
-            const osg::Vec3Array& soft_ctrs, const std::vector<int>& soft_idx)
-{
-    float* p;
-    int p_num = vertices_->size();
-    p = (float*)malloc(sizeof(float)*p_num*3);
-
-    for (size_t i = 0; i < p_num; i ++)
-    {
-        const osg::Vec3& point = vertices_->at(i);
-        p[3*i+0] = point.x();
-        p[3*i+1] = point.y();
-        p[3*i+2] = point.z();
-    }
-
-    Deform::VectorF vf_hard_ctrs;
-    Deform::VectorI vi_hard_idx;
-
-    Deform::VectorF vf_soft_ctrs;
-    Deform::VectorI vi_soft_idx;
-
-
-    for (size_t i = 0, i_end = hard_ctrs.size(); i < i_end; i ++)
-    {
-        osg::Vec3 hard_ctr = hard_ctrs.at(i);
-        vf_hard_ctrs.push_back(hard_ctr.x());
-        vf_hard_ctrs.push_back(hard_ctr.y());
-        vf_hard_ctrs.push_back(hard_ctr.z()); 
-    }
-
-    for (size_t i = 0, i_end = hard_idx.size(); i < i_end; i ++)
-    {
-        vi_hard_idx.push_back(hard_idx.at(i));
-    }
-
-    for (size_t i = 0, i_end = soft_ctrs.size(); i < i_end; i ++)
-    {
-        osg::Vec3 soft_ctr = soft_ctrs.at(i);
-        vf_soft_ctrs.push_back(soft_ctr.x());
-        vf_soft_ctrs.push_back(soft_ctr.y());
-        vf_soft_ctrs.push_back(soft_ctr.z()); 
-    }
-
-    for (size_t i = 0, i_end = soft_idx.size(); i < i_end; i ++)
-    {
-        vi_soft_idx.push_back(soft_idx.at(i));
-    }
-
-    Deform deform_model(p, p_num, adj_list_, faces_);
-    deform_model.set_hard_ctrs(vf_hard_ctrs, vi_hard_idx);
-    deform_model.set_soft_ctrs(vf_soft_ctrs, vi_soft_idx);
-    deform_model.set_arap_type(Deform::HARD_SOFT);
-    deform_model.set_lambda(2);
-    deform_model.do_Deform(1);
-
-
-    float* new_p = deform_model.get_P_Prime();
-
-    for (size_t i = 0; i < p_num; i ++)
-    {
-        osg::Vec3& point = vertices_->at(i);
-        point.x() = new_p[3*i+0];
-        point.y() = new_p[3*i+1];
-        point.z() = new_p[3*i+2];
-    }
-
-    free(p);
-}
-
-
-void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx)
-{
-    float* p;
-    int p_num = vertices_->size();
-    p = (float*)malloc(sizeof(float)*p_num*3);
-
-    for (size_t i = 0; i < p_num; i ++)
-    {
-        const osg::Vec3& point = vertices_->at(i);
-        p[3*i+0] = point.x();
-        p[3*i+1] = point.y();
-        p[3*i+2] = point.z();
-    }
-
-    Deform deform_model(p, p_num, adj_list_, faces_);
-    deform_model.set_hard_ctrs(hard_ctrs, hard_idx);
-    deform_model.do_Deform(1);
-
-    float* new_p = deform_model.get_P_Prime();
-
-    for (size_t i = 0; i < p_num; i ++)
-    {
-        osg::Vec3& point = vertices_->at(i);
-        point.x() = new_p[3*i+0];
-        point.y() = new_p[3*i+1];
-        point.z() = new_p[3*i+2];
-    }
-
-    free(p);
-}
-
-void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx,
-            const std::vector<float>& soft_ctrs, const std::vector<int>& soft_idx)
-{
-    float* p;
-    int p_num = vertices_->size();
-    p = (float*)malloc(sizeof(float)*p_num*3);
-
-    for (size_t i = 0; i < p_num; i ++)
-    {
-        const osg::Vec3& point = vertices_->at(i);
-        p[3*i+0] = point.x();
-        p[3*i+1] = point.y();
-        p[3*i+2] = point.z();
-    }
-
-    Deform deform_model(p, p_num, adj_list_, faces_);
-    deform_model.set_arap_type(Deform::HARD_SOFT);
-    deform_model.set_hard_ctrs(hard_ctrs, hard_idx);
-    deform_model.set_soft_ctrs(soft_ctrs, soft_idx);
-    deform_model.set_lambda(0);
-    deform_model.do_Deform(1);
-
-    float* new_p = deform_model.get_P_Prime();
-
-    for (size_t i = 0; i < p_num; i ++)
-    {
-        osg::Vec3& point = vertices_->at(i);
-        point.x() = new_p[3*i+0];
-        point.y() = new_p[3*i+1];
-        point.z() = new_p[3*i+2];
-    }
-
-    free(p);
-}
-
-void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
-{
-
-    // Init the indices of the halfedges and the vertices.
-    set_halfedgeds_items_id(deform_model_);
-    // Create a deformation object
-    Surface_mesh_deformation deform_mesh(deform_model_);
-    // Definition of the region of interest (use the whole mesh)
-    vertex_iterator vb,ve;
-    boost::tie(vb, ve) = vertices(deform_model_);
-    deform_mesh.insert_roi_vertices(vb, ve);
-    // Select control vertices ...and insert them
-    std::vector<vertex_descriptor> control_vertices;
-    for (size_t i = 0, i_end = index.size(); i < i_end; i ++)
-    {
-        control_vertices.push_back(*CGAL::cpp11::next(vb, index[i]));
-        deform_mesh.insert_control_vertex(control_vertices.at(i));
-    }
-    // The definition of the ROI and the control vertices is done, call preprocess
-    bool is_matrix_factorization_OK = deform_mesh.preprocess();
-    if(!is_matrix_factorization_OK){
-        std::cerr << "Error in preprocessing, check documentation of preprocess()" << std::endl;
-        return;
-    }
-    // Use set_target_position() to set the constained position
-    for (size_t i = 0, i_end = indicators.size(); i < i_end; i ++)
-    {
-        const osg::Vec3& indicator = indicators.at(i);
-        Surface_mesh_deformation::Point constrained_pos(indicator.x(), indicator.y(), indicator.z());
-        deform_mesh.set_target_position(control_vertices[i], constrained_pos);
-    }
-
-    // Deform the mesh, the positions of vertices of 'mesh' are updated
-    deform_mesh.deform();
-
-    for (Polyhedron::Vertex_iterator vb = deform_model_.vertices_begin(), ve = deform_model_.vertices_end();
-        vb != ve; vb ++)
-    {
-        osg::Vec3& point = vertices_->at(vb->id());
-        point.x() = vb->point().x();
-        point.y() = vb->point().y();
-        point.z() = vb->point().z();
-    }
-}
+//void MeshModel::deform(const osg::Vec3Array& hard_ctrs, const std::vector<int>& hard_idx,
+//            const osg::Vec3Array& soft_ctrs, const std::vector<int>& soft_idx)
+//{
+//    float* p;
+//    int p_num = vertices_->size();
+//    p = (float*)malloc(sizeof(float)*p_num*3);
+//
+//    for (size_t i = 0; i < p_num; i ++)
+//    {
+//        const osg::Vec3& point = vertices_->at(i);
+//        p[3*i+0] = point.x();
+//        p[3*i+1] = point.y();
+//        p[3*i+2] = point.z();
+//    }
+//
+//    Deform::VectorF vf_hard_ctrs;
+//    Deform::VectorI vi_hard_idx;
+//
+//    Deform::VectorF vf_soft_ctrs;
+//    Deform::VectorI vi_soft_idx;
+//
+//
+//    for (size_t i = 0, i_end = hard_ctrs.size(); i < i_end; i ++)
+//    {
+//        osg::Vec3 hard_ctr = hard_ctrs.at(i);
+//        vf_hard_ctrs.push_back(hard_ctr.x());
+//        vf_hard_ctrs.push_back(hard_ctr.y());
+//        vf_hard_ctrs.push_back(hard_ctr.z()); 
+//    }
+//
+//    for (size_t i = 0, i_end = hard_idx.size(); i < i_end; i ++)
+//    {
+//        vi_hard_idx.push_back(hard_idx.at(i));
+//    }
+//
+//    for (size_t i = 0, i_end = soft_ctrs.size(); i < i_end; i ++)
+//    {
+//        osg::Vec3 soft_ctr = soft_ctrs.at(i);
+//        vf_soft_ctrs.push_back(soft_ctr.x());
+//        vf_soft_ctrs.push_back(soft_ctr.y());
+//        vf_soft_ctrs.push_back(soft_ctr.z()); 
+//    }
+//
+//    for (size_t i = 0, i_end = soft_idx.size(); i < i_end; i ++)
+//    {
+//        vi_soft_idx.push_back(soft_idx.at(i));
+//    }
+//
+//    Deform deform_model(p, p_num, adj_list_, faces_);
+//    deform_model.set_hard_ctrs(vf_hard_ctrs, vi_hard_idx);
+//    deform_model.set_soft_ctrs(vf_soft_ctrs, vi_soft_idx);
+//    deform_model.set_arap_type(Deform::HARD_SOFT);
+//    deform_model.set_lambda(2);
+//    deform_model.do_Deform(1);
+//
+//
+//    float* new_p = deform_model.get_P_Prime();
+//
+//    for (size_t i = 0; i < p_num; i ++)
+//    {
+//        osg::Vec3& point = vertices_->at(i);
+//        point.x() = new_p[3*i+0];
+//        point.y() = new_p[3*i+1];
+//        point.z() = new_p[3*i+2];
+//    }
+//
+//    free(p);
+//}
+//
+//
+//void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx)
+//{
+//    float* p;
+//    int p_num = vertices_->size();
+//    p = (float*)malloc(sizeof(float)*p_num*3);
+//
+//    for (size_t i = 0; i < p_num; i ++)
+//    {
+//        const osg::Vec3& point = vertices_->at(i);
+//        p[3*i+0] = point.x();
+//        p[3*i+1] = point.y();
+//        p[3*i+2] = point.z();
+//    }
+//
+//    Deform deform_model(p, p_num, adj_list_, faces_);
+//    deform_model.set_hard_ctrs(hard_ctrs, hard_idx);
+//    deform_model.do_Deform(1);
+//
+//    float* new_p = deform_model.get_P_Prime();
+//
+//    for (size_t i = 0; i < p_num; i ++)
+//    {
+//        osg::Vec3& point = vertices_->at(i);
+//        point.x() = new_p[3*i+0];
+//        point.y() = new_p[3*i+1];
+//        point.z() = new_p[3*i+2];
+//    }
+//
+//    free(p);
+//}
+//
+//void MeshModel::deform(const std::vector<float>& hard_ctrs, const std::vector<int>& hard_idx,
+//            const std::vector<float>& soft_ctrs, const std::vector<int>& soft_idx)
+//{
+//    float* p;
+//    int p_num = vertices_->size();
+//    p = (float*)malloc(sizeof(float)*p_num*3);
+//
+//    for (size_t i = 0; i < p_num; i ++)
+//    {
+//        const osg::Vec3& point = vertices_->at(i);
+//        p[3*i+0] = point.x();
+//        p[3*i+1] = point.y();
+//        p[3*i+2] = point.z();
+//    }
+//
+//    Deform deform_model(p, p_num, adj_list_, faces_);
+//    deform_model.set_arap_type(Deform::HARD_SOFT);
+//    deform_model.set_hard_ctrs(hard_ctrs, hard_idx);
+//    deform_model.set_soft_ctrs(soft_ctrs, soft_idx);
+//    deform_model.set_lambda(0);
+//    deform_model.do_Deform(1);
+//
+//    float* new_p = deform_model.get_P_Prime();
+//
+//    for (size_t i = 0; i < p_num; i ++)
+//    {
+//        osg::Vec3& point = vertices_->at(i);
+//        point.x() = new_p[3*i+0];
+//        point.y() = new_p[3*i+1];
+//        point.z() = new_p[3*i+2];
+//    }
+//
+//    free(p);
+//}
+//
+//void MeshModel::deform(const osg::Vec3Array& indicators, const std::vector<int>& index)
+//{
+//
+//    // Init the indices of the halfedges and the vertices.
+//    set_halfedgeds_items_id(deform_model_);
+//    // Create a deformation object
+//    Surface_mesh_deformation deform_mesh(deform_model_);
+//    // Definition of the region of interest (use the whole mesh)
+//    vertex_iterator vb,ve;
+//    boost::tie(vb, ve) = vertices(deform_model_);
+//    deform_mesh.insert_roi_vertices(vb, ve);
+//    // Select control vertices ...and insert them
+//    std::vector<vertex_descriptor> control_vertices;
+//    for (size_t i = 0, i_end = index.size(); i < i_end; i ++)
+//    {
+//        control_vertices.push_back(*CGAL::cpp11::next(vb, index[i]));
+//        deform_mesh.insert_control_vertex(control_vertices.at(i));
+//    }
+//    // The definition of the ROI and the control vertices is done, call preprocess
+//    bool is_matrix_factorization_OK = deform_mesh.preprocess();
+//    if(!is_matrix_factorization_OK){
+//        std::cerr << "Error in preprocessing, check documentation of preprocess()" << std::endl;
+//        return;
+//    }
+//    // Use set_target_position() to set the constained position
+//    for (size_t i = 0, i_end = indicators.size(); i < i_end; i ++)
+//    {
+//        const osg::Vec3& indicator = indicators.at(i);
+//        Surface_mesh_deformation::Point constrained_pos(indicator.x(), indicator.y(), indicator.z());
+//        deform_mesh.set_target_position(control_vertices[i], constrained_pos);
+//    }
+//
+//    // Deform the mesh, the positions of vertices of 'mesh' are updated
+//    deform_mesh.deform();
+//
+//    for (Polyhedron::Vertex_iterator vb = deform_model_.vertices_begin(), ve = deform_model_.vertices_end();
+//        vb != ve; vb ++)
+//    {
+//        osg::Vec3& point = vertices_->at(vb->id());
+//        point.x() = vb->point().x();
+//        point.y() = vb->point().y();
+//        point.z() = vb->point().z();
+//    }
+//}
 
 void MeshModel::searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx)
 {
@@ -789,7 +789,7 @@ void MeshModel::pickEvent(int pick_mode, osg::Vec3 position)
     {
     case (osgGA::GUIEventAdapter::MODKEY_CTRL):
         {
-            hard_ctrs_->clear();
+//            hard_ctrs_->clear();
             hard_index_.clear();
 
             const float radius = 10;
@@ -799,7 +799,7 @@ void MeshModel::pickEvent(int pick_mode, osg::Vec3 position)
                 osg::Vec3 vertex = vertices_->at(i);
                 if ((position-vertex).length() < radius)
                 {
-                    hard_ctrs_->push_back(vertex);
+ //                   hard_ctrs_->push_back(vertex);
                     hard_index_.push_back(i);
                 }
             }

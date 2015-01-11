@@ -403,20 +403,20 @@ void PointsFileSystem::navigateToNextFrame()
     return;
 }
 
-void PointsFileSystem::segmentPointCloudByKmeans(int frame)
-{
-    PointCloud* point_cloud = getPointCloud(frame);
-    point_cloud->kmeans_segmentation();
+//void PointsFileSystem::segmentPointCloudByKmeans(int frame)
+//{
+//    PointCloud* point_cloud = getPointCloud(frame);
+//    point_cloud->kmeans_segmentation();
+//
+//    return;
+//}
 
-    return;
-}
-
-void PointsFileSystem::kmeans_segmentation()
-{
-    int frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
-    KmeansSegmentThread* seg_thread = new KmeansSegmentThread(this, frame);
-    connect(seg_thread, SIGNAL(finished()), seg_thread, SLOT(quit()));
-
-    seg_thread->start();
-    return;
-}
+//void PointsFileSystem::kmeans_segmentation()
+//{
+//    int frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
+//    KmeansSegmentThread* seg_thread = new KmeansSegmentThread(this, frame);
+//    connect(seg_thread, SIGNAL(finished()), seg_thread, SLOT(quit()));
+//
+//    seg_thread->start();
+//    return;
+//}

@@ -75,87 +75,87 @@ int Flower::contains(Petal* petal)
     return -1;
 }
 
-Flower Flower::simplifyMesh(int scale)
-{
-    Flower simplified_flower;
-
-    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
-    {
-        Petal& petal = petals_[i];
-        Petal simplified_petal = petal.simplify(scale);
-        simplified_flower.getPetals().push_back(simplified_petal);
-    }
-
-    return simplified_flower;
-}
-
-void Flower::buildHardCtrs(int scale)
-{
-    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
-    {
-        Petal& petal = petals_[i];
-        petal.buildHardCtrsIdx(scale);
-    }
-}
-
-void Flower::buildHardCtrs()
-{
-    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
-    {
-        Petal& petal = petals_[i];
-        petal.buildHardCtrsIdx();
-    }
-}
-
-void Flower::deform(const std::vector<osg::ref_ptr<osg::Vec3Array> >& pos, 
-            const std::vector<std::vector<int> > idx)
-{
-    if (pos.size() != idx.size())
-    {
-        std::cerr << "the number of position groups is not the same as indices' group number" << std::endl;
-        return;
-    }
-
-    if (pos.size() != petals_.size())
-    {
-        std::cerr << "the number of position groups is not the same as petals' number" << std::endl;
-        return;
-    }
-
-    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
-    {
-        Petal& petal = petals_.at(i);
-        /*std::vector<float> ctrs;
-        osg::ref_ptr<osg::Vec3Array> ctrs_pos = petal->getVertices();
-        for (size_t j = 0, j_end = ctrs_pos->size(); j < j_end; ++ j)
-        {
-        ctrs.push_back(ctrs_pos->at(j).x());
-        ctrs.push_back(ctrs_pos->at(j).x());
-        ctrs.push_back(ctrs_pos->at(j).x());
-        }*/
-
-        petal.deform(*pos[i], idx[i]);
-    }
-}
-
-void Flower::deform(const std::vector<osg::ref_ptr<osg::Vec3Array> >& hard_ctrs, const std::vector<std::vector<int> > hard_idx, 
-            const std::vector<osg::ref_ptr<osg::Vec3Array> >& soft_ctrs, const std::vector<std::vector<int> > soft_idx)
-{
-    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
-    {
-        Petal petal = petals_.at(i);
-        /*std::vector<float> ctrs;
-        osg::ref_ptr<osg::Vec3Array> ctrs_pos = petal->getVertices();
-        for (size_t j = 0, j_end = ctrs_pos->size(); j < j_end; ++ j)
-        {
-        ctrs.push_back(ctrs_pos->at(j).x());
-        ctrs.push_back(ctrs_pos->at(j).x());
-        ctrs.push_back(ctrs_pos->at(j).x());
-        }*/
-
-        petal.deform(*hard_ctrs[i], hard_idx[i], *soft_ctrs[i], soft_idx[i]);
-    }
-}
+//Flower Flower::simplifyMesh(int scale)
+//{
+//    Flower simplified_flower;
+//
+//    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+//    {
+//        Petal& petal = petals_[i];
+//        Petal simplified_petal = petal.simplify(scale);
+//        simplified_flower.getPetals().push_back(simplified_petal);
+//    }
+//
+//    return simplified_flower;
+//}
+//
+//void Flower::buildHardCtrs(int scale)
+//{
+//    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+//    {
+//        Petal& petal = petals_[i];
+//        petal.buildHardCtrsIdx(scale);
+//    }
+//}
+//
+//void Flower::buildHardCtrs()
+//{
+//    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+//    {
+//        Petal& petal = petals_[i];
+//        petal.buildHardCtrsIdx();
+//    }
+//}
+//
+//void Flower::deform(const std::vector<osg::ref_ptr<osg::Vec3Array> >& pos, 
+//            const std::vector<std::vector<int> > idx)
+//{
+//    if (pos.size() != idx.size())
+//    {
+//        std::cerr << "the number of position groups is not the same as indices' group number" << std::endl;
+//        return;
+//    }
+//
+//    if (pos.size() != petals_.size())
+//    {
+//        std::cerr << "the number of position groups is not the same as petals' number" << std::endl;
+//        return;
+//    }
+//
+//    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+//    {
+//        Petal& petal = petals_.at(i);
+//        /*std::vector<float> ctrs;
+//        osg::ref_ptr<osg::Vec3Array> ctrs_pos = petal->getVertices();
+//        for (size_t j = 0, j_end = ctrs_pos->size(); j < j_end; ++ j)
+//        {
+//        ctrs.push_back(ctrs_pos->at(j).x());
+//        ctrs.push_back(ctrs_pos->at(j).x());
+//        ctrs.push_back(ctrs_pos->at(j).x());
+//        }*/
+//
+//        petal.deform(*pos[i], idx[i]);
+//    }
+//}
+//
+//void Flower::deform(const std::vector<osg::ref_ptr<osg::Vec3Array> >& hard_ctrs, const std::vector<std::vector<int> > hard_idx, 
+//            const std::vector<osg::ref_ptr<osg::Vec3Array> >& soft_ctrs, const std::vector<std::vector<int> > soft_idx)
+//{
+//    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+//    {
+//        Petal petal = petals_.at(i);
+//        /*std::vector<float> ctrs;
+//        osg::ref_ptr<osg::Vec3Array> ctrs_pos = petal->getVertices();
+//        for (size_t j = 0, j_end = ctrs_pos->size(); j < j_end; ++ j)
+//        {
+//        ctrs.push_back(ctrs_pos->at(j).x());
+//        ctrs.push_back(ctrs_pos->at(j).x());
+//        ctrs.push_back(ctrs_pos->at(j).x());
+//        }*/
+//
+//        petal.deform(*hard_ctrs[i], hard_idx[i], *soft_ctrs[i], soft_idx[i]);
+//    }
+//}
 
 
 //void Flower::searchNearestIdx(Flower& simplified_flower, 
