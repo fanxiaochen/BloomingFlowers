@@ -19,18 +19,6 @@ find_package(PCL REQUIRED common io search features kdtree)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 
-find_package(CGAL REQUIRED)
-if(CGAL_FOUND)
-  include_directories(${CGAL_INCLUDE_DIRS})
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CGAL_DIR}/cmake/modules)
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CGAL_DIR})
-  include(CGAL_Macros)
-  find_package(GMP REQUIRED)
-  if(GMP_FOUND)
-    include_directories(${GMP_INCLUDE_DIR})
-  endif(GMP_FOUND)
-endif(CGAL_FOUND)
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 find_package(Qt5Core REQUIRED)
@@ -49,8 +37,7 @@ QT5_WRAP_UI(ui_srcs ${uis})
 QT5_ADD_RESOURCES(resource_srcs ${resources})
 
 find_package(3rdParty)
-include_directories(${CPD_INCLUDE_DIR})
-include_directories(${ARAP_INCLUDE_DIR})
+include_directories(${SVD_INCLUDE})
 
 set(lily_inc    include/lily)
 set(lily_src    src/lily)
@@ -101,10 +88,8 @@ set(lily_srcs       ${lily_src}/main.cpp
             
 set(blooming_incs   ${blooming_inc}/point_cloud.h
                     ${blooming_inc}/mesh_model.h
-                    ${blooming_inc}/types_wrapper.h
                     ${blooming_inc}/tracking_system.h
                     ${blooming_inc}/task_thread.h
-                    ${blooming_inc}/trajectory_model.h
 					${blooming_inc}/flower.h
 					${blooming_inc}/mesh_simplify.h
                     ${blooming_inc}/deform_model.h
@@ -114,7 +99,6 @@ set(blooming_srcs	${blooming_src}/point_cloud.cpp
                     ${blooming_src}/mesh_model.cpp
                     ${blooming_src}/tracking_system.cpp
                     ${blooming_src}/task_thread.cpp
-                    ${blooming_src}/trajectory_model.cpp
 					${blooming_src}/flower.cpp
                     ${blooming_src}/deform_model.cpp
                     )
@@ -175,11 +159,10 @@ set(link_libraies	${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
   ${OPENSCENEGRAPH_LIBRARIES}
   Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent Qt5::Xml
   ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_KDTREE_LIBRARIES}
-  ${CGAL_LIBRARY}
   ${CPD_LIBRARY} ${ARAP_LIBRARY})
 
 set(exe_name BloomingFlower)
-add_executable(${exe_name} ${prelily_src} ${prelily_inc} ${ui_srcs} ${moc_srcs} ${resource_srcs} ${srcs} ${incs})
+add_executable(${exe_name} ${prelily_src} ${prelily_inc} ${ui_srcs} ${moc_srcs} ${resource_srcs} ${srcs} ${incs} ${svd_src})
 target_link_libraries(${exe_name} ${link_libraies})
 
 set_target_properties(${exe_name} PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT ${prelily_inc})

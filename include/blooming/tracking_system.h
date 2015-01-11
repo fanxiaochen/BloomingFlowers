@@ -5,13 +5,11 @@
 #include <vector>
 
 #include "flower.h"
-//#include "types_wrapper.h"
 
 class PointCloud;
 class MeshModel;
 class PointsFileSystem;
 class MeshFileSystem;
-//class Trajectories;
 
 class TrackingSystem: public QObject
 {
@@ -24,7 +22,6 @@ public:
 
     inline PointsFileSystem* getPointsFileSystem(){ return points_file_system_; }
     inline MeshFileSystem* getMeshFileSystem(){ return mesh_file_system_; }
-//    inline Trajectories* getTrajectories(){ return trajectories_; }
 
     inline Flowers* getFlowers(){ return flowers_; }
 
@@ -37,34 +34,16 @@ public:
     inline int getKeyFrame() { return key_frame_; }
 
     public slots:
-//    void pointcloud_tracking();
-//    void mesh_tracking();
-//    void petal_tracking();
-//    void flower_tracking();
-
-//    void buildTrajectories();
-//    void clusterTrajectories();
-
-    //void template_segmentation();
 
     void em_tracking();
 
 public:
-    //void cpd_registration(const PointCloud& tracked_frame, PointCloud& tracking_template);
-    //void cpd_registration(const PointCloud& tracked_frame, MeshModel& tracking_template);
-    //void cpd_registration(const PointCloud& source_frame, const PointCloud& target_frame, 
-    //    const std::vector<int>& src_idx, std::vector<int>& tar_idx);
-
-    //void cpd_petal(const PointCloud& tracked_frame, Petal& tracking_template);
-    //void cpd_flower(const PointCloud& tracked_frame, Flower& tracking_template);
 
     void em_registration(PointCloud& tracked_frame, Flower& tracking_template);
 
 private:
     PointsFileSystem*   points_file_system_;
     MeshFileSystem*     mesh_file_system_;
-
-//    Trajectories*       trajectories_;
 
     int                 start_frame_;
     int                 end_frame_;

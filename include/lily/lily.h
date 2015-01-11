@@ -6,9 +6,6 @@
 #include <pcl/point_cloud.h>
 #include <pcl/io/pcd_io.h>
 
-#include <base/matrix.hpp>
-#include <core/cpd_nonrigid.hpp>
-
 #include "adapter_widget.h"
 #include "file_viewer_widget.h"
 #include "osg_viewer_widget.h"

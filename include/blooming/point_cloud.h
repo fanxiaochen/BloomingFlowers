@@ -84,33 +84,10 @@ static bool operator != (const Point& p1, const Point& p2)
 
 
 class Flower;
+class MeshModel;
 
 class PointCloud : public QObject, public Renderable, public PclPointCloud
 {
-//public:
-//
-//    // kmeans_segmentation
-//    inline const std::vector<int>& getPickedIndices() const { return picked_indices_; }
-//    inline std::vector<osg::Vec3>& getPickedPoints() { return picked_points_; }
-//    void pickEvent(int pick_mode, osg::Vec3 position);
-//
-//private:
-//    // kmeans_segmentation
-//    void k_means();
-//    float distance(const Point& p1, const Point& p2);
-//    void estimateNormals();
-//    void computeFlowerPoints();
-//    void setCenters();
-//    void updateCenters();
-//    int determineCluster(const Point& point);
-//    Point mean_center(const std::vector<int>& ids);
-//    bool terminal(const std::vector<Point>& cluster_centers, const std::vector<Point>& next_centers);
-//
-//private:
-//    // kmeans_segmentation
-//    std::vector<int>              picked_indices_;
-//    std::vector<osg::Vec3>        picked_points_;
-//    std::vector<Point>            cluster_centers_;
 
 public:
   PointCloud(void);
@@ -126,21 +103,10 @@ public:
   int getFrame(void) const;
   bool isShown(void) const;
   
-  //// using idx vector of this point cloud to build a new cloud
-  //void reordering(osg::ref_ptr<PointCloud> point_cloud, const std::vector<int>& idx);
-
-  //// k-means segmentation
-  //void kmeans_segmentation();
-
-  //// template segmentation with visibility
-  //void template_segmentation(Flower* flower);
-
   // template segmentation for em tracking framework
   void flower_segmentation(Flower* flower);
 
   osg::ref_ptr<PointCloud> getPetalCloud(int id);
-
-//  void resetSegmentation();
 
   std::vector<int>& getSegmentFlags() { return segment_flags_; }
 protected:
