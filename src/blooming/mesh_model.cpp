@@ -19,9 +19,8 @@ MeshModel::MeshModel()
     :vertices_(new osg::Vec3Array),
     texcoords_(new osg::Vec2Array),
     vertex_normals_(new osg::Vec3Array),
-    colors_(new osg::Vec4Array),
+    colors_(new osg::Vec4Array)
     /*face_normals_(new osg::Vec3Array),*/
-    smoothing_visitor_(new osgUtil::SmoothingVisitor)
 {
 }
 
@@ -29,9 +28,8 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     :vertices_(new osg::Vec3Array),
     texcoords_(new osg::Vec2Array),
     vertex_normals_(new osg::Vec3Array),
-    colors_(new osg::Vec4Array),
+    colors_(new osg::Vec4Array)
     /*face_normals_(new osg::Vec3Array),*/
-    smoothing_visitor_(new osgUtil::SmoothingVisitor)
 {
     *(this->getVertices()) = *(mesh_model.getVertices());
     *(this->getTexcoords()) = *(mesh_model.getTexcoords());
@@ -59,23 +57,22 @@ void MeshModel::visualizeMesh(void)
 
     if (faces_.empty())
     {
-    geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices_->size()));
+        geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices_->size()));
     }
     else
     {
         /*geometry->setNormalArray(face_normals_);
         face_normals_->setBinding(osg::Array::BIND_PER_VERTEX);*/
-        geode->accept(*smoothing_visitor_);
 
-    for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
-    {
-        size_t vertex_num = faces_[i].size();
-        osg::ref_ptr<osg::DrawElementsUInt> face = new osg::DrawElementsUInt(GL_TRIANGLES, vertex_num);
-        for (size_t j = 0; j < vertex_num; ++ j)
-        face->at(j) = faces_[i][j];
+        for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
+        {
+            size_t vertex_num = faces_[i].size();
+            osg::ref_ptr<osg::DrawElementsUInt> face = new osg::DrawElementsUInt(GL_TRIANGLES, vertex_num);
+            for (size_t j = 0; j < vertex_num; ++ j)
+            face->at(j) = faces_[i][j];
 
-        geometry->addPrimitiveSet(face.get());
-    }
+            geometry->addPrimitiveSet(face.get());
+        }
     }
 
     geode->addDrawable(geometry);
@@ -445,7 +442,7 @@ void MeshModel::pickEvent(int pick_mode, osg::Vec3 position)
         {
             hard_index_.clear();
 
-            const float radius = 10;
+            const float radius = 20;
 
             for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
             {

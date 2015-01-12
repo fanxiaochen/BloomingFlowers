@@ -2,8 +2,6 @@
 #ifndef MESH_MODEL_H
 #define MESH_MODEL_H
 
-#include <osgUtil/SmoothingVisitor>
-
 #include "renderable.h"
 
 class PointCloud;
@@ -83,8 +81,6 @@ protected:
     std::vector<std::vector<int> >      faces_;
 //	osg::ref_ptr<osg::Vec3Array>        face_normals_;
     std::vector<std::vector<int> >      adj_list_;
-
-    osg::ref_ptr<osgUtil::SmoothingVisitor>     smoothing_visitor_;
 
 
     std::vector<int>                    edge_index_;

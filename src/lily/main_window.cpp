@@ -15,7 +15,6 @@
 #include "mesh_file_system.h"
 #include "tracking_system.h"
 #include "parameters.h"
-#include "trajectory_model.h"
 #include "registrator.h"
 
 
@@ -145,20 +144,10 @@ void MainWindow::init(void)
 
     connect(ui_.actionLoadPoints, SIGNAL(triggered()), this, SLOT(slotLoadPoints()));
     connect(ui_.actionLoadMesh, SIGNAL(triggered()), this, SLOT(slotLoadMesh()));
-    connect(ui_.actionLoadTrajectories, SIGNAL(triggered()), this, SLOT(slotLoadTrajectories()));
     connect(ui_.actionLoadParameters, SIGNAL(triggered()), this, SLOT(slotLoadParameters()));
     connect(ui_.actionSaveParameters, SIGNAL(triggered()), this, SLOT(slotSaveParameters()));
     connect(ui_.actionLoadAxis, SIGNAL(triggered()), this, SLOT(slotLoadAxis()));
 
-    //connect(ui_.actionKMeansForTrajectories, SIGNAL(triggered()), tracking_system_, SLOT(clusterTrajectories()));
-    //connect(ui_.actionKMeansForFlower, SIGNAL(triggered()), points_files_, SLOT(kmeans_segmentation()));
-    //connect(ui_.actionSegmentationByTemplate, SIGNAL(triggered()), tracking_system_, SLOT(template_segmentation()));
-
-    //connect(ui_.actionPointCloudTracking, SIGNAL(triggered()), tracking_system_, SLOT(pointcloud_tracking()));
-    //connect(ui_.actionMeshTracking, SIGNAL(triggered()), tracking_system_, SLOT(mesh_tracking()));
-    //connect(ui_.actionTrajectoryTracking, SIGNAL(triggered()), tracking_system_, SLOT(buildTrajectories()));
-    //connect(ui_.actionPetalTracking, SIGNAL(triggered()), tracking_system_, SLOT(petal_tracking()));
-    //connect(ui_.actionFlowerTracking, SIGNAL(triggered()), tracking_system_, SLOT(flower_tracking()));
     connect(ui_.actionEMTracking, SIGNAL(triggered()), tracking_system_, SLOT(em_tracking()));
 
     // connect
@@ -185,7 +174,7 @@ bool MainWindow::slotLoadPoints(void)
 
 bool MainWindow::slotLoadMesh(void)
 {
-    QString directory = QFileDialog::getExistingDirectory(this, tr("Load Mesh"), mesh_path_.c_str(), QFileDialog::ShowDirsOnly);
+    QString directory = QFileDialog::getExistingDirectory(this, tr("Load Mesh"), workspace_.c_str(), QFileDialog::ShowDirsOnly);
 
     if (directory.isEmpty())
         return false;
@@ -196,19 +185,6 @@ bool MainWindow::slotLoadMesh(void)
 
     return true;
 }
-
-//bool MainWindow::slotLoadTrajectories()
-//{
-//    QString traj_file = QFileDialog::getOpenFileName(this, tr("Load Trajectories"), workspace_.c_str(),  tr("Files (*.json)"));
-//
-//    if (traj_file.isEmpty())
-//        return false;
-//
-//    tracking_system_->getTrajectories()->load(traj_file.toStdString());
-//    MainWindow::getInstance()->getSceneWidget()->addSceneChild(tracking_system_->getTrajectories());
-//
-//    return true;
-//}
 
 bool MainWindow::slotLoadParameters()
 {
