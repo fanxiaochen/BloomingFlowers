@@ -465,6 +465,7 @@ bool NodeHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapte
                     Renderable* node = dynamic_cast<Renderable*>(root_->getChild(i));
                     node->setHiddenState(!node->isHidden());
                     node->expire();
+                    break;
                 }
             }
         }
