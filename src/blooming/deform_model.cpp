@@ -128,7 +128,7 @@ void DeformModel::e_step(int petal_id)
     {
         for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
         {
-            corres_mat(j, i) = gaussian(petal_id, j, i) /** vis_list[i]*/;
+            corres_mat(j, i) = gaussian(petal_id, j, i) /** vis_list[j]*/;
         }
     }
 
@@ -171,25 +171,6 @@ void DeformModel::initialize()
         deform_petals_[i]._origin_petal = pm;
     }
 
-    // init petal matrix
-    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
-    {
-        Petal& petal = petals.at(i);
-
-        std::vector<int> knn_idx;
-        petal.searchNearestIdx(point_cloud_, knn_idx);
-        
-        int petal_size = petal.getVertices()->size();
-        PetalMatrix pm(3, petal_size);
-
-        for (size_t j = 0, j_end = petal_size; j < j_end; ++ j)
-        {
-            pm.col(j) << point_cloud_->at(knn_idx[j]).x, point_cloud_->at(knn_idx[j]).y, point_cloud_->at(knn_idx[j]).z;
-        }
-
-        deform_petals_[i]._petal_matrix = pm;
-    }
-
     // init cloud matrix
     point_cloud_->flower_segmentation(flower_); // using knn to segment the point cloud to petals, and along with visibility determination
 
@@ -207,6 +188,27 @@ void DeformModel::initialize()
 
         deform_petals_[i]._cloud_matrix = cm;
     }
+
+
+    // init petal matrix
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals.at(i);
+        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getPetalCloud(i);
+        std::vector<int> knn_idx;
+        petal.searchNearestIdx(petal_cloud, knn_idx);
+        
+        int petal_size = petal.getVertices()->size();
+        PetalMatrix pm(3, petal_size);
+
+        for (size_t j = 0, j_end = petal_size; j < j_end; ++ j)
+        {
+            pm.col(j) << petal_cloud->at(knn_idx[j]).x, petal_cloud->at(knn_idx[j]).y, petal_cloud->at(knn_idx[j]).z;
+        }
+
+        deform_petals_[i]._petal_matrix = pm;
+    }
+
 
     // init correspondence matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)

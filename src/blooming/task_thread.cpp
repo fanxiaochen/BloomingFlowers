@@ -56,12 +56,12 @@ void EATrackThread::run()
 
     std::cout << "Forward Tracking..." << std::endl;
     forward_flower->show();
-    for (size_t i = key_frame , i_end = end_frame;
+    for (size_t i = key_frame , i_end = key_frame + 5;
         i <= i_end; ++ i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
 
-        // EM tracking 
+        // EM + ARAP tracking 
         PointCloud* forward_cloud = points_file_system->getPointCloud(i);
         tracking_system_->ea_registration(*forward_cloud, *forward_flower);
 

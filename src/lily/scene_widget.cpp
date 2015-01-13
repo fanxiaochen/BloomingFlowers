@@ -19,9 +19,9 @@ SceneWidget::SceneWidget(QWidget * parent, const QGLWidget * shareWidget, Qt::Wi
 	light_model->setTwoSided(true);
 	scene_root_->getOrCreateStateSet()->setAttributeAndModes(light_model.get(), osg::StateAttribute::ON);
 
-	//addSceneChild(point_cloud_);
     addEventHandler(new PickHandler());
     addEventHandler(new CameraHandler());
+    addEventHandler(new NodeHandler(scene_root_));
 }
 
 SceneWidget::~SceneWidget()

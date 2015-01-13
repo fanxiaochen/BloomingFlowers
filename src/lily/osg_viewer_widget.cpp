@@ -439,3 +439,37 @@ void OSGViewerWidget::setCenterScene(bool center_scene)
 {
     center_scene_ = center_scene;
 }
+
+
+NodeHandler::NodeHandler(osg::Group* root)
+    :root_(root)
+{}
+
+NodeHandler::~NodeHandler(void)
+{
+
+}
+
+bool NodeHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapter& aa)
+{
+    switch(ea.getEventType())
+    {
+    case(osgGA::GUIEventAdapter::KEYDOWN):
+        {
+            int child_num = root_->getNumChildren();
+            int key_num = ea.getKey();
+            for (size_t i = 0; i < child_num; ++ i)
+            {
+                if (i == (key_num - '0'))
+                {
+                    Renderable* node = dynamic_cast<Renderable*>(root_->getChild(i));
+                    node->setHiddenState(!node->isHidden());
+                    node->expire();
+                }
+            }
+        }
+        break;
+    }
+
+    return false;
+}

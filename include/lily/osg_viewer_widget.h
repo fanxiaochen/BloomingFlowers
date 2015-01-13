@@ -92,4 +92,17 @@ private:
     osg::Vec3 up_;
 };
 
+class NodeHandler: public osgGA::GUIEventHandler
+{
+public:
+    NodeHandler(osg::Group* root);
+    virtual ~NodeHandler(void);
+
+    virtual bool handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapter& aa);
+    virtual void accept(osgGA::GUIEventHandlerVisitor& v)   { v.visit(*this); };
+private:
+    osg::Group* root_;
+    bool visible_;
+};
+
 #endif // OSG_VIEWER_WIDGET_H
