@@ -6,11 +6,12 @@
 
 class TrackingSystem;
 
-class EMTrackThread: public QThread
+// EM + ARAP Tracking
+class EATrackThread: public QThread
 {
 public:
-    EMTrackThread(TrackingSystem* tracking_system);
-    virtual ~EMTrackThread();
+    EATrackThread(TrackingSystem* tracking_system);
+    virtual ~EATrackThread();
 
 protected:
     void run();

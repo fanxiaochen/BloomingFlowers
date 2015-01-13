@@ -35,11 +35,11 @@ public:
 
     public slots:
 
-    void em_tracking();
+    void em_arap();
 
 public:
 
-    void em_registration(PointCloud& tracked_frame, Flower& tracking_template);
+    void ea_registration(PointCloud& tracked_frame, Flower& tracking_template);
 
 private:
     PointsFileSystem*   points_file_system_;
@@ -49,7 +49,7 @@ private:
     int                 end_frame_;
     int                 key_frame_;
 
-    Flowers*             flowers_;
+    Flowers*            flowers_;
     
 };
 

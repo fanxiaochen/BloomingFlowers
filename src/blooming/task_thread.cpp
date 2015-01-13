@@ -14,18 +14,18 @@
 #include "deform_model.h"
 
 
-EMTrackThread::EMTrackThread(TrackingSystem* tracking_system)
+EATrackThread::EATrackThread(TrackingSystem* tracking_system)
     :QThread()
 {
     tracking_system_ = tracking_system;
 }
 
-EMTrackThread::~EMTrackThread()
+EATrackThread::~EATrackThread()
 {}
 
-void EMTrackThread::run()
+void EATrackThread::run()
 {
-    std::cout << "EM Tracking Starts..." << std::endl;
+    std::cout << "EM + ARAP Tracking Starts..." << std::endl;
 
     int key_frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
     Flowers* flowers = tracking_system_->getFlowers();
@@ -48,7 +48,7 @@ void EMTrackThread::run()
     }
 
     Flower* forward_flower = new Flower(*flower);
-    Flower* backward_flower = new Flower(*flower);
+//    Flower* backward_flower = new Flower(*flower);
 
     std::string workspace = MainWindow::getInstance()->getWorkspace();
     QDir mesh_dir(QString(workspace.c_str()));
@@ -63,7 +63,7 @@ void EMTrackThread::run()
 
         // EM tracking 
         PointCloud* forward_cloud = points_file_system->getPointCloud(i);
-        tracking_system_->em_registration(*forward_cloud, *forward_flower);
+        tracking_system_->ea_registration(*forward_cloud, *forward_flower);
 
         QString frame_path = mesh_dir.absolutePath() + "/meshes";
         QDir mesh_frame(frame_path);
@@ -79,5 +79,5 @@ void EMTrackThread::run()
     }
     //   forward_flower->hide();
 
-    std::cout << "EM Tracking Finished!" << std::endl;
+    std::cout << "EM + ARAP Tracking Finished!" << std::endl;
 }

@@ -52,7 +52,7 @@
     <property name="title">
      <string>Tracking</string>
     </property>
-    <addaction name="actionEMTracking"/>
+    <addaction name="actionEMARAP"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTracking"/>
@@ -141,9 +141,9 @@
     <string>Petal Tracking</string>
    </property>
   </action>
-  <action name="actionEMTracking">
+  <action name="actionEMARAP">
    <property name="text">
-    <string>EM Tracking</string>
+    <string>EM + ARAP</string>
    </property>
   </action>
  </widget>

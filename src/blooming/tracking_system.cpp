@@ -28,16 +28,17 @@ TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system, MeshFileSys
 TrackingSystem::~TrackingSystem()
 {}
 
-void TrackingSystem::em_tracking()
+void TrackingSystem::em_arap()
 {
-    EMTrackThread* track_thread = new EMTrackThread(this);
+    EATrackThread* track_thread = new EATrackThread(this);
     connect(track_thread, SIGNAL(finished()), track_thread, SLOT(quit()));
 
     track_thread->start();
     return;
 }
 
-void TrackingSystem::em_registration(PointCloud& tracked_frame, Flower& tracking_template)
+// em + arap registration
+void TrackingSystem::ea_registration(PointCloud& tracked_frame, Flower& tracking_template)
 {
     DeformModel deform_model(&tracked_frame, &tracking_template);
     deform_model.deform();

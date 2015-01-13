@@ -148,7 +148,7 @@ void MainWindow::init(void)
     connect(ui_.actionSaveParameters, SIGNAL(triggered()), this, SLOT(slotSaveParameters()));
     connect(ui_.actionLoadAxis, SIGNAL(triggered()), this, SLOT(slotLoadAxis()));
 
-    connect(ui_.actionEMTracking, SIGNAL(triggered()), tracking_system_, SLOT(em_tracking()));
+    connect(ui_.actionEMARAP, SIGNAL(triggered()), tracking_system_, SLOT(em_arap()));
 
     // connect
 
