@@ -32,7 +32,7 @@ bool ObjWriter::save(const std::string& obj_file)
 
     fs << "\n\n";
 
-    fs << "mtllib petal.mtl" << "\n";
+//    fs << "mtllib petal.mtl" << "\n";
 
     fs << "\n\n";
 
@@ -68,9 +68,18 @@ bool ObjWriter::save(const std::string& obj_file)
         if (face.size() != 3)
             return false;
 
-        fs << "f " << face[0]+1 << "/" << face[0]+1 << "/" << face[0]+1;
-        fs << " " << face[1]+1 << "/" << face[1]+1 << "/" << face[1]+1;
-        fs << " " << face[2]+1 << "/" << face[2]+1 << "/" << face[2]+1 << "\n";
+        std::string f0 = std::to_string(face[0] + 1);
+        std::string f1 = std::to_string(face[1] + 1);
+        std::string f2 = std::to_string(face[2] + 1);
+
+        int v_num = vertices->size();
+        int vt_num = texcoords->size();
+        int vn_num = vertex_normals->size();
+
+
+        fs << "f " << (v_num != 0 ? f0 : "") << "/" << (vt_num != 0 ? f0 : "") << "/" << (vn_num != 0 ? f0 : "");
+        fs << " " << (v_num != 0 ? f1 : "") << "/" << (vt_num != 0 ? f1 : "") << "/" << (vn_num != 0 ? f1 : "");
+        fs << " " << (v_num != 0 ? f2 : "") << "/" << (vt_num != 0 ? f2 : "") << "/" << (vn_num != 0 ? f2 : "") << "\n";
 
     }
 
