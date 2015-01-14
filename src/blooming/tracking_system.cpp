@@ -7,7 +7,7 @@
 #include "deform_model.h"
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system)
-    :key_frame_(-1), flowers_(new Flowers)
+    :key_frame_(-1)
 {
     points_file_system_ = points_file_system;
 
@@ -16,7 +16,7 @@ TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system)
 }
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system, MeshFileSystem* mesh_file_system)
-    :key_frame_(-1), flowers_(new Flowers)
+    :key_frame_(-1)
 {
 	points_file_system_ = points_file_system;
 	mesh_file_system_ = mesh_file_system;	

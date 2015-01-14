@@ -23,8 +23,6 @@ public:
     inline PointsFileSystem* getPointsFileSystem(){ return points_file_system_; }
     inline MeshFileSystem* getMeshFileSystem(){ return mesh_file_system_; }
 
-    inline Flowers* getFlowers(){ return flowers_; }
-
     inline void setStartFrame(int start_frame) { start_frame_ = start_frame; }
     inline void setEndFrame(int end_frame) { end_frame_ = end_frame; }
     inline void setKeyFrame(int key_frame) { key_frame_ = key_frame; }
@@ -48,8 +46,6 @@ private:
     int                 start_frame_;
     int                 end_frame_;
     int                 key_frame_;
-
-    Flowers*            flowers_;
     
 };
 

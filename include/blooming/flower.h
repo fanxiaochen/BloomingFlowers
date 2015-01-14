@@ -7,6 +7,7 @@
 typedef MeshModel   Petal;
 typedef std::vector<Petal>  Petals;
 
+// Flower could not be template of osg::ref_ptr
 class Flower
 {
 public:
@@ -18,6 +19,8 @@ public:
     inline Petals& getPetals() { return petals_; }
 
     void save(const std::string& flower_path);
+    void save(const std::string& flower_folder, int frame);
+    void load(const std::string& flower_path);
 
     void show();
     void update();
@@ -39,5 +42,21 @@ private:
 };
 
 typedef std::vector<Flower> Flowers;
+
+//class FlowersManager
+//{
+//public:
+//    FlowersManager();
+//    virtual ~FlowersManager();
+//
+//    void setFlowersFolder(const std::string& flowers_folder);
+//
+//    Flower getFlower(int frame);
+//    Flower next(int frame);
+//    Flower previous(int frame);
+//
+//private:
+//    std::string flowers_folder_;
+//};
 
 #endif 

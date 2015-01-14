@@ -28,6 +28,27 @@ void Flower::save(const std::string& flower_path)
     }
 }
 
+void Flower::save(const std::string& flower_folder, int frame)
+{
+    QDir flower_frame(flower_folder.c_str());
+    QString frame_file = QString("frame_%1").arg(frame, 5, 10, QChar('0'));
+    flower_frame.mkdir(frame_file);
+    QString flower_path = flower_frame.absolutePath() + "/" + frame_file;
+    
+    save(flower_path.toStdString());
+}
+
+void Flower::load(const std::string& flower_path)
+{
+    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+    {
+        std::string& petal_file = flower_path + QString("/petal-%1.obj").arg(i).toStdString();
+        Petal& petal = petals_[i];
+        petal.load(petal_file);
+    }
+
+}
+
 void Flower::show()
 {
     for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
@@ -195,3 +216,42 @@ void Flower::initVisibility()
     for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
         petals_[i].initializeVisibility();
 }
+
+
+//FlowersManager::FlowersManager()
+//{
+//
+//}
+//
+//FlowersManager::~FlowersManager()
+//{
+//
+//}
+//
+//void FlowersManager::setFlowersFolder(const std::string& flowers_folder)
+//{
+//    flowers_folder_ = flowers_folder;
+//}
+//
+//osg::ref_ptr<Flower> FlowersManager::getFlower(int frame)
+//{
+//    osg::ref_ptr<Flower> flower = new Flower;
+//
+//    std::string frame_file = QString("frame_%1").arg(frame, 5, 10, QChar('0')).toStdString();
+//    std::string flower_path = flowers_folder_ + "/" + frame_file;
+//
+//    flower->load(flower_path);
+//
+//    return flower;
+//}
+//
+//osg::ref_ptr<Flower> FlowersManager::next(int frame)
+//{
+//    return getFlower(frame + 1);
+//}
+//
+//osg::ref_ptr<Flower> FlowersManager::previous(int frame)
+//{
+//    return getFlower(frame - 1);
+//}
+

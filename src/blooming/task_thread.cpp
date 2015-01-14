@@ -28,7 +28,6 @@ void EATrackThread::run()
     std::cout << "EM + ARAP Tracking Starts..." << std::endl;
 
     int key_frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
-    Flowers* flowers = tracking_system_->getFlowers();
 
     PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
     MeshFileSystem* mesh_file_system = tracking_system_->getMeshFileSystem();
@@ -51,8 +50,10 @@ void EATrackThread::run()
 //    Flower* backward_flower = new Flower(*flower);
 
     std::string workspace = MainWindow::getInstance()->getWorkspace();
-    QDir mesh_dir(QString(workspace.c_str()));
-    mesh_dir.mkdir("meshes");
+    QDir flowers_dir(QString(workspace.c_str()));
+    flowers_dir.mkdir("flowers");
+    std::string flowers_folder = flowers_dir.absolutePath().toStdString() + "/flowers";
+
 
     std::cout << "Forward Tracking..." << std::endl;
     forward_flower->show();
@@ -60,23 +61,21 @@ void EATrackThread::run()
         i <= i_end; ++ i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
+
         // EM + ARAP tracking 
         PointCloud* forward_cloud = points_file_system->getPointCloud(i);
- //       forward_cloud->flower_segmentation(forward_flower);
         tracking_system_->ea_registration(*forward_cloud, *forward_flower);
-        QString frame_path = mesh_dir.absolutePath() + "/meshes";
-        QDir mesh_frame(frame_path);
-        QString frame_file = QString("frame_%1").arg(i, 5, 10, QChar('0'));
-        mesh_frame.mkdir(frame_file);
-        QString mesh_path = mesh_frame.absolutePath() + "/" + frame_file;
-        forward_flower->save(mesh_path.toStdString());
-
+        
+        forward_flower->save(flowers_folder, i);
         forward_flower->update();
+
         points_file_system->hidePointCloud(i - 1);
         points_file_system->showPointCloud(i);
 
     }
     //   forward_flower->hide();
+
+
 
     std::cout << "EM + ARAP Tracking Finished!" << std::endl;
 }

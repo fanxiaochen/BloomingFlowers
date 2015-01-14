@@ -53,11 +53,6 @@ public:
     void navigateToNextFrame();
 
     void hideAndShowPointCloud(int hide_frame, int show_frame);
-
-    //void segmentPointCloudByKmeans(int frame);
-
-    //public slots:
-    //    void kmeans_segmentation();
 private:
 
     //void limitPointCloudCacheSize(void);
