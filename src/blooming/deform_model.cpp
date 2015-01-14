@@ -8,7 +8,7 @@
 
 DeformModel::DeformModel()
     :petal_num_(0),
-    iter_num_(10), 
+    iter_num_(10),
     eps_(1e-2),
     lambda_(1.0),
     noise_p_(0.0)
