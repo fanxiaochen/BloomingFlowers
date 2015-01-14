@@ -134,8 +134,8 @@ void PointCloud::searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_i
 
     for (size_t i = 0, i_end = mesh_model->getVertices()->size(); i < i_end; ++ i)
     {
-        if (mesh_model->getVisibility().size() != 0 && mesh_model->getVisibility()[i] == 0)
-            continue;
+        //if (mesh_model->getVisibility().size() != 0 && mesh_model->getVisibility()[i] == 0)
+        //    continue;
 
         const osg::Vec3& point = mesh_model->getVertices()->at(i);
 
@@ -225,12 +225,12 @@ void PointCloud::flower_segmentation(Flower* flower)
 
     segmented_ = true;
 
-    // determine visibility
-    flower->initVisibility();
-    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
-    {
-        int petal_id = segment_flags_[i];
-        Petal& petal = flower->getPetals().at(petal_id);
-        petal.getVisibility()[knns_idx[petal_id][i]] = 1;
-    }
+    //// determine visibility
+    //flower->initVisibility();
+    //for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+    //{
+    //    int petal_id = segment_flags_[i];
+    //    Petal& petal = flower->getPetals().at(petal_id);
+    //    petal.getVisibility()[knns_idx[petal_id][i]] = 1;
+    //}
 }
