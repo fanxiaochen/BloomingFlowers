@@ -13,6 +13,8 @@ public:
     MeshModel(const MeshModel& mesh_model);  // deep copy
     virtual ~MeshModel(void);
 
+    MeshModel& operator = (const MeshModel& mesh_model);
+
     bool load(const std::string& filename);
     bool save(const std::string& filename);
   

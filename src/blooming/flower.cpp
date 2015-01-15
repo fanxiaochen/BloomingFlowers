@@ -16,7 +16,8 @@ Flower::Flower(const Flower& flower)
 }
 
 Flower::~Flower()
-{}
+{
+}
 
 void Flower::save(const std::string& flower_path)
 {
@@ -40,13 +41,25 @@ void Flower::save(const std::string& flower_folder, int frame)
 
 void Flower::load(const std::string& flower_path)
 {
-    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
-    {
-        std::string& petal_file = flower_path + QString("/petal-%1.obj").arg(i).toStdString();
-        Petal& petal = petals_[i];
-        petal.load(petal_file);
-    }
+    QDir flowers_dir = QDir(flower_path.c_str());
+    QStringList allowed_file_extensions;
+    allowed_file_extensions.push_back("*.obj");
+    flowers_dir.setNameFilters(allowed_file_extensions);
 
+    QStringList points_entries = flowers_dir.entryList();
+
+    for (size_t i = 0, i_end = points_entries.size(); i < i_end; ++ i)
+    {
+        std::string& petal_file = flower_path + "/" + points_entries.at(i).toStdString();
+        Petal petal;
+        petal.load(petal_file);
+        petals_.push_back(petal);
+    }
+}
+
+void Flower::clear()
+{
+    petals_.clear();
 }
 
 void Flower::show()
@@ -78,6 +91,19 @@ void Flower::hide()
         petal.expire();
     }
 
+}
+
+// since removeSceneChild(&petal) will cause error(I don't know why...), here in order to remove the flower
+// in the graph scene, I decide to remove all...
+void Flower::remove()
+{
+    //for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+    //{
+    //    Petal& petal = petals_[i];
+    //    MainWindow::getInstance()->getSceneWidget()->removeSceneChild(&petal);  // will cause error
+    //}
+
+    MainWindow::getInstance()->getSceneWidget()->removeSceneChildren();
 }
 
 void Flower::rotate(const osg::Matrix& rot_matrix)
@@ -218,40 +244,113 @@ void Flower::initVisibility()
 }
 
 
-//FlowersManager::FlowersManager()
-//{
-//
-//}
-//
-//FlowersManager::~FlowersManager()
-//{
-//
-//}
-//
-//void FlowersManager::setFlowersFolder(const std::string& flowers_folder)
-//{
-//    flowers_folder_ = flowers_folder;
-//}
-//
-//osg::ref_ptr<Flower> FlowersManager::getFlower(int frame)
-//{
-//    osg::ref_ptr<Flower> flower = new Flower;
-//
-//    std::string frame_file = QString("frame_%1").arg(frame, 5, 10, QChar('0')).toStdString();
-//    std::string flower_path = flowers_folder_ + "/" + frame_file;
-//
-//    flower->load(flower_path);
-//
-//    return flower;
-//}
-//
-//osg::ref_ptr<Flower> FlowersManager::next(int frame)
-//{
-//    return getFlower(frame + 1);
-//}
-//
-//osg::ref_ptr<Flower> FlowersManager::previous(int frame)
-//{
-//    return getFlower(frame - 1);
-//}
 
+
+FlowersViewer::FlowersViewer(const std::string& flowers_folder)
+    :flowers_folder_(flowers_folder),
+    current_frame_(-1),
+    start_frame_(-1),
+    end_frame_(-1)
+{
+
+}
+
+FlowersViewer::~FlowersViewer()
+{
+
+}
+
+void FlowersViewer::setFrame(int frame)
+{
+    current_frame_ = frame;
+}
+
+void FlowersViewer::getFlower(int frame)
+{
+    current_frame_ = frame;
+    Flower current_flower;
+
+    std::string frame_file = QString("frame_%1").arg(current_frame_, 5, 10, QChar('0')).toStdString();
+    std::string flower_path = flowers_folder_ + "/" + frame_file;
+
+    current_flower.load(flower_path);
+    current_flower_ = current_flower;
+}
+
+void FlowersViewer::getFlower()
+{
+    getFlower(start_frame_);
+}
+
+void FlowersViewer::next()
+{
+    current_frame_ = current_frame_ + 1;
+    if (current_frame_ > end_frame_)
+        current_frame_ = end_frame_;
+
+    getFlower(current_frame_);
+}
+
+void FlowersViewer::previous()
+{
+    current_frame_ = current_frame_ - 1;
+    if (current_frame_ < start_frame_)
+        current_frame_ = start_frame_;
+
+    getFlower(current_frame_);
+}
+
+void FlowersViewer::show()
+{
+    current_flower_.show();
+}
+
+void FlowersViewer::update()
+{
+    current_flower_.update();
+}
+
+void FlowersViewer::computeFrameRange()
+{
+    start_frame_ = end_frame_ = -1;
+
+    QString root_path = QString(flowers_folder_.c_str());
+
+    if (root_path.contains("frame_")) {
+        start_frame_ = end_frame_ = root_path.right(4).toInt();
+        return;
+    }
+
+    if (root_path.contains("flowers"))
+    {
+        QStringList points_entries = QDir(root_path).entryList();
+        extractStartEndFrame(points_entries, start_frame_, end_frame_);
+        return;
+    }
+
+    current_frame_ = start_frame_;
+
+    return;
+
+}
+
+void FlowersViewer::extractStartEndFrame(const QStringList& entries, int& start_frame, int& end_frame)
+{
+    start_frame = std::numeric_limits<int>::max();
+    end_frame = std::numeric_limits<int>::min();
+
+    for (QStringList::const_iterator entries_it = entries.begin();
+        entries_it != entries.end(); ++ entries_it)
+    {
+        if (!entries_it->contains("frame_"))
+            continue;
+
+        int index = entries_it->right(4).toInt();
+        if (start_frame > index)
+            start_frame = index;
+        if (end_frame < index)
+            end_frame = index;
+    }
+
+    return;
+}

@@ -16,6 +16,7 @@ class SceneWidget;
 class TrackingSystem;
 class Parameters;
 class Registrator;
+class FlowersViewer;
 
 class MainWindow : public QMainWindow
 {
@@ -35,6 +36,7 @@ public:
     inline TrackingSystem* getTrackingSystem() { return tracking_system_; }
     inline Parameters* getParameters(){ return parameters_; }
     inline Registrator* getRegistrator(){ return registrator_; }
+    inline FlowersViewer* getFlowersViewer(){ return flowers_viewer_; }
 
     inline std::string& getPointsPath(){ return points_path_; }
     inline std::string& getMeshPath(){ return mesh_path_; }
@@ -60,10 +62,10 @@ private slots:
     void slotShowStatus(const QString& status, int timeout);
     bool slotLoadPoints();
     bool slotLoadMesh();
-    //bool slotLoadTrajectories();
     bool slotLoadParameters();
     bool slotSaveParameters();
     bool slotLoadAxis();
+    bool slotLoadFlowers();
 
 private:
     void loadSettings();
@@ -85,6 +87,7 @@ private:
     TrackingSystem*					tracking_system_;
     Parameters*                     parameters_;
     Registrator*                    registrator_;
+    FlowersViewer*                  flowers_viewer_;
 };
 
 class MainWindowInstancer

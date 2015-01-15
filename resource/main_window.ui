@@ -47,6 +47,8 @@
     <addaction name="actionSaveParameters"/>
     <addaction name="separator"/>
     <addaction name="actionLoadAxis"/>
+    <addaction name="separator"/>
+    <addaction name="actionLoadFlowers"/>
    </widget>
    <widget class="QMenu" name="menuTracking">
     <property name="title">
@@ -144,6 +146,11 @@
   <action name="actionEMARAP">
    <property name="text">
     <string>EM + ARAP</string>
+   </property>
+  </action>
+  <action name="actionLoadFlowers">
+   <property name="text">
+    <string>Load Flowers</string>
    </property>
   </action>
  </widget>

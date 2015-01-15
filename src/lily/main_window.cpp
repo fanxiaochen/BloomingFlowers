@@ -16,6 +16,7 @@
 #include "tracking_system.h"
 #include "parameters.h"
 #include "registrator.h"
+#include "flower.h"
 
 
 MainWindow::MainWindow(void)
@@ -27,7 +28,8 @@ MainWindow::MainWindow(void)
     mesh_widget_(NULL),
     tracking_system_(NULL),
     parameters_(NULL),
-    registrator_(NULL)
+    registrator_(NULL),
+    flowers_viewer_(NULL)
 {
     ui_.setupUi(this);
 
@@ -48,6 +50,7 @@ MainWindow::~MainWindow()
     delete tracking_system_;
     delete parameters_;
     delete registrator_;
+    delete flowers_viewer_;
 
     return;
 }
@@ -90,6 +93,14 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
             break;
     case(Qt::Key_Down):
             points_file->navigateToNextFrame();
+            break;
+    case(Qt::Key_PageUp):
+            flowers_viewer_->previous();
+            flowers_viewer_->update();
+            break;
+    case(Qt::Key_PageDown):
+            flowers_viewer_->next();
+            flowers_viewer_->update();
             break;
     default:
             QMainWindow::keyPressEvent(event);
@@ -147,6 +158,7 @@ void MainWindow::init(void)
     connect(ui_.actionLoadParameters, SIGNAL(triggered()), this, SLOT(slotLoadParameters()));
     connect(ui_.actionSaveParameters, SIGNAL(triggered()), this, SLOT(slotSaveParameters()));
     connect(ui_.actionLoadAxis, SIGNAL(triggered()), this, SLOT(slotLoadAxis()));
+    connect(ui_.actionLoadFlowers, SIGNAL(triggered()), this, SLOT(slotLoadFlowers()));
 
     connect(ui_.actionEMARAP, SIGNAL(triggered()), tracking_system_, SLOT(em_arap()));
 
@@ -210,6 +222,21 @@ bool MainWindow::slotLoadAxis()
         return false;
 
     return registrator_->load(axis_file);
+}
+
+bool MainWindow::slotLoadFlowers()
+{
+    QString flower_folder = QFileDialog::getExistingDirectory(this, tr("Load Flowers"), workspace_.c_str(), QFileDialog::ShowDirsOnly);
+
+    if (flower_folder.isEmpty())
+        return false;
+
+    flowers_viewer_ = new FlowersViewer(flower_folder.toStdString());
+    flowers_viewer_->computeFrameRange();
+    flowers_viewer_->getFlower();
+    flowers_viewer_->show();
+    return true;
+
 }
 
 void MainWindow::loadSettings()

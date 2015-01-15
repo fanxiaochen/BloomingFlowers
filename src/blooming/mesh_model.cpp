@@ -34,7 +34,6 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     *(this->getVertices()) = *(mesh_model.getVertices());
     *(this->getTexcoords()) = *(mesh_model.getTexcoords());
     *(this->getVertexNormals()) = *(mesh_model.getVertexNormals());
-    *(this->getVertices()) = *(mesh_model.getVertices());
     this->getFaces() = mesh_model.getFaces();
     this->getAdjList() = mesh_model.getAdjList();
     this->getEdgeIndex() = mesh_model.getEdgeIndex();
@@ -43,6 +42,19 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
 
 MeshModel::~MeshModel(void)
 {
+}
+
+MeshModel& MeshModel::operator =(const MeshModel& mesh_model)
+{
+    vertices_ = mesh_model.getVertices();
+    texcoords_ = mesh_model.getTexcoords();
+    vertex_normals_ = mesh_model.getVertexNormals();
+    faces_ = mesh_model.getFaces();
+    adj_list_ = mesh_model.getAdjList();
+    edge_index_ = mesh_model.getEdgeIndex();
+    hard_index_ = mesh_model.getHardCtrsIndex();
+
+    return *this;
 }
 
 void MeshModel::visualizeMesh(void)

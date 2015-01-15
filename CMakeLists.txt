@@ -11,7 +11,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #include_directories(${Boost_INCLUDE_DIRS})
 
 include(cotire)
-
 find_package(OpenSceneGraph REQUIRED osgViewer osgText osgDB osgGA osgQt osgManipulator osgUtil)
 include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
 

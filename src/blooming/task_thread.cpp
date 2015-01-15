@@ -54,6 +54,9 @@ void EATrackThread::run()
     flowers_dir.mkdir("flowers");
     std::string flowers_folder = flowers_dir.absolutePath().toStdString() + "/flowers";
 
+    //// init Flowers Viewer for output 
+    //FlowersViewer* flowers_viewer = tracking_system_->getFlowersViewer();
+    //flowers_viewer = new FlowersViewer(flowers_folder);
 
     std::cout << "Forward Tracking..." << std::endl;
     forward_flower->show();

@@ -7,8 +7,8 @@
 typedef MeshModel   Petal;
 typedef std::vector<Petal>  Petals;
 
-// Flower could not be template of osg::ref_ptr
-class Flower
+// Flower could not be template of osg::ref_ptr unless inherited from osg::Referenced
+class Flower: public osg::Referenced
 {
 public:
     Flower();
@@ -22,9 +22,12 @@ public:
     void save(const std::string& flower_folder, int frame);
     void load(const std::string& flower_path);
 
+    void clear();
+
     void show();
     void update();
     void hide();
+    void remove();
 
     void rotate(const osg::Matrix& rot_matrix);
 
@@ -43,20 +46,35 @@ private:
 
 typedef std::vector<Flower> Flowers;
 
-//class FlowersManager
-//{
-//public:
-//    FlowersManager();
-//    virtual ~FlowersManager();
-//
-//    void setFlowersFolder(const std::string& flowers_folder);
-//
-//    Flower getFlower(int frame);
-//    Flower next(int frame);
-//    Flower previous(int frame);
-//
-//private:
-//    std::string flowers_folder_;
-//};
+class FlowersViewer
+{
+public:
+    FlowersViewer(const std::string& flowers_folder);
+    virtual ~FlowersViewer();
+
+    void setFrame(int frame);
+
+    void getFlower();
+    void getFlower(int frame);
+    void next();
+    void previous();
+
+    void show();
+    void update();
+
+    void computeFrameRange();
+
+private:
+    void extractStartEndFrame(const QStringList& entries, int& start_frame, int& end_frame);
+
+private:
+    std::string flowers_folder_;
+
+    Flower current_flower_;
+    int current_frame_;
+
+    int start_frame_;
+    int end_frame_;
+};
 
 #endif 

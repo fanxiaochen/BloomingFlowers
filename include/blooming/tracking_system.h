@@ -46,7 +46,7 @@ private:
     int                 start_frame_;
     int                 end_frame_;
     int                 key_frame_;
-    
+
 };
 
 #endif
