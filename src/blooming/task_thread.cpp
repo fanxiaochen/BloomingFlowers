@@ -47,20 +47,17 @@ void EATrackThread::run()
     }
 
     Flower* forward_flower = new Flower(*flower);
-//    Flower* backward_flower = new Flower(*flower);
+    Flower* backward_flower = new Flower(*flower);
 
     std::string workspace = MainWindow::getInstance()->getWorkspace();
     QDir flowers_dir(QString(workspace.c_str()));
     flowers_dir.mkdir("flowers");
     std::string flowers_folder = flowers_dir.absolutePath().toStdString() + "/flowers";
 
-    //// init Flowers Viewer for output 
-    //FlowersViewer* flowers_viewer = tracking_system_->getFlowersViewer();
-    //flowers_viewer = new FlowersViewer(flowers_folder);
 
     std::cout << "Forward Tracking..." << std::endl;
     forward_flower->show();
-    for (size_t i = key_frame , i_end = end_frame;
+    for (size_t i = key_frame + 1, i_end = end_frame;
         i <= i_end; ++ i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
@@ -68,7 +65,6 @@ void EATrackThread::run()
         // EM + ARAP tracking 
         PointCloud* forward_cloud = points_file_system->getPointCloud(i);
         tracking_system_->ea_registration(*forward_cloud, *forward_flower);
-        
         forward_flower->save(flowers_folder, i);
         forward_flower->update();
 
@@ -76,7 +72,27 @@ void EATrackThread::run()
         points_file_system->showPointCloud(i);
 
     }
+    forward_flower->hide();
+
+    std::cout << "Backward Tracking..." << std::endl;
+    backward_flower->show();
+    for (int i = key_frame, i_end = start_frame;
+        i >= i_end; -- i)
+    {
+        std::cout << "tracking [frame " << i << "]" << std::endl;
+
+        // EM + ARAP tracking 
+        PointCloud* backward_cloud = points_file_system->getPointCloud(i);
+        tracking_system_->ea_registration(*backward_cloud, *backward_flower);
+        backward_flower->save(flowers_folder, i);
+        backward_flower->update();
+
+        points_file_system->hidePointCloud(i + 1);
+        points_file_system->showPointCloud(i);
+
+    }
     //   forward_flower->hide();
+
 
 
 

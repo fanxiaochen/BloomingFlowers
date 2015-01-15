@@ -55,6 +55,8 @@ void DeformModel::setFlower(Flower* flower)
 
 void DeformModel::deform()
 {
+    // visibility
+    visibility();
     // initial step
     initialize();
 
@@ -128,7 +130,7 @@ void DeformModel::e_step(int petal_id)
     {
         for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
         {
-            corres_mat(j, i) = gaussian(petal_id, j, i) /** vis_list[j]*/;
+            corres_mat(j, i) = gaussian(petal_id, j, i) * vis_list[j];
         }
     }
 
@@ -143,9 +145,10 @@ void DeformModel::e_step(int petal_id)
     }
 }
 
+// determine visibility
 void DeformModel::visibility()
 {
-    // now just using knn to determine visibility
+    flower_->determineVisibility();
 }
 
 

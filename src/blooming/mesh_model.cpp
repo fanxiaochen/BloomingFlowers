@@ -454,7 +454,7 @@ void MeshModel::pickEvent(int pick_mode, osg::Vec3 position)
         {
             hard_index_.clear();
 
-            const float radius = 20;
+            const float radius = 10;
 
             for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
             {
