@@ -80,7 +80,7 @@ void PointCloud::visualizePoints()
         {
             const Point& point = at(i);
             vertices->push_back(osg::Vec3(point.x, point.y, point.z));
-            osg::Vec4 color = ColorMap::getInstance().getDiscreteColor(segment_flags_[i] + 1);
+            osg::Vec4 color = ColorMap::getInstance().getDiscreteColor(segment_flags_[i]);
             colors->push_back(color);
         }
     }
@@ -134,11 +134,15 @@ void PointCloud::searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_i
 
     for (size_t i = 0, i_end = mesh_model->getVertices()->size(); i < i_end; ++ i)
     {
-        //if (mesh_model->getVisibility().size() != 0 && mesh_model->getVisibility()[i] == 0)
-        //    continue;
+        // we only use visible vertices to segment point cloud
+        if (mesh_model->getVisibility().size() != 0 && mesh_model->getVisibility()[i] == 0)
+        {
+             pcl::PointXYZ pcl_point(0.0f, 0.0f, 0.0f);  // origin point is far from our dataset
+             cloud->push_back(pcl_point);
+             continue;
+        }
 
         const osg::Vec3& point = mesh_model->getVertices()->at(i);
-
         pcl::PointXYZ pcl_point(point.x(), point.y(), point.z());
         cloud->push_back(pcl_point);
     }
@@ -224,13 +228,4 @@ void PointCloud::flower_segmentation(Flower* flower)
     }
 
     segmented_ = true;
-
-    //// determine visibility
-    //flower->initVisibility();
-    //for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
-    //{
-    //    int petal_id = segment_flags_[i];
-    //    Petal& petal = flower->getPetals().at(petal_id);
-    //    petal.getVisibility()[knns_idx[petal_id][i]] = 1;
-    //}
 }

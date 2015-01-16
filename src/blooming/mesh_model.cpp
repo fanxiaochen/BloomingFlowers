@@ -19,7 +19,8 @@ MeshModel::MeshModel()
     :vertices_(new osg::Vec3Array),
     texcoords_(new osg::Vec2Array),
     vertex_normals_(new osg::Vec3Array),
-    colors_(new osg::Vec4Array)
+    colors_(new osg::Vec4Array),
+    color_id_(0)
     /*face_normals_(new osg::Vec3Array),*/
 {
 }
@@ -28,7 +29,8 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     :vertices_(new osg::Vec3Array),
     texcoords_(new osg::Vec2Array),
     vertex_normals_(new osg::Vec3Array),
-    colors_(new osg::Vec4Array)
+    colors_(new osg::Vec4Array),
+    color_id_(0)
     /*face_normals_(new osg::Vec3Array),*/
 {
     *(this->getVertices()) = *(mesh_model.getVertices());
@@ -38,6 +40,7 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     this->getAdjList() = mesh_model.getAdjList();
     this->getEdgeIndex() = mesh_model.getEdgeIndex();
     this->getHardCtrsIndex() = mesh_model.getHardCtrsIndex();
+    this->getColorId() = mesh_model.getColorId();
 }
 
 MeshModel::~MeshModel(void)
@@ -53,6 +56,7 @@ MeshModel& MeshModel::operator =(const MeshModel& mesh_model)
     adj_list_ = mesh_model.getAdjList();
     edge_index_ = mesh_model.getEdgeIndex();
     hard_index_ = mesh_model.getHardCtrsIndex();
+    color_id_ = mesh_model.color_id_;
 
     return *this;
 }
@@ -63,7 +67,7 @@ void MeshModel::visualizeMesh(void)
     osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry;
     geometry->setUseDisplayList(true);
     geometry->setVertexArray(vertices_);
-    colors_->push_back(osg::Vec4(0.0f, 1.0f, 0.0f, 0.0f));
+    colors_->push_back(ColorMap::getInstance().getDiscreteColor(color_id_));
     geometry->setColorArray(colors_);
     colors_->setBinding(osg::Array::BIND_OVERALL);
 
@@ -73,8 +77,8 @@ void MeshModel::visualizeMesh(void)
     }
     else
     {
-        /*geometry->setNormalArray(face_normals_);
-        face_normals_->setBinding(osg::Array::BIND_PER_VERTEX);*/
+        geometry->setNormalArray(vertex_normals_);
+        vertex_normals_->setBinding(osg::Array::BIND_PER_VERTEX);
 
         for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
         {
@@ -468,5 +472,22 @@ void MeshModel::pickEvent(int pick_mode, osg::Vec3 position)
         }
     default:
         break;
+    }
+}
+
+void MeshModel::updateNormals()
+{
+    for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
+    {
+        const std::vector<int>& face = faces_.at(i);
+        const osg::Vec3& v1 = vertices_->at(face[0]);
+        const osg::Vec3& v2 = vertices_->at(face[1]);
+        const osg::Vec3& v3 = vertices_->at(face[2]);
+
+        osg::Vec3 face_normal = ((v2-v1)^(v3-v2));
+        face_normal.normalize();
+        vertex_normals_->at(face[0]) = face_normal;
+        vertex_normals_->at(face[1]) = face_normal;
+        vertex_normals_->at(face[2]) = face_normal;
     }
 }

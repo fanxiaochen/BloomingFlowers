@@ -61,12 +61,17 @@
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">
+   <property name="mouseTracking">
+    <bool>false</bool>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="separator"/>
+   <addaction name="actionLights"/>
   </widget>
   <action name="actionLoadPoints">
    <property name="text">
@@ -151,6 +156,14 @@
   <action name="actionLoadFlowers">
    <property name="text">
     <string>Load Flowers</string>
+   </property>
+  </action>
+  <action name="actionLights">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Lights</string>
    </property>
   </action>
  </widget>

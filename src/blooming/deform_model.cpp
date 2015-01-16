@@ -8,8 +8,8 @@
 
 DeformModel::DeformModel()
     :petal_num_(0),
-    iter_num_(10),
-    eps_(1e-2),
+    iter_num_(30),
+    eps_(1e-3),
     lambda_(1.0),
     noise_p_(0.0)
 {
@@ -18,8 +18,8 @@ DeformModel::DeformModel()
 
 DeformModel::DeformModel(PointCloud* point_cloud, Flower* flower)
     :petal_num_(0),
-    iter_num_(10), 
-    eps_(1e-2),
+    iter_num_(30), 
+    eps_(1e-3),
     lambda_(0.05),
     noise_p_(0.0),
     point_cloud_(point_cloud),
@@ -613,6 +613,8 @@ void DeformModel::deforming()
             petal.getVertices()->at(j).y() = pm(1, j);
             petal.getVertices()->at(j).z() = pm(2, j);
         }
+
+        petal.updateNormals();
     }
 }
 

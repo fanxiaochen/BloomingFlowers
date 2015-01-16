@@ -2,6 +2,8 @@
 #ifndef SCENE_WIDGET_H_
 #define SCENE_WIDGET_H_
 
+#include <osg/LightSource>
+
 #include "osg_viewer_widget.h"
 
 class SceneWidget : public OSGViewerWidget
@@ -14,43 +16,17 @@ public:
 
 	virtual QSize sizeHint() const {return QSize(256, 256);}
 
-public slots:
-	/*void slotOpenPointCloud(void);
-	void slotSavePointCloud(void);
+    public slots:
+    bool setLight();
 
-	void slotSensorFromCamera(void);
-	void slotCameraFromSensor(void);
+private:
+    void turnOnLights();
+    void turnOffLights();
 
-	void slotEstimateNormals(void);
-	void slotEstimateCurvatures(void);
-	void slotOrientNormals(void);
-	void slotFlipAllNormals(void);
-	void slotVoxelGridFilter(void);
-
-	void slotColorizeOriginal(void);
-	void slotColorizeUniform(void);
-	void slotColorizeCategory(void);
-	void slotColorizeInstance(void);
-	void slotColorizeSegment(void);
-	void slotColorizeCurvature(void);
-	void slotColorizeDepth(void);
-	void slotColorizeIntensity(void);
-
-	void slotTogglePointCloud(void);
-
-	void slotToggleShowNormals(void);
-	void slotToggleMeshModels(void);
-
-	void slotToggleCloudDraggers(void);
-	void slotToggleCloudScalers(void);
-
-	void slotPOVRaySnapshot(void);
-	void slotPOVRayVideo(void);
-
-	void slotImportMeshModels(void);
-	void slotSampleMeshModels(void);
-	void slotClearMeshModels(void);
-	void slotVirtualScan(void);*/
+private:
+    std::vector<osg::ref_ptr<osg::LightSource> > light_sources_;
+    int light_number_;
+    bool light_status_;
 };
 
 #endif // SCENE_WIDGET_H_

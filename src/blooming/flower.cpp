@@ -67,6 +67,7 @@ void Flower::show()
     for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
     {
         Petal& petal = petals_[i];
+        petal.getColorId() = i;
         MainWindow::getInstance()->getSceneWidget()->addSceneChild(&petal);
     }
 }

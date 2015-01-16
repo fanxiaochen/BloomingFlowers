@@ -162,6 +162,7 @@ void MainWindow::init(void)
 
     connect(ui_.actionEMARAP, SIGNAL(triggered()), tracking_system_, SLOT(em_arap()));
 
+    connect(ui_.actionLights, SIGNAL(triggered()), scene_widget_, SLOT(setLight()));
     // connect
 
     return;
