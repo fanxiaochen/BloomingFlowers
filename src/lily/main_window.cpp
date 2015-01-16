@@ -85,14 +85,17 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
     PointsFileSystem* points_file = dynamic_cast<PointsFileSystem*>(points_files_);
+    int checked_size = points_files_->getCheckedIndexes().size();
 
     switch(event->key())
     {
     case(Qt::Key_Up):
-            points_file->navigateToPreviousFrame();
+            if (checked_size != 0)
+                points_file->navigateToPreviousFrame();
             break;
     case(Qt::Key_Down):
-            points_file->navigateToNextFrame();
+            if (checked_size != 0)
+                points_file->navigateToNextFrame();
             break;
     case(Qt::Key_PageUp):
             flowers_viewer_->previous();
