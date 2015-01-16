@@ -56,6 +56,8 @@ double ElasticModel::BasicAdjFacet::computeStiffness( Eigen::VectorXd& X )
 	ScalarType area2 = ( (x2-x3).cross(x1-x3) ).norm();
 	
 	m_stiffness = (x1-x2).squaredNorm() /( area1 + area2 );
+
+	return m_stiffness;
 }
 
 void ElasticModel::BasicAdjFacet::evaluateGradientAndHessian( const VectorX& x, 
@@ -273,6 +275,8 @@ double ElasticModel::BasicEdge::computeStiffness( Eigen::VectorXd& X )
 	EigenVector3 x2 = X.block_vector( m_v2 );
 	m_stiffness = 1/(x1-x2).squaredNorm();
 
+	return m_stiffness;
+
 }
 
 void ElasticModel::BasicEdge::evaluateGradientAndHessian( const VectorX& x, 
@@ -316,8 +320,7 @@ ElasticModel::ElasticModel()
 	iter_num_(10),
 	eps_(1e-2),
 	lambda_(1.0),
-	noise_p_(0.0),
-	vertex_num_(0)
+	noise_p_(0.0)
 {
 
 }
@@ -329,8 +332,7 @@ ElasticModel::ElasticModel(PointCloud* point_cloud, Flower* flower)
 	lambda_(0.01),
 	noise_p_(0.0),
 	point_cloud_(point_cloud),
-	flower_(flower),
-	vertex_num_(0)
+	flower_(flower)
 {
 
 }
@@ -547,6 +549,22 @@ void ElasticModel::initialize()
 	{
 		extractVertexEdges(i);
 	}
+
+	// init index_range
+	for( size_t i = 0, i_end = petal_num_; i < i_end; ++i )
+	{
+		IndexRange& id_range = deform_petals_[i]._index_range_;
+		if( i== 0 )
+		{
+			id_range.m_min = 0;
+			id_range.m_max = petals[i].getVertices()->size();
+		}
+		else
+		{
+			id_range.m_min = deform_petals_[i-1]._index_range_.m_max;
+			id_range.m_max = id_range.m_min + petals[i].getVertices()->size();
+		}
+	}
 	
 
 	// init covariance matrix 
@@ -555,11 +573,11 @@ void ElasticModel::initialize()
 		std::vector<std::vector<int>>& adj_list = deform_petals_[i]._adj_list;
 		PetalVector& origin_petal = deform_petals_[i]._origin_petal;
 		CovVector& cov_v = deform_petals_[i]._cov_v;
-		cov_v.resize(3, origin_petal.cols());
+		cov_v.resize(origin_petal.cols());
 
 		for (size_t k = 0, k_end = adj_list.size(); k < k_end; ++ k)
 		{
-			Eigen::Vector3d c = origin_petal.col(k);
+			Eigen::Vector3d c = origin_petal.block_vector(k);
 			int adj_size = adj_list[k].size();
 			double s_x = 0, s_y = 0, s_z = 0;
 
@@ -585,16 +603,6 @@ void ElasticModel::initialize()
 		hc_idx = petal.getHardCtrsIndex();
 		std::sort(hc_idx.begin(), hc_idx.end());
 	}
-
-	// 得到顶点
-	vertex_num_ = 0;
-	for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
-	{
-		ElasticPetal& elastic_petal = deform_petals_[i];
-		vertex_num_ += elastic_petal._petal_v.rows();
-	}
-
-
 }
 
 void ElasticModel::extractVertexEdges( int petal_id )
@@ -722,13 +730,13 @@ double ElasticModel::gaussian( int petal_id, int m_id, int c_id )
 {
 	double p;
 
-	CovVector& cov_mat = deform_petals_[petal_id]._cov_v;
-	CloudVector& cloud_mat = deform_petals_[petal_id]._cloud_vector;
-	PetalVector& petal_mat = deform_petals_[petal_id]._petal_v;
+	CovVector& cov_v = deform_petals_[petal_id]._cov_v;
+	CloudVector& cloud_v = deform_petals_[petal_id]._cloud_vector;
+	PetalVector& petal_v = deform_petals_[petal_id]._petal_v;
 
-	Eigen::Vector3d xu = cloud_mat.col(c_id) - petal_mat.col(m_id);
-	p = pow(2*M_PI, -3/2.0) * pow((cov_mat.col(m_id).asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
-		exp((-1/2.0)*xu.transpose()*cov_mat.col(m_id).asDiagonal().inverse()*xu);
+	Eigen::Vector3d xu = cloud_v.block_vector(c_id) - petal_v.block_vector(m_id);
+	p = pow(2*M_PI, -3/2.0) * pow((cov_v.block_vector(m_id).asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
+		exp((-1/2.0)*xu.transpose()*cov_v.block_vector(m_id).asDiagonal().inverse()*xu);
 
 	return p;
 }
@@ -936,13 +944,33 @@ double ElasticModel::solve()
 	VectorX delta_pos;
 	conjugateGradientSolver( L_, d_, delta_pos,  warning_msg);
 	//赋值
+	for( int i = 0; i!= petal_num_; ++i )
+	{
+		PetalVector& petal_v = deform_petals_[i]._petal_v;
+		IndexRange& id_range = deform_petals_[i]._index_range_;
+		petal_v += delta_pos.block( 3*id_range.m_min, 0, 3*(id_range.m_max-id_range.m_min), 1);
+	}
 
 	return energy();
 }
 
 void ElasticModel::deforming()
 {
+	Petals& petals = flower_->getPetals();
 
+	for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+	{
+		Petal& petal = petals.at(i);
+		PetalVector& petal_v = deform_petals_[i]._petal_v;
+
+		for (size_t j = 0, j_end = petal.getVertices()->size(); j < j_end; ++ j)
+		{
+			EigenVector3 v = petal_v.block_vector(j);
+			petal.getVertices()->at(j).x() = v.x();
+			petal.getVertices()->at(j).y() = v.y();
+			petal.getVertices()->at(j).z() = v.z();
+		}
+	}
 }
 
 bool ElasticModel::conjugateGradientSolver( const SparseMatrix& A, const VectorX& b, VectorX& x, std::string& warning_msg )
