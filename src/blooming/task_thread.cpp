@@ -91,10 +91,7 @@ void EATrackThread::run()
         points_file_system->showPointCloud(i);
 
     }
-    //   forward_flower->hide();
-
-
-
+    backward_flower->hide();
 
     std::cout << "EM + ARAP Tracking Finished!" << std::endl;
 }

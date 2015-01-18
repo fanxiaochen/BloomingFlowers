@@ -33,6 +33,7 @@ public:
     inline const std::vector<int>& getEdgeIndex() const { return edge_index_; }
     inline const std::vector<int>& getHardCtrsIndex() const { return hard_index_; }
     inline const std::vector<int>& getVisibility() const { return visibility_; }
+    inline const size_t& getColorId() const { return color_id_; }
 
     inline osg::ref_ptr<osg::Vec3Array> getVertices() { return vertices_; }
     inline osg::ref_ptr<osg::Vec2Array> getTexcoords() { return texcoords_; }
@@ -42,6 +43,7 @@ public:
     inline std::vector<int>& getEdgeIndex() { return edge_index_; }
     inline std::vector<int>& getHardCtrsIndex(){ return hard_index_; }
     inline std::vector<int>& getVisibility() { return visibility_; }
+    inline size_t& getColorId() { return color_id_; }
 
     // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
     void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
@@ -56,6 +58,8 @@ public:
 
     void pickEvent(int pick_mode, osg::Vec3 position);
 
+    void updateNormals();
+
 protected:
     virtual void updateImpl(void);
     virtual void visualizeMesh(void);
@@ -69,7 +73,6 @@ private:
 
     // source is the source_mesh, target is this mesh, knn_idx is based on this mesh
     void searchNearestIdx(const MeshModel& source_mesh, std::vector<int>& knn_idx);
-
 
 protected:
     std::string                         obj_name_;
@@ -88,6 +91,8 @@ protected:
     std::vector<int>                    edge_index_;
     std::vector<int>                    hard_index_; // hard constraints 
     std::vector<int>                    visibility_; // the same size of vertices
+
+    size_t                              color_id_; // for visualization
 };
 
 #endif // MESH_MODEL_H
