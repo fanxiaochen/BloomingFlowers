@@ -159,6 +159,14 @@
     <string>EM + Elastic</string>
    </property>
   </action>
+  <action name="actionLights">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name = "text">
+	<string>Lights</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
