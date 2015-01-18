@@ -56,11 +56,12 @@ private:
 	public:
 		BasicAdjFacet()
 			:m_stiffness(0)
+			,m_rest_angle(0)
 		{
 
 		}
 		double computeTheta( Eigen::VectorXd& X  );
-		double computeStiffness( Eigen::VectorXd& X );
+		double computeStiffnessAndRestValue( Eigen::VectorXd& X );
 		void evaluateGradientAndHessian( const VectorX& x, VectorX& gradient, std::vector<SparseMatrixTriplet>& hessian_triplets );
 
 	private:
@@ -89,7 +90,7 @@ private:
 		{
 
 		}
-		double computeStiffness( Eigen::VectorXd& X );
+		double computeStiffnessAndRestValue( Eigen::VectorXd& X );
 		void evaluateGradientAndHessian( const VectorX& x, VectorX& gradient, std::vector<SparseMatrixTriplet>& hessian_triplets );
 
 		unsigned int m_v1, m_v2; // indices of endpoint vertices/faces
@@ -159,7 +160,24 @@ protected:
 
 	double solve();  // m_step时，执行一步隐式梯度下降迭代
 
-	void updateSys(int petal_id);
+	//************************************
+	// Method:    updateSys1
+	// Returns:   void
+	// Function:  似乎有问题
+	// Function:  Surface-based Growth Simulation for Opening Flowers
+	// Time:      2015/01/16
+	// Author:    Qian
+	//************************************
+	void updateSys1(int petal_id);   
+
+	//************************************
+	// Method:    updateSys2
+	// Returns:   void
+	// Function:  Newton's Method: delta_x = - H^-1*G 
+	// Time:      2015/01/16
+	// Author:    Qian
+	//************************************
+	void updateSys2(int petal_id);
 
 	double energy();
 	double zero_correction(double value);
@@ -182,7 +200,7 @@ private:
 	std::vector<ElasticPetal> deform_petals_;
 
 	Eigen::SparseMatrix<double>  L_;
-	Eigen::Matrix3Xd d_;
+	Eigen::VectorXd d_;
 	Eigen::SparseLU<Eigen::SparseMatrix<double> > lu_solver_;
 	//    Eigen::SimplicialCholesky<Eigen::SparseMatrix<double> > lu_solver_;
 

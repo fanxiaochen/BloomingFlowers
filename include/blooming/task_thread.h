@@ -21,4 +21,20 @@ protected:
 };
 
 
+// EM + Elastic Tracking
+class EETrackThread : public QThread
+{
+public:
+	EETrackThread(TrackingSystem* tracking_system);
+	virtual ~EETrackThread();
+
+protected:
+	void run();
+	
+protected:
+	TrackingSystem* tracking_system_;
+};
+
+
+
 #endif

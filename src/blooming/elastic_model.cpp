@@ -45,7 +45,7 @@ double ElasticModel::BasicAdjFacet::computeTheta( Eigen::VectorXd& X )
 	return theta;
 }
 
-double ElasticModel::BasicAdjFacet::computeStiffness( Eigen::VectorXd& X )
+double ElasticModel::BasicAdjFacet::computeStiffnessAndRestValue( Eigen::VectorXd& X )
 {
 	EigenVector3 x0 = X.block_vector( m_v0 ); 
 	EigenVector3 x1 = X.block_vector( m_v1 );
@@ -56,6 +56,8 @@ double ElasticModel::BasicAdjFacet::computeStiffness( Eigen::VectorXd& X )
 	ScalarType area2 = ( (x2-x3).cross(x1-x3) ).norm();
 	
 	m_stiffness = (x1-x2).squaredNorm() /( area1 + area2 );
+
+	m_rest_angle = computeTheta( X );
 
 	return m_stiffness;
 }
@@ -219,7 +221,7 @@ void ElasticModel::BasicAdjFacet::evaluateGradientAndHessian( const VectorX& x,
 
 Eigen::Vector3d ElasticModel::BasicAdjFacet::skewMatrixRow( const Eigen::Vector3d& v, int s )
 {
-	assert( s<3 && s>0);
+	assert( s<3 && s>=0);
 	EigenVector3 new_v;
 	switch (s)
 	{
@@ -238,7 +240,7 @@ Eigen::Vector3d ElasticModel::BasicAdjFacet::skewMatrixRow( const Eigen::Vector3
 
 Eigen::Vector3d ElasticModel::BasicAdjFacet::identifyRow( int s )
 {
-	assert( s<3 && s>0);
+	assert( s<3 && s>=0);
 	EigenVector3 new_v(0,0,0);
 	new_v(s) = s;
 	return new_v;
@@ -266,14 +268,17 @@ int ElasticModel::BasicAdjFacet::getIdx( int v_id )
 	return id;
 }
 
+
 #pragma endregion
 
 #pragma region stretching constraint
-double ElasticModel::BasicEdge::computeStiffness( Eigen::VectorXd& X )
+double ElasticModel::BasicEdge::computeStiffnessAndRestValue( Eigen::VectorXd& X )
 {
 	EigenVector3 x1 = X.block_vector( m_v1 );
 	EigenVector3 x2 = X.block_vector( m_v2 );
 	m_stiffness = 1/(x1-x2).squaredNorm();
+
+	m_rest_length = (x1-x2).norm();
 
 	return m_stiffness;
 
@@ -317,22 +322,28 @@ void ElasticModel::BasicEdge::evaluateGradientAndHessian( const VectorX& x,
 
 ElasticModel::ElasticModel()
 	:petal_num_(0),
-	iter_num_(10),
-	eps_(1e-2),
+	iter_num_(30),
+	eps_(1e-4),
 	lambda_(1.0),
-	noise_p_(0.0)
+	noise_p_(0.0),
+	weight_b(1),
+	weight_s(100),
+	h_(0.1)
 {
 
 }
 
 ElasticModel::ElasticModel(PointCloud* point_cloud, Flower* flower)
 	:petal_num_(0),
-	iter_num_(10), 
+	iter_num_(30), 
 	eps_(1e-2),
-	lambda_(0.01),
+	lambda_(1),
 	noise_p_(0.0),
 	point_cloud_(point_cloud),
-	flower_(flower)
+	flower_(flower),
+	weight_b(0),
+	weight_s(10),
+	h_(1)
 {
 
 }
@@ -407,7 +418,26 @@ void ElasticModel::e_step()
 
 void ElasticModel::e_step( int petal_id )
 {
+	CorresMatrix& corres_mat = deform_petals_[petal_id]._corres_matrix;
+	VisList& vis_list = deform_petals_[petal_id]._vis_list;
 
+	for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
+	{
+		for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
+		{
+			corres_mat(j, i) = gaussian(petal_id, j, i) * vis_list[j];
+		}
+	}
+
+	for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
+	{
+		double sum_gaussian = corres_mat.col(i).sum() + noise_p_;
+
+		for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
+		{
+			corres_mat(j, i) = corres_mat(j, i) / zero_correction(sum_gaussian);
+		}
+	}
 }
 
 
@@ -418,23 +448,38 @@ double ElasticModel::m_step()
 	int iter = 0;
 	double eps = 0;
 
-	double e = 0;
+	double e = energy();
+	std::cout << "energy: " << e<< std::endl;
+
 
 	updateSys();
 
 	do {
 		double e_n = solve();
-		eps = std::fabs((e_n - e) / e_n);
+
+		eps = std::abs( e - e_n );
 		e = e_n;
+
+		std::cout << "energy: " << e<< std::endl;
+		++iter;
+
 
 		updateSys();
 
-	}while(eps > eps_ && iter < iter_num_);
+	}while(eps > eps_ /*|| iter < iter_num_*/);
 
 	return e;
 }
 
 
+//************************************
+// Method:    initialize
+// Returns:   void
+// Function:  初始化
+// Time:      2015/01/15： 能跑通
+// Time:      2015/01/16:  将_petal_vector_的初始设成原始初值
+// Author:    Qian
+//************************************
 void ElasticModel::initialize()
 {
 	Petals& petals = flower_->getPetals();
@@ -476,7 +521,7 @@ void ElasticModel::initialize()
 	}
 
 
-	// init petal matrix
+	// init petal matrix  by point cloud and oriangle petal
 	for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
 	{
 		Petal& petal = petals.at(i);
@@ -487,21 +532,30 @@ void ElasticModel::initialize()
 		int petal_size = petal.getVertices()->size();
 		PetalVector pm(3*petal_size);
 
+		double w_c = 0.5;
 		for (size_t j = 0, j_end = petal_size; j < j_end; ++ j)
 		{
-			pm.block_vector(j) = EigenVector3( petal_cloud->at(knn_idx[j]).x, petal_cloud->at(knn_idx[j]).y, petal_cloud->at(knn_idx[j]).z );
+			EigenVector3 v1( petal_cloud->at(knn_idx[j]).x, petal_cloud->at(knn_idx[j]).y, petal_cloud->at(knn_idx[j]).z );
+			EigenVector3 v2( petal.getVertices()->at(j).x(), petal.getVertices()->at(j).y(), petal.getVertices()->at(j).z() );
+			pm.block_vector(j) = w_c*v1 + (1-w_c)*v2;
+		
 		}
-
 		deform_petals_[i]._petal_v = pm;
 	}
+
+	
 
 
 	// init correspondence matrix (  )
 	for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
 	{
-		CloudVector& cloud_mat = deform_petals_[i]._cloud_vector;
-		PetalVector& petal_mat = deform_petals_[i]._petal_v;
-		CorresMatrix corres_mat = CorresMatrix::Zero(petal_mat.cols(), cloud_mat.cols());
+		CloudVector& cloud_v = deform_petals_[i]._cloud_vector;
+		PetalVector& petal_v = deform_petals_[i]._petal_v;
+
+		int point_num = cloud_v.size()/3;
+		int vertex_num = petal_v.size()/3;
+
+		CorresMatrix corres_mat = CorresMatrix::Zero(vertex_num, point_num);
 		deform_petals_[i]._corres_matrix = corres_mat;
 	}
 
@@ -509,7 +563,9 @@ void ElasticModel::initialize()
 	for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
 	{
 		Petal& petal = petals.at(i);
-		deform_petals_[i]._vis_list = petal.getVisibility();
+		deform_petals_[i]._vis_list = VisList( petal.getVertices()->size(), 1);
+//		deform_petals_[i]._vis_list = petal.getVisibility();
+		
 	}
 
 	// init adjacent list
@@ -527,7 +583,7 @@ void ElasticModel::initialize()
 		std::vector<BasicFacet>& facets = deform_petals_[i]._facets_;
 		for (size_t i = 0, i_end = triangle_list.size(); i < i_end; ++ i)
 		{
-			std::vector<int> face = triangle_list[i];
+			std::vector<int>& face = triangle_list[i];
 			assert( face.size() == 3);
 			BasicFacet facet;
 			facet.m_idx0 = face[0];
@@ -573,25 +629,23 @@ void ElasticModel::initialize()
 		std::vector<std::vector<int>>& adj_list = deform_petals_[i]._adj_list;
 		PetalVector& origin_petal = deform_petals_[i]._origin_petal;
 		CovVector& cov_v = deform_petals_[i]._cov_v;
-		cov_v.resize(origin_petal.cols());
+		cov_v.resize(origin_petal.size());
 
 		for (size_t k = 0, k_end = adj_list.size(); k < k_end; ++ k)
 		{
 			Eigen::Vector3d c = origin_petal.block_vector(k);
 			int adj_size = adj_list[k].size();
-			double s_x = 0, s_y = 0, s_z = 0;
+			EigenVector3 sv(0,0,0);
 
 			for (size_t j = 0, j_end = adj_size; j < j_end; ++ j)
 			{
 				int id_j = adj_list[k][j];
-				Eigen::Vector3d v = origin_petal.col(id_j);
+				Eigen::Vector3d v = origin_petal.block_vector(id_j);
 
-				s_x += pow((c[0] - v[0]), 2.0);
-				s_y += pow((c[1] - v[1]), 2.0);
-				s_z += pow((c[2] - v[2]), 2.0);
+				sv += (c-v).cwiseAbs2();
 			}
 
-			cov_v.block_vector(k) = EigenVector3( s_x / adj_size, s_y / adj_size, s_z / adj_size ); 
+			cov_v.block_vector(k) = sv/adj_size; 
 		}
 	}
 
@@ -611,7 +665,7 @@ void ElasticModel::extractVertexEdges( int petal_id )
 	std::vector<BasicFacet>& facets = elastic_petal._facets_;
 	std::vector<BasicEdge>& vertex_edges = elastic_petal._vertex_edges;
 
-	unsigned int vertices_num = elastic_petal._petal_v.rows();
+	unsigned int vertices_num = elastic_petal._origin_petal.size()/3;
 	vertex_edges.clear();
 	std::map<std::pair<int,int>, std::vector<LocalEdge>> mapAdjFacet;
 	// Loop over faces
@@ -656,10 +710,9 @@ void ElasticModel::extractVertexEdges( int petal_id )
 		vertex_edges.push_back( e );
 	}
 
-	PetalVector& petal_v = elastic_petal._petal_v;
 	for( int i = 0 ;i!= vertex_edges.size(); ++i )
 	{
-		vertex_edges[i].computeStiffness( petal_v );
+		vertex_edges[i].computeStiffnessAndRestValue( elastic_petal._origin_petal );
 	}
 }
 
@@ -669,7 +722,7 @@ void ElasticModel::extractAdjFacets( int petal_id )
 	std::vector<BasicFacet>& facets = elastic_petal._facets_;
 	std::vector<BasicAdjFacet>& adj_facets = elastic_petal._adj_facets_;
 
-	unsigned int vertices_num = elastic_petal._petal_v.rows();
+	unsigned int vertices_num = elastic_petal._origin_petal.size()/3;
 	adj_facets.clear();
 	std::map<std::pair<int,int>, std::vector<LocalEdge>> mapAdjFacet;
 	// Loop over faces
@@ -716,11 +769,10 @@ void ElasticModel::extractAdjFacets( int petal_id )
 
 
 	// 设置stiffness & rest length
-	PetalVector& petal_v = elastic_petal._petal_v;
 	for( int i = 0; i != adj_facets.size(); ++i )
 	{
 		BasicAdjFacet& adj_facet = adj_facets[i];
-		adj_facet.computeStiffness( petal_v );
+		adj_facet.computeStiffnessAndRestValue( elastic_petal._origin_petal );
 	}
 }
 
@@ -744,13 +796,23 @@ double ElasticModel::gaussian( int petal_id, int m_id, int c_id )
 
 void ElasticModel::updateSys()
 {
-	L_ = Eigen::SparseMatrix<double>();
+	if( petal_num_ ==0 )
+		return;
+
+	int dim_num = 3* deform_petals_[petal_num_-1]._index_range_.m_max;
+	L_ = Eigen::SparseMatrix<double>( dim_num, dim_num );
+	d_ = VectorX(dim_num);
+	d_.setZero();
+
 	for (size_t i = 0; i < petal_num_; ++ i)
 	{
-		updateSys(i);
+		// 似乎不对,改用Newton's method
+		// updateSys1(i);
+		updateSys2(i);
 	}
 	L_.makeCompressed();
 }
+
 
 
 double ElasticModel::energy()
@@ -787,22 +849,21 @@ double ElasticModel::evaluateEnergy( int petal_id )
 	}
 
 	double e_b = 0;
-	// bending
-	AdjFacetList& adj_facets = deform_petals_[petal_id]._adj_facets_;
-	for( int i = 0; i!= adj_facets.size(); ++i )
-	{
-		BasicAdjFacet& adj_facet = adj_facets[i];
-		double stiffness = adj_facet.m_stiffness;
-		double rest_angle = adj_facet.m_rest_angle;
-		ScalarType theta = adj_facet.computeTheta( x );
-		ScalarType J = stiffness/2 * std::pow(theta - rest_angle,2 );
-
-		e_b += J;
-	}
+// 	// bending
+// 	AdjFacetList& adj_facets = deform_petals_[petal_id]._adj_facets_;
+// 	for( int i = 0; i!= adj_facets.size(); ++i )
+// 	{
+// 		BasicAdjFacet& adj_facet = adj_facets[i];
+// 		double stiffness = adj_facet.m_stiffness;
+// 		double rest_angle = adj_facet.m_rest_angle;
+// 		ScalarType theta = adj_facet.computeTheta( x );
+// 		ScalarType J = stiffness/2 * std::pow(theta - rest_angle,2 );
+// 
+// 		e_b += J;
+// 	}
 
 	double e_o = 0; // observation
 	CorresMatrix& corres_matrix = deform_petal._corres_matrix;
-	PetalVector& origin_petal = deform_petal._origin_petal;
 	int point_num = corres_matrix.cols();
 	int vertex_num = corres_matrix.rows();
 	for (size_t k = 0, k_end = vertex_num; k < k_end; ++ k)
@@ -815,7 +876,7 @@ double ElasticModel::evaluateEnergy( int petal_id )
 		}
 	}
 
-	double J = e_o + lambda_*( weight_b*e_b + weight_s*e_s );
+	double J = lambda_*e_o + ( weight_b*e_b + weight_s*e_s );
 	return J;
 }
 
@@ -841,10 +902,10 @@ void ElasticModel::evaluateGradientAndHessian( int petal_id, const VectorX& x,
 		spring.evaluateGradientAndHessian( x, graident_s, hessian_s);
 	}
 	// weight
-	graident_s *=lambda_*weight_s;
-	for( int i = 0; hessian_s.size(); ++i )
+	graident_s *= weight_s;
+	for( int i = 0; i!= hessian_s.size(); ++i )
 	{
-		SparseMatrixTriplet triple(hessian_s[i].row(), hessian_s[i].col(), hessian_s[i].value()*lambda_*weight_s); 
+		SparseMatrixTriplet triple(hessian_s[i].row(), hessian_s[i].col(), hessian_s[i].value()*weight_s); 
 		hessian_s[i] = SparseMatrixTriplet( triple );
 	}
 
@@ -852,19 +913,19 @@ void ElasticModel::evaluateGradientAndHessian( int petal_id, const VectorX& x,
 	VectorX graident_b(dim_num);
 	graident_b.setZero();
 	std::vector<SparseMatrixTriplet> hessian_b;
-	AdjFacetList& adj_facets = deformed_petal._adj_facets_;
-	for( int i = 0; i!= adj_facets.size(); ++i )
-	{
-		BasicAdjFacet& adj_facet = adj_facets[i];
-		adj_facet.evaluateGradientAndHessian( x, graident_b, hessian_b );
-	}
-	// weight
-	graident_b *=lambda_*weight_b;
-	for( int i = 0; hessian_b.size(); ++i )
-	{
-		SparseMatrixTriplet triple(hessian_b[i].row(), hessian_b[i].col(), hessian_b[i].value()*lambda_*weight_b); 
-		hessian_b[i] = SparseMatrixTriplet( triple );
-	}
+// 	AdjFacetList& adj_facets = deformed_petal._adj_facets_;
+// 	for( int i = 0; i!= adj_facets.size(); ++i )
+// 	{
+// 		BasicAdjFacet& adj_facet = adj_facets[i];
+// 		adj_facet.evaluateGradientAndHessian( x, graident_b, hessian_b );
+// 	}
+// 	// weight
+// 	graident_b *= weight_b;
+// 	for( int i = 0; i!=hessian_b.size(); ++i )
+// 	{
+// 		SparseMatrixTriplet triple(hessian_b[i].row(), hessian_b[i].col(), hessian_b[i].value()*weight_b); 
+// 		hessian_b[i] = SparseMatrixTriplet( triple );
+// 	}
 
 	// observation
 	CorresMatrix& corres_matrix = deformed_petal._corres_matrix;
@@ -883,14 +944,15 @@ void ElasticModel::evaluateGradientAndHessian( int petal_id, const VectorX& x,
 		for( int j = 0; j!= point_num; ++j )
 		{
 			EigenVector3 cm =  xi - cloud_v.block_vector(j);
-			g_i += 2*cov_v(i,j)*cm;
+			g_i += 2*corres_matrix(i,j)*cm;
 		}
-		graident_o.block_vector(i) += xi.cwiseQuotient(cov_v);
-		EigenVector3 hv = cov_i* 2*cov_v.row(i).sum();
-		hessian_o.push_back( SparseMatrixTriplet( 3*i+0, 3*i+0, hv(0) ) );
-		hessian_o.push_back( SparseMatrixTriplet( 3*i+1, 3*i+1, hv(1) ) );
-		hessian_o.push_back( SparseMatrixTriplet( 3*i+2, 3*i+2, hv(2) ) );
+		graident_o.block_vector(i) += g_i.cwiseQuotient(cov_i);
+		EigenVector3 hv = cov_i* 2* ( cov_v.row(i).sum() );
+		hessian_o.push_back( SparseMatrixTriplet( 3*i+0, 3*i+0, lambda_*hv(0) ) );
+		hessian_o.push_back( SparseMatrixTriplet( 3*i+1, 3*i+1, lambda_*hv(1) ) );
+		hessian_o.push_back( SparseMatrixTriplet( 3*i+2, 3*i+2, lambda_*hv(2) ) );
 	}
+	graident_o *= lambda_;
 
 	gradient += graident_s;
 	gradient += graident_b;
@@ -902,7 +964,7 @@ void ElasticModel::evaluateGradientAndHessian( int petal_id, const VectorX& x,
 }
 
 
-void ElasticModel::updateSys( int petal_id )
+void ElasticModel::updateSys1( int petal_id )
 {
 	ElasticPetal& deform_petal = deform_petals_[petal_id];
 	CovVector& cov_v = deform_petal._cov_v;
@@ -920,7 +982,7 @@ void ElasticModel::updateSys( int petal_id )
 
 	// update the left matrix L_
 	int sym_dim = 3*deform_petals_.rbegin()->_index_range_.m_max;
-	SparseMatrix h_mat( sym_dim, sym_dim);
+	SparseMatrix hessian_mat( sym_dim, sym_dim);
 	int delta_dim = 3*id_range.m_min;
 	for( int i = 0 ;i!= hessian_triples.size(); ++i )
 	{
@@ -929,14 +991,49 @@ void ElasticModel::updateSys( int petal_id )
 	}
 	for( int i = 0;i!= 3*ver_num; ++i )
 	{
-		hessian_triples.push_back( SparseMatrixTriplet( delta_dim + i, delta_dim+i, h_) );
+		hessian_triples.push_back( SparseMatrixTriplet( delta_dim + i, delta_dim+i, 1/h_) );
 	}
-	h_mat.setFromTriplets( hessian_triples.begin(), hessian_triples.end() );
-	L_ += h_mat;
+	hessian_mat.setFromTriplets( hessian_triples.begin(), hessian_triples.end() );
+	L_ += hessian_mat;
 
 	// update the right column d_
-	d_.block( delta_dim, delta_dim, 3*ver_num, 3*ver_num) += gradient;	
+	d_.block( delta_dim, delta_dim, 3*ver_num, 1) -= gradient;	
 }
+
+
+void ElasticModel::updateSys2( int petal_id )
+{
+	ElasticPetal& deform_petal = deform_petals_[petal_id];
+	CovVector& cov_v = deform_petal._cov_v;
+	CorresMatrix& corres_matrix = deform_petal._corres_matrix;
+	AdjList& adj_list = deform_petal._adj_list;
+	HardCtrsIdx& hc_idx = deform_petal._hc_idx;
+	IndexRange id_range = deform_petal._index_range_;
+
+	PetalVector& petal_v = deform_petal._petal_v;
+	int ver_num = petal_v.rows()/3;
+
+	VectorX gradient;
+	std::vector<SparseMatrixTriplet> hessian_triples;
+	evaluateGradientAndHessian( petal_id, petal_v,  gradient, hessian_triples );
+
+	// update the left matrix L_
+	int sym_dim = 3*deform_petals_.rbegin()->_index_range_.m_max;
+	SparseMatrix hessian_mat( sym_dim, sym_dim);
+	int delta_dim = 3*id_range.m_min;
+	for( int i = 0 ;i!= hessian_triples.size(); ++i )
+	{
+		SparseMatrixTriplet triplet( hessian_triples[i].row()+delta_dim, hessian_triples[i].col()+delta_dim, hessian_triples[i].value() );
+		hessian_triples[i] = triplet;
+	}
+	hessian_mat.setFromTriplets( hessian_triples.begin(), hessian_triples.end() );
+	L_ += hessian_mat;
+
+	// update the right column d_
+	d_.block( delta_dim, delta_dim, 3*ver_num, 1) -= gradient;	
+}
+
+
 
 double ElasticModel::solve()
 {
@@ -992,6 +1089,15 @@ bool ElasticModel::conjugateGradientSolver( const SparseMatrix& A, const VectorX
 	}
 	warning_msg = ss.str();
 
+}
+
+
+double ElasticModel::zero_correction(double value)
+{
+	double min_double = std::numeric_limits<double>::min();
+	if (min_double > value)
+		return min_double;
+	return value;
 }
 
 

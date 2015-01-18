@@ -119,6 +119,7 @@ MainWindow* MainWindow::getInstance()
 
 void MainWindow::init(void)
 {
+
     points_files_ = new PointsFileSystem;
     mesh_files_ = new MeshFileSystem;
     points_widget_ = new FileViewerWidget(this, points_files_);
@@ -151,7 +152,12 @@ void MainWindow::init(void)
 
     connect(this, SIGNAL(showInformationRequested(const QString&)), this, SLOT(slotShowInformation(const QString&)));
     connect(this, SIGNAL(showStatusRequested(const QString&, int)), this, SLOT(slotShowStatus(const QString&, int)));
-    loadSettings();
+
+
+	loadSettings();
+	points_widget_->setWorkspace( QString(points_path_.c_str()));
+	mesh_widget_->setWorkspace( QString(mesh_path_.c_str() ));
+	
 
     connect(ui_.actionLoadPoints, SIGNAL(triggered()), this, SLOT(slotLoadPoints()));
     connect(ui_.actionLoadMesh, SIGNAL(triggered()), this, SLOT(slotLoadMesh()));
@@ -161,7 +167,7 @@ void MainWindow::init(void)
     connect(ui_.actionLoadFlowers, SIGNAL(triggered()), this, SLOT(slotLoadFlowers()));
 
     connect(ui_.actionEMARAP, SIGNAL(triggered()), tracking_system_, SLOT(em_arap()));
-
+	connect(ui_.actionEMElastic, SIGNAL(triggered()), tracking_system_, SLOT(em_elastic()));
     // connect
 
     return;
@@ -241,19 +247,20 @@ bool MainWindow::slotLoadFlowers()
 
 void MainWindow::loadSettings()
 {
-    QSettings settings("Blooming Flower", "Blooming Flower");
+    QSettings settings("Blooming_Flower", "Blooming_Flower");
 
-    points_path_ = settings.value("workspace").toString().toStdString();
-
+    points_path_ = settings.value("points_path").toString().toStdString();
+	workspace_ = settings.value("workspace").toString().toStdString();
+	mesh_path_ = settings.value("meshs_path").toString().toStdString();
     return;
 }
 
 void MainWindow::saveSettings()
 {
-    QSettings settings("Blooming Flower", "Blooming Flower");
-
-    QString workspace(points_path_.c_str());
-    settings.setValue("workspace", workspace);
+    QSettings settings("Blooming_Flower", "Blooming_Flower");
+    settings.setValue("points_path", QString(points_path_.c_str()));
+	settings.setValue("workspace", QString(workspace_.c_str()));
+	settings.setValue("meshs_path", QString( mesh_path_.c_str()) );
 
     return;
 }
