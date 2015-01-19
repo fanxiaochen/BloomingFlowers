@@ -77,8 +77,11 @@ void MeshModel::visualizeMesh(void)
     }
     else
     {
-        geometry->setNormalArray(vertex_normals_);
-        vertex_normals_->setBinding(osg::Array::BIND_PER_VERTEX);
+        if (!vertex_normals_->empty())
+        {
+            geometry->setNormalArray(vertex_normals_);
+            vertex_normals_->setBinding(osg::Array::BIND_PER_VERTEX);
+        }
 
         for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
         {
@@ -477,6 +480,9 @@ void MeshModel::pickEvent(int pick_mode, osg::Vec3 position)
 
 void MeshModel::updateNormals()
 {
+    if (vertex_normals_->empty())
+        return;
+
     for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
     {
         const std::vector<int>& face = faces_.at(i);
