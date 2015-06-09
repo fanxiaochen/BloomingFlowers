@@ -30,11 +30,11 @@ bool ObjWriter::save(const std::string& obj_file)
 //    fs << "usemtl default" << "\n";
 //    fs << "s 1" << "\n";
 
-    fs << "\n\n";
+//    fs << "\n\n";
 
 //    fs << "mtllib petal.mtl" << "\n";
 
-    fs << "\n\n";
+//    fs << "\n\n";
 
     for (size_t i = 0, i_end = vertices->size(); i < i_end; ++ i)
     {
@@ -77,9 +77,18 @@ bool ObjWriter::save(const std::string& obj_file)
         int vn_num = vertex_normals->size();
 
 
-        fs << "f " << (v_num != 0 ? f0 : "") << "/" << (vt_num != 0 ? f0 : "") << "/" << (vn_num != 0 ? f0 : "");
-        fs << " " << (v_num != 0 ? f1 : "") << "/" << (vt_num != 0 ? f1 : "") << "/" << (vn_num != 0 ? f1 : "");
-        fs << " " << (v_num != 0 ? f2 : "") << "/" << (vt_num != 0 ? f2 : "") << "/" << (vn_num != 0 ? f2 : "") << "\n";
+        if (vn_num != 0)
+        {
+            fs << "f " << (v_num != 0 ? f0 : "") << "/" << (vt_num != 0 ? f0 : "") << "/" << (vn_num != 0 ? f0 : "");
+            fs << " " << (v_num != 0 ? f1 : "") << "/" << (vt_num != 0 ? f1 : "") << "/" << (vn_num != 0 ? f1 : "");
+            fs << " " << (v_num != 0 ? f2 : "") << "/" << (vt_num != 0 ? f2 : "") << "/" << (vn_num != 0 ? f2 : "") << "\n";
+        }
+        else
+        {
+            fs << "f " << (v_num != 0 ? f0 : "") << "/" << (vt_num != 0 ? f0 : "");
+            fs << " " << (v_num != 0 ? f1 : "") << "/" << (vt_num != 0 ? f1 : "");
+            fs << " " << (v_num != 0 ? f2 : "") << "/" << (vt_num != 0 ? f2 : "") << "\n";
+        }
 
     }
 

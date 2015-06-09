@@ -4,6 +4,10 @@
 
 #include <osgDB/WriteFile>
 #include <osg/Point>
+#include <osg/Material>
+#include <osg/Image>
+#include <osgDB/ReadFile>
+#include <osg/Texture2D>
 
 #include <pcl/kdtree/kdtree_flann.h>
 
@@ -33,10 +37,18 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     color_id_(0)
     /*face_normals_(new osg::Vec3Array),*/
 {
+    this->getObjFile() = mesh_model.getObjFile();
+    this->getMtlFile() = mesh_model.getMtlFile();
     *(this->getVertices()) = *(mesh_model.getVertices());
     *(this->getTexcoords()) = *(mesh_model.getTexcoords());
     *(this->getVertexNormals()) = *(mesh_model.getVertexNormals());
     this->getFaces() = mesh_model.getFaces();
+    this->getAmbient() = mesh_model.getAmbient();
+    this->getDiffuse() = mesh_model.getDiffuse();
+    this->getSpecular() = mesh_model.getSpecular();
+    this->getEmission() = mesh_model.getEmission();
+    this->getMapKa() = mesh_model.getMapKa();
+    this->getMapKd() = mesh_model.getMapKd();
     this->getAdjList() = mesh_model.getAdjList();
     this->getEdgeIndex() = mesh_model.getEdgeIndex();
     this->getHardCtrsIndex() = mesh_model.getHardCtrsIndex();
@@ -49,10 +61,18 @@ MeshModel::~MeshModel(void)
 
 MeshModel& MeshModel::operator =(const MeshModel& mesh_model)
 {
+    obj_file_ = mesh_model.getObjFile();
+    mtl_file_ = mesh_model.getMtlFile();
     vertices_ = mesh_model.getVertices();
     texcoords_ = mesh_model.getTexcoords();
     vertex_normals_ = mesh_model.getVertexNormals();
     faces_ = mesh_model.getFaces();
+    ambient_ = mesh_model.getAmbient();
+    diffuse_ = mesh_model.getDiffuse();
+    specular_ = mesh_model.getSpecular();
+    emission_ = mesh_model.getEmission();
+    map_Ka_ = mesh_model.getMapKa();
+    map_Kd_ = mesh_model.getMapKd();
     adj_list_ = mesh_model.getAdjList();
     edge_index_ = mesh_model.getEdgeIndex();
     hard_index_ = mesh_model.getHardCtrsIndex();
@@ -70,6 +90,36 @@ void MeshModel::visualizeMesh(void)
     colors_->push_back(ColorMap::getInstance().getDiscreteColor(color_id_));
     geometry->setColorArray(colors_);
     colors_->setBinding(osg::Array::BIND_OVERALL);
+
+    if (!texcoords_->empty() && !map_Ka_.empty() && !map_Kd_.empty())
+    {
+        geometry->setTexCoordArray(0, texcoords_);
+        osg::StateSet* stateset = this->getOrCreateStateSet();
+
+        osg::Material* material = new osg::Material;
+        material->setColorMode(osg::Material::OFF); 
+        material->setAmbient(osg::Material::FRONT_AND_BACK, ambient_);
+        material->setDiffuse(osg::Material::FRONT_AND_BACK, diffuse_);
+        material->setSpecular(osg::Material::FRONT_AND_BACK, specular_);
+        material->setEmission(osg::Material::FRONT_AND_BACK, emission_);
+        stateset->setAttributeAndModes(material,osg::StateAttribute::OVERRIDE|osg::StateAttribute::ON);
+        stateset->setMode(GL_LIGHTING,osg::StateAttribute::OVERRIDE|osg::StateAttribute::ON);
+
+        osg::Image *image = osgDB::readImageFile(map_Kd_);
+        if (!image)
+        {
+            std::cout << "couldn't find texture." << std::endl;
+        }
+
+        osg::Texture2D *texture = new osg::Texture2D;
+        texture->setDataVariance(Object::DYNAMIC);
+        texture->setFilter(osg::Texture::MIN_FILTER, osg::Texture::LINEAR_MIPMAP_LINEAR);
+        texture->setFilter(osg::Texture::MAG_FILTER, osg::Texture::LINEAR);
+        texture->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP);
+        texture->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP);
+        texture->setImage(image);
+        stateset->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
+    }
 
     if (faces_.empty())
     {
@@ -160,6 +210,14 @@ void MeshModel::updateImpl()
 bool MeshModel::save(const std::string& filename)
 {
     ObjWriter obj_writer(this);
+
+    /*QString qfilename(filename.c_str()); 
+    QString obj_file(qfilename);
+    QString mtl_file = obj_file.replace(obj_file.indexOf("obj"), 3, "mtl");
+    QFile::copy(QString(mtl_file_.c_str()), mtl_file);
+    QString tga_file = obj_file.replace(obj_file.indexOf("obj"), 3, "tga");
+    QFile::copy(QString(map_Ka_.c_str()), tga_file);*/
+
     return obj_writer.save(filename);
 }
 
@@ -182,11 +240,13 @@ bool MeshModel::readObjFile(const std::string& filename)
 
     QString mtl_file = obj_file.replace(obj_file.indexOf("obj"), 3, "mtl");
     mtl_file_ = mtl_file.toStdString();
+    mtl_file.resize(mtl_file.lastIndexOf('/')+1);
+    QString mtl_base(mtl_file);
 
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
 
-    std::string err = tinyobj::LoadObj(shapes, materials, obj_file_.c_str());
+    std::string err = tinyobj::LoadObj(shapes, materials, obj_file_.c_str(), mtl_base.toStdString().c_str());
 
     if (!err.empty()) {
       std::cerr << err << std::endl;
@@ -239,6 +299,18 @@ bool MeshModel::readObjFile(const std::string& filename)
         face.push_back(mesh_model.indices[i*3+1]);
         face.push_back(mesh_model.indices[i*3+2]);
         faces_.push_back(face);
+    }
+
+    // only one material needed
+    if (materials.size() == 1)
+    {
+        tinyobj::material_t mesh_material = materials.at(0);
+        ambient_ = osg::Vec4(mesh_material.ambient[0], mesh_material.ambient[1], mesh_material.ambient[2], 1.0f);
+        diffuse_ = osg::Vec4(mesh_material.diffuse[0], mesh_material.diffuse[1], mesh_material.diffuse[2], 1.0f);
+        specular_ = osg::Vec4(mesh_material.specular[0], mesh_material.specular[1], mesh_material.specular[2], 1.0f);
+        emission_ = osg::Vec4(mesh_material.emission[0], mesh_material.emission[1], mesh_material.emission[2], 1.0f);
+        map_Ka_ = mtl_base.toStdString() + mesh_material.ambient_texname;
+        map_Kd_ = mtl_base.toStdString() + mesh_material.diffuse_texname;
     }
 
     recoverAdjList();
