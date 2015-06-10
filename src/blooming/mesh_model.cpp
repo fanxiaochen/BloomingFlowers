@@ -37,6 +37,7 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     color_id_(0)
     /*face_normals_(new osg::Vec3Array),*/
 {
+    this->getObjName() = mesh_model.getObjName();
     this->getObjFile() = mesh_model.getObjFile();
     this->getMtlFile() = mesh_model.getMtlFile();
     *(this->getVertices()) = *(mesh_model.getVertices());
@@ -61,6 +62,7 @@ MeshModel::~MeshModel(void)
 
 MeshModel& MeshModel::operator =(const MeshModel& mesh_model)
 {
+    obj_name_ = mesh_model.getObjName();
     obj_file_ = mesh_model.getObjFile();
     mtl_file_ = mesh_model.getMtlFile();
     vertices_ = mesh_model.getVertices();
@@ -207,18 +209,11 @@ void MeshModel::updateImpl()
     return;
 }
 
-bool MeshModel::save(const std::string& filename)
+bool MeshModel::save(const std::string& filename, bool tex_flag)
 {
     ObjWriter obj_writer(this);
 
-    /*QString qfilename(filename.c_str()); 
-    QString obj_file(qfilename);
-    QString mtl_file = obj_file.replace(obj_file.indexOf("obj"), 3, "mtl");
-    QFile::copy(QString(mtl_file_.c_str()), mtl_file);
-    QString tga_file = obj_file.replace(obj_file.indexOf("obj"), 3, "tga");
-    QFile::copy(QString(map_Ka_.c_str()), tga_file);*/
-
-    return obj_writer.save(filename);
+    return obj_writer.save(filename, tex_flag);
 }
 
 bool MeshModel::load(const std::string& filename)
@@ -238,10 +233,13 @@ bool MeshModel::readObjFile(const std::string& filename)
     QString obj_file(filename.c_str());
     obj_file_ = obj_file.toStdString();
 
-    QString mtl_file = obj_file.replace(obj_file.indexOf("obj"), 3, "mtl");
+    QString mtl_file = obj_file;
+    mtl_file = mtl_file.replace(mtl_file.indexOf("obj"), 3, "mtl");
     mtl_file_ = mtl_file.toStdString();
     mtl_file.resize(mtl_file.lastIndexOf('/')+1);
     QString mtl_base(mtl_file);
+
+    obj_name_ = obj_file.replace(mtl_base, "").toStdString();
 
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;

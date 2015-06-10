@@ -25,7 +25,7 @@ void Flower::save(const std::string& flower_path)
     {
         std::string& petal_file = flower_path + QString("/petal-%1.obj").arg(i).toStdString();
         Petal& petal = petals_[i];
-        petal.save(petal_file);
+        petal.save(petal_file, true);
     }
 }
 

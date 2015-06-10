@@ -16,7 +16,7 @@ public:
     MeshModel& operator = (const MeshModel& mesh_model);
 
     bool load(const std::string& filename);
-    bool save(const std::string& filename);
+    bool save(const std::string& filename, bool tex_flag = false);
   
     bool empty(void) const {return vertices_->empty();}
 
