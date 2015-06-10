@@ -35,11 +35,11 @@ bool ObjWriter::save(const std::string& new_obj_file, bool tex_flag)
 //    fs << "\n\n";
     if (tex_flag)
     {
-        QString mtl_file(new_obj_file.c_str());
-        mtl_file = mtl_file.replace(mtl_file.indexOf("obj"), 3, "mtl");
-        QString mtl_name = QString(mtl_file.toStdString().substr(mtl_file.lastIndexOf('/')+1).c_str());
+        std::string obj_name = mesh_model_->getObjName();
+        std::string mtl_name = QString(obj_name.c_str()).replace(
+            QString(obj_name.c_str()).indexOf("obj"), 3, "mtl").toStdString();
 
-        fs << QString("mtllib %1").arg(mtl_name).toStdString() << "\n";
+        fs << QString("mtllib %1").arg(QString(mtl_name.c_str())).toStdString() << "\n";
 
         fs << "\n\n";
     }
@@ -105,9 +105,6 @@ bool ObjWriter::save(const std::string& new_obj_file, bool tex_flag)
 
     if (tex_flag)
     {
-        std::string base_path = new_obj_file;
-        base_path.resize(new_obj_file.find_last_of('/')+1);
-
         // mtl file
         std::string new_mtl_file = new_obj_file;
         new_mtl_file = QString(new_mtl_file.c_str()).replace(

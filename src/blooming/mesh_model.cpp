@@ -89,9 +89,9 @@ void MeshModel::visualizeMesh(void)
     osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry;
     geometry->setUseDisplayList(true);
     geometry->setVertexArray(vertices_);
-    colors_->push_back(ColorMap::getInstance().getDiscreteColor(color_id_));
+    /*colors_->push_back(ColorMap::getInstance().getDiscreteColor(color_id_));
     geometry->setColorArray(colors_);
-    colors_->setBinding(osg::Array::BIND_OVERALL);
+    colors_->setBinding(osg::Array::BIND_OVERALL);*/
 
     if (!texcoords_->empty() && !map_Ka_.empty() && !map_Kd_.empty())
     {
