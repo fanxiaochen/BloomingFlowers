@@ -130,7 +130,7 @@ void WEATrackThread::run()
     }
 
     Flower* forward_flower = new Flower(*flower);
-    PointCloud* aligned_cloud = points_file_system->getPointCloud(key_frame);
+    osg::ref_ptr<PointCloud> aligned_cloud = points_file_system->getPointCloud(key_frame);
     aligned_cloud->flower_segmentation(forward_flower);
 
     std::string workspace = MainWindow::getInstance()->getWorkspace();
@@ -151,7 +151,7 @@ void WEATrackThread::run()
         forward_flower->determineWeights(aligned_cloud);  // weights of gmm based on aligned cloud
         forward_flower->determineVisibility(); // visibility of vertices
 
-        PointCloud* forward_cloud = points_file_system->getPointCloud(i);
+        osg::ref_ptr<PointCloud> forward_cloud = points_file_system->getPointCloud(i);
         forward_cloud->flower_segmentation(forward_flower);
 
         tracking_system_->wea_registration(*forward_cloud, *forward_flower);
