@@ -51,6 +51,7 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     this->getMapKa() = mesh_model.getMapKa();
     this->getMapKd() = mesh_model.getMapKd();
     this->getAdjList() = mesh_model.getAdjList();
+    this->getWeights() = mesh_model.getWeights();
     this->getEdgeIndex() = mesh_model.getEdgeIndex();
     this->getHardCtrsIndex() = mesh_model.getHardCtrsIndex();
     this->getColorId() = mesh_model.getColorId();
@@ -76,6 +77,7 @@ MeshModel& MeshModel::operator =(const MeshModel& mesh_model)
     map_Ka_ = mesh_model.getMapKa();
     map_Kd_ = mesh_model.getMapKd();
     adj_list_ = mesh_model.getAdjList();
+    weights_ = mesh_model.getWeights();
     edge_index_ = mesh_model.getEdgeIndex();
     hard_index_ = mesh_model.getHardCtrsIndex();
     color_id_ = mesh_model.color_id_;
@@ -565,5 +567,49 @@ void MeshModel::updateNormals()
         vertex_normals_->at(face[0]) = face_normal;
         vertex_normals_->at(face[1]) = face_normal;
         vertex_normals_->at(face[2]) = face_normal;
+    }
+}
+
+void MeshModel::determineWeights(PointCloud* aligned_cloud, int petal_id)
+{
+    weights_.clear();
+
+    PointCloud segmented_cloud;
+    for (size_t k = 0, k_end = aligned_cloud->size(); k < k_end; ++ k)
+    {
+        if (aligned_cloud->getSegmentFlags()[k] != petal_id)
+            continue;;
+        segmented_cloud.push_back(Point(aligned_cloud->at(k)));
+    }
+
+    int cloud_nums = segmented_cloud.size();
+
+    for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
+    {
+        const osg::Vec3& v = vertices_->at(i);
+        double s_x = 0, s_y = 0, s_z = 0;
+        int adj_size = adj_list_[i].size();
+
+        for (size_t j = 0, j_end = adj_size; j < j_end; ++ j)
+        {
+            const osg::Vec3& c = vertices_->at(adj_list_[i][j]);
+            s_x += abs(v[0] - c[0]);
+            s_y += abs(v[1] - c[1]);
+            s_z += abs(v[2] - c[2]);
+        }
+
+        s_x = pow(s_x / adj_size, 2);
+        s_y = pow(s_y / adj_size, 2);
+        s_z = pow(s_z / adj_size, 2);
+
+        int point_nums = 0;
+        for (size_t k = 0, k_end = segmented_cloud.size(); k < k_end; ++ k)
+        {
+            const Point& p = segmented_cloud.at(k);
+            if ((v[0]-p.x)*(v[0]-p.x)/s_x + (v[1]-p.y)*(v[1]-p.y)/s_y + (v[2]-p.z)*(v[2]-p.z)/s_z <= 1)
+                point_nums ++;
+        }
+
+        weights_.push_back(double(point_nums)/cloud_nums);
     }
 }

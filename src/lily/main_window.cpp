@@ -167,6 +167,7 @@ void MainWindow::init(void)
     connect(ui_.actionLoadFlowers, SIGNAL(triggered()), this, SLOT(slotLoadFlowers()));
 
     connect(ui_.actionEMARAP, SIGNAL(triggered()), tracking_system_, SLOT(em_arap()));
+    connect(ui_.actionWEMARAP, SIGNAL(triggered()), tracking_system_, SLOT(wem_arap()));
 	connect(ui_.actionEMElastic, SIGNAL(triggered()), tracking_system_, SLOT(em_elastic()));
 	connect(ui_.actionLights, SIGNAL(triggered()), scene_widget_, SLOT(setLight()));
     // connect

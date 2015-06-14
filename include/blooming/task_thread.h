@@ -20,6 +20,20 @@ protected:
     TrackingSystem*	tracking_system_;
 };
 
+// WEM + ARAP Tracking
+class WEATrackThread: public QThread
+{
+public:
+    WEATrackThread(TrackingSystem* tracking_system);
+    virtual ~WEATrackThread();
+
+protected:
+    void run();
+
+protected:
+    TrackingSystem*	tracking_system_;
+};
+
 
 // EM + Elastic Tracking
 class EETrackThread : public QThread

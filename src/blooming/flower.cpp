@@ -125,6 +125,14 @@ int Flower::contains(Petal* petal)
     return -1;
 }
 
+void Flower::determineWeights(PointCloud* aligned_cloud)
+{
+    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+    {
+        petals_[i].determineWeights(aligned_cloud, i);
+    }
+}
+
 void Flower::determineVisibility()
 {
     for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)

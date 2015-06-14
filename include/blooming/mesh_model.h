@@ -38,6 +38,7 @@ public:
     inline const std::vector<int>& getEdgeIndex() const { return edge_index_; }
     inline const std::vector<int>& getHardCtrsIndex() const { return hard_index_; }
     inline const std::vector<int>& getVisibility() const { return visibility_; }
+    inline const std::vector<double>& getWeights() const { return weights_; }
     inline const size_t& getColorId() const { return color_id_; }
 
     inline std::string& getObjName() { return obj_name_; }
@@ -57,6 +58,7 @@ public:
     inline std::vector<int>& getEdgeIndex() { return edge_index_; }
     inline std::vector<int>& getHardCtrsIndex(){ return hard_index_; }
     inline std::vector<int>& getVisibility() { return visibility_; }
+    inline std::vector<double>& getWeights() { return weights_; }
     inline size_t& getColorId() { return color_id_; }
 
     // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
@@ -73,6 +75,8 @@ public:
     void pickEvent(int pick_mode, osg::Vec3 position);
 
     void updateNormals();
+
+    void determineWeights(PointCloud* aligned_cloud, int petal_id);
 
 protected:
     virtual void updateImpl(void);
@@ -112,6 +116,7 @@ protected:
     std::vector<int>                    edge_index_;
     std::vector<int>                    hard_index_; // hard constraints 
     std::vector<int>                    visibility_; // the same size of vertices
+    std::vector<double>                 weights_; // the same size of vertices
 
     size_t                              color_id_; // for visualization
 };

@@ -6,6 +6,7 @@
 #include "tracking_system.h"
 #include "deform_model.h"
 #include "elastic_model.h"
+#include "weighted_model.h"
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system)
     :key_frame_(-1)
@@ -48,12 +49,28 @@ void TrackingSystem::em_elastic()
 	return;
 }
 
+void TrackingSystem::wem_arap()
+{
+    WEATrackThread* track_thread = new WEATrackThread(this);
+    connect(track_thread, SIGNAL(finished()), track_thread, SLOT(quit()));
+
+    track_thread->start();
+    return;
+}
+
 
 // em + arap registration
 void TrackingSystem::ea_registration(PointCloud& tracked_frame, Flower& tracking_template)
 {
     DeformModel deform_model(&tracked_frame, &tracking_template);
     deform_model.deform();
+}
+
+// wem + arap registration
+void TrackingSystem::wea_registration(PointCloud& tracked_frame, Flower& tracking_template)
+{
+    WeightedModel weighted_model(&tracked_frame, &tracking_template);
+    weighted_model.deform();
 }
 
 void TrackingSystem::ee_registration( PointCloud& tracked_frame, Flower& tracking_template )

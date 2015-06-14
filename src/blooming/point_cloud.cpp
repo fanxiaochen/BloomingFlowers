@@ -193,6 +193,8 @@ osg::ref_ptr<PointCloud> PointCloud::getPetalCloud(int id)
 
 void PointCloud::flower_segmentation(Flower* flower)
 {
+    segment_flags_.clear();
+
     std::vector<std::vector<int> > knns_idx;
     std::vector<std::vector<float> > knns_dists;
 

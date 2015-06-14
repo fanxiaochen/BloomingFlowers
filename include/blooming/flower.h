@@ -33,6 +33,7 @@ public:
 
     void initVisibility();
     void determineVisibility();
+    void determineWeights(PointCloud* aligned_cloud);
 
 private:
     int contains(Petal* petal);

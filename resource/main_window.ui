@@ -56,6 +56,7 @@
     </property>
     <addaction name="actionEMARAP"/>
     <addaction name="actionEMElastic"/>
+    <addaction name="actionWEMARAP"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTracking"/>
@@ -163,8 +164,13 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name = "text">
-	<string>Lights</string>
+   <property name="text">
+    <string>Lights</string>
+   </property>
+  </action>
+  <action name="actionWEMARAP">
+   <property name="text">
+    <string>WEM + ARAP</string>
    </property>
   </action>
  </widget>
