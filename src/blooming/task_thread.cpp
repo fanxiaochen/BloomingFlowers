@@ -132,6 +132,7 @@ void WEATrackThread::run()
     Flower* forward_flower = new Flower(*flower);
     osg::ref_ptr<PointCloud> aligned_cloud = points_file_system->getPointCloud(key_frame);
     aligned_cloud->flower_segmentation(forward_flower);
+    osg::ref_ptr<PointCloud> forward_cloud;
 
     std::string workspace = MainWindow::getInstance()->getWorkspace();
     QDir flowers_dir(QString(workspace.c_str()));
@@ -149,9 +150,9 @@ void WEATrackThread::run()
         std::cout << "tracking [frame " << i << "]" << std::endl;
      
         forward_flower->determineWeights(aligned_cloud);  // weights of gmm based on aligned cloud
-        forward_flower->determineVisibility(); // visibility of vertices
+        //forward_flower->determineVisibility(); // visibility of vertices
 
-        osg::ref_ptr<PointCloud> forward_cloud = points_file_system->getPointCloud(i);
+        forward_cloud = points_file_system->getPointCloud(i);
         forward_cloud->flower_segmentation(forward_flower);
 
         tracking_system_->wea_registration(*forward_cloud, *forward_flower);

@@ -1,11 +1,15 @@
 #ifndef FLOWER_H
 #define FLOWER_H
 
+#include <unordered_map>
+
 #include "renderable.h"
 #include "mesh_model.h"
 
 typedef MeshModel   Petal;
 typedef std::vector<Petal>  Petals;
+
+typedef std::unordered_map<int, int> PetalOrder;
 
 // Flower could not be template of osg::ref_ptr unless inherited from osg::Referenced
 class Flower: public osg::Referenced
@@ -17,6 +21,9 @@ public:
 
     inline const Petals& getPetals() const { return petals_; }
     inline Petals& getPetals() { return petals_; }
+
+    inline const PetalOrder& getPetalOrder() const { return petal_order_; }
+    inline PetalOrder& getPetalOrder() { return petal_order_; }
 
     void save(const std::string& flower_path);
     void save(const std::string& flower_folder, int frame);
@@ -41,7 +48,8 @@ private:
     void determineIntersection();
     
 private:
-    Petals            petals_;
+    Petals                            petals_;
+    PetalOrder                        petal_order_;
 
 };
 

@@ -80,7 +80,10 @@ void PointCloud::visualizePoints()
         {
             const Point& point = at(i);
             vertices->push_back(osg::Vec3(point.x, point.y, point.z));
-            osg::Vec4 color = ColorMap::getInstance().getDiscreteColor(segment_flags_[i]);
+
+            osg::Vec4 color;
+            if (segment_flags_[i] == -1) color = osg::Vec4(0.2, 0.2, 0.2, 1.0);
+            else color = ColorMap::getInstance().getDiscreteColor(segment_flags_[i]);
             colors->push_back(color);
         }
     }
@@ -194,40 +197,59 @@ osg::ref_ptr<PointCloud> PointCloud::getPetalCloud(int id)
 void PointCloud::flower_segmentation(Flower* flower)
 {
     segment_flags_.clear();
+    segment_flags_.resize(this->size(), -1);
 
-    std::vector<std::vector<int> > knns_idx;
+    PetalOrder& petal_order = flower->getPetalOrder();
+    Petals& petals = flower->getPetals();
+    int petal_num = flower->getPetals().size();
+
+    std::vector<int> knn_idx;
+    int order = 0;
+    while (order < petal_num)
+    {
+        Petal& petal = petals[petal_order[order]];
+        petal.searchNearestIdx(this, knn_idx);
+        for (int i = 0, i_end = knn_idx.size(); i < i_end; ++ i)
+        {
+            segment_flags_[knn_idx[i]] = order;
+        }
+        knn_idx.clear();
+        order++;
+    }
+
+    /*std::vector<std::vector<int> > knns_idx;
     std::vector<std::vector<float> > knns_dists;
 
     for (size_t i = 0, i_end = flower->getPetals().size(); i < i_end; ++ i)
     {
-        std::vector<int> knn_idx;
-        std::vector<float> knn_dists;
+    std::vector<int> knn_idx;
+    std::vector<float> knn_dists;
 
-        Petal& petal = flower->getPetals().at(i);
+    Petal& petal = flower->getPetals().at(i);
 
-        searchNearestIdx(&petal, knn_idx, knn_dists);
+    searchNearestIdx(&petal, knn_idx, knn_dists);
 
-        knns_idx.push_back(knn_idx);
-        knns_dists.push_back(knn_dists);
+    knns_idx.push_back(knn_idx);
+    knns_dists.push_back(knn_dists);
     }
 
 
     for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
     {
-        float min_dist = std::numeric_limits<float>::max();
-        int min_j = std::numeric_limits<int>::max();
+    float min_dist = std::numeric_limits<float>::max();
+    int min_j = std::numeric_limits<int>::max();
 
-        for (size_t j = 0, j_end = knns_idx.size(); j < j_end; ++ j)
-        {
-            if (min_dist > knns_dists[j][i])
-            {
-                min_j = j;
-                min_dist = knns_dists[j][i];
-            }
-        }
-
-        segment_flags_.push_back(min_j);
+    for (size_t j = 0, j_end = knns_idx.size(); j < j_end; ++ j)
+    {
+    if (min_dist > knns_dists[j][i])
+    {
+    min_j = j;
+    min_dist = knns_dists[j][i];
     }
+    }
+
+    segment_flags_.push_back(min_j);
+    }*/
 
     segmented_ = true;
 }

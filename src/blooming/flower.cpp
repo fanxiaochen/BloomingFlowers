@@ -11,8 +11,10 @@ Flower::Flower()
 // deep copy
 Flower::Flower(const Flower& flower)
 {
-    for (size_t i = 0, i_end = flower.getPetals().size(); i < i_end; ++ i)
+    for (size_t i = 0, i_end = flower.getPetals().size(); i < i_end; ++ i){
         petals_.push_back(flower.getPetals()[i]);
+        petal_order_[i] = i;
+    }
 }
 
 Flower::~Flower()
@@ -210,7 +212,7 @@ void Flower::determineIntersection()
             {
                 osgUtil::LineSegmentIntersector::Intersection& intersection = lsi->getFirstIntersection();
                 osg::NodePath& node_path = intersection.nodePath;
-                Petal* intersection_object = NULL;
+                osg::ref_ptr<Petal> intersection_object = NULL;
 
                 while (!node_path.empty()) {
                     intersection_object = dynamic_cast<Petal*>(node_path.back());
