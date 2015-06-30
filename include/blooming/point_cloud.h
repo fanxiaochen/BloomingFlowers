@@ -31,9 +31,9 @@ static Point operator + (const Point& p1, const Point& p2)
 static Point operator - (const Point& p1, const Point& p2)
 {
     Point p;
-    p.x = p1.x + p2.x;
-    p.y = p1.y + p2.y;
-    p.z = p1.z + p2.z;
+    p.x = p1.x - p2.x;
+    p.y = p1.y - p2.y;
+    p.z = p1.z - p2.z;
 
     return p;
 }
@@ -119,6 +119,9 @@ protected:
 
   // source is this point cloud, target is mesh_model, knn_idx is based on mesh_model
   void searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_idx, std::vector<float>& knn_dists);
+
+  // region growing
+  void region_growing(std::vector<int>& segment_index, int petal_id);
 
 
 protected:

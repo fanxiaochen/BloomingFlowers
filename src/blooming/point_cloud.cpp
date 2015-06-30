@@ -196,7 +196,6 @@ osg::ref_ptr<PointCloud> PointCloud::getPetalCloud(int id)
 
 void PointCloud::flower_segmentation(Flower* flower)
 {
-    segment_flags_.clear();
     segment_flags_.resize(this->size(), -1);
 
     PetalOrder& petal_order = flower->getPetalOrder();
@@ -211,45 +210,86 @@ void PointCloud::flower_segmentation(Flower* flower)
         petal.searchNearestIdx(this, knn_idx);
         for (int i = 0, i_end = knn_idx.size(); i < i_end; ++ i)
         {
-            segment_flags_[knn_idx[i]] = order;
+            if(segment_flags_[knn_idx[i]] == -1) segment_flags_[knn_idx[i]] = petal_order[order];
         }
         knn_idx.clear();
         order++;
     }
 
-    /*std::vector<std::vector<int> > knns_idx;
-    std::vector<std::vector<float> > knns_dists;
+    // region growing
 
-    for (size_t i = 0, i_end = flower->getPetals().size(); i < i_end; ++ i)
+    std::vector<std::vector<int> > segment_indices(petal_num);
+    for (int i = 0, i_end = size(); i < i_end; ++ i)
     {
-    std::vector<int> knn_idx;
-    std::vector<float> knn_dists;
-
-    Petal& petal = flower->getPetals().at(i);
-
-    searchNearestIdx(&petal, knn_idx, knn_dists);
-
-    knns_idx.push_back(knn_idx);
-    knns_dists.push_back(knn_dists);
+        if (segment_flags_[i] == -1) continue;
+        else segment_indices[segment_flags_[i]].push_back(i);
     }
 
+    order = 0;
+    while (order < petal_num)
+    {
+        region_growing(segment_indices[petal_order[order]], petal_order[order]);
+        order ++;
+    }
+
+    segmented_ = true;
+}
+
+void PointCloud::region_growing(std::vector<int>& segment_index, int petal_id)
+{
+    std::unordered_set<int> segment_set(segment_index.begin(), segment_index.end());
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
     for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
     {
-    float min_dist = std::numeric_limits<float>::max();
-    int min_j = std::numeric_limits<int>::max();
+        const Point& point = this->at(i);
 
-    for (size_t j = 0, j_end = knns_idx.size(); j < j_end; ++ j)
-    {
-    if (min_dist > knns_dists[j][i])
-    {
-    min_j = j;
-    min_dist = knns_dists[j][i];
-    }
+        pcl::PointXYZ pcl_point(point.x, point.y, point.z);
+        cloud->push_back(pcl_point);
     }
 
-    segment_flags_.push_back(min_j);
-    }*/
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
 
-    segmented_ = true;
+    kdtree.setInputCloud (cloud);
+
+    float growing_radius = 2;
+
+    // radius neighbor search 
+
+    for (int k = 0; k < segment_index.size(); ++ k)
+    {
+        pcl::PointXYZ searchPoint;
+        std::vector<int> pointIdxRadiusSearch;
+        std::vector<float> pointRadiusSquaredDistance;
+        searchPoint.x = this->at(segment_index[k]).x;
+        searchPoint.y = this->at(segment_index[k]).y;
+        searchPoint.z = this->at(segment_index[k]).z;
+
+        if ( kdtree.radiusSearch (searchPoint, growing_radius, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0 )
+        {
+            bool growing = true;
+            for (int i = 0, i_end = pointIdxRadiusSearch.size(); i < i_end; ++ i)
+            {
+                if (segment_flags_[pointIdxRadiusSearch[i]] != -1 && segment_flags_[pointIdxRadiusSearch[i]] != petal_id)
+                {
+                    growing = false;
+                    break;
+                }
+            }
+
+            if (growing)
+            {
+                for (int i = 0, i_end = pointIdxRadiusSearch.size(); i < i_end; ++ i)
+                {
+                    if (segment_set.find(pointIdxRadiusSearch[i]) == segment_set.end())
+                    {
+                        segment_flags_[pointIdxRadiusSearch[i]] = petal_id;
+                        segment_index.push_back(pointIdxRadiusSearch[i]);
+                        segment_set.insert(pointIdxRadiusSearch[i]);
+                    }
+                }
+            }
+        }
+    }
 }
