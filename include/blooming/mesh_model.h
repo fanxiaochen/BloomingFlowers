@@ -2,6 +2,7 @@
 #ifndef MESH_MODEL_H
 #define MESH_MODEL_H
 
+#include "skeleton.h"
 #include "renderable.h"
 
 class PointCloud;
@@ -40,6 +41,7 @@ public:
     inline const std::vector<int>& getVisibility() const { return visibility_; }
     inline const std::vector<double>& getWeights() const { return weights_; }
     inline const size_t& getColorId() const { return color_id_; }
+    inline const osg::ref_ptr<Skeleton> getSkeleton() const { return skeleton_; }
 
     inline std::string& getObjName() { return obj_name_; }
     inline std::string& getObjFile() { return obj_file_; }
@@ -60,6 +62,7 @@ public:
     inline std::vector<int>& getVisibility() { return visibility_; }
     inline std::vector<double>& getWeights() { return weights_; }
     inline size_t& getColorId() { return color_id_; }
+    inline osg::ref_ptr<Skeleton> getSkeleton(){ return skeleton_; }
 
     // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
     void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
@@ -119,6 +122,8 @@ protected:
     std::vector<double>                 weights_; // the same size of vertices
 
     size_t                              color_id_; // for visualization
+    
+    osg::ref_ptr<Skeleton>              skeleton_;
 };
 
 #endif // MESH_MODEL_H

@@ -104,8 +104,11 @@ void MeshFileSystem::showMeshModel(const QPersistentModelIndex& index)
     if (!mesh_model.valid())
         return;
 
-    MainWindow::getInstance()->getSceneWidget()->addSceneChild(mesh_model);
-    mesh_model_map_[index] = mesh_model;
+    MainWindow::getInstance()->getSceneWidget()->addSceneChild(mesh_model); // show mesh model
+    mesh_model_map_[index] = mesh_model; 
+
+    if (!mesh_model->getSkeleton()->isEmpty())
+        mesh_model->getSkeleton()->show(); // show related skeleton
 
     return;
 }
@@ -119,7 +122,11 @@ void MeshFileSystem::hideMeshModel(const QPersistentModelIndex& index)
     if (mesh_model_map_it == mesh_model_map_.end())
         return;
 
-    MainWindow::getInstance()->getSceneWidget()->removeSceneChild(mesh_model_map_it.value().get());
+    osg::ref_ptr<MeshModel> mesh_model = mesh_model_map_it.value();
+    if (!mesh_model->getSkeleton()->isEmpty())
+        mesh_model->getSkeleton()->hide(); // hide related skeleton
+
+    MainWindow::getInstance()->getSceneWidget()->removeSceneChild(mesh_model.get());
     mesh_model_map_.erase(mesh_model_map_it);
 
     return;

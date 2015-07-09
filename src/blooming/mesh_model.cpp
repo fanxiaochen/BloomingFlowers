@@ -11,10 +11,8 @@
 
 #include <pcl/kdtree/kdtree_flann.h>
 
-
 #include "tiny_obj_loader.h"
 #include "obj_writer.h"
-
 #include "point_cloud.h"
 #include "mesh_model.h"
 
@@ -24,7 +22,8 @@ MeshModel::MeshModel()
     texcoords_(new osg::Vec2Array),
     vertex_normals_(new osg::Vec3Array),
     colors_(new osg::Vec4Array),
-    color_id_(0)
+    color_id_(0),
+    skeleton_(new Skeleton)
     /*face_normals_(new osg::Vec3Array),*/
 {
 }
@@ -34,7 +33,8 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     texcoords_(new osg::Vec2Array),
     vertex_normals_(new osg::Vec3Array),
     colors_(new osg::Vec4Array),
-    color_id_(0)
+    color_id_(0),
+    skeleton_(new Skeleton)
     /*face_normals_(new osg::Vec3Array),*/
 {
     this->getObjName() = mesh_model.getObjName();
@@ -226,6 +226,10 @@ bool MeshModel::load(const std::string& filename)
     std::string extension = boost::filesystem::path(filename).extension().string();
     if (extension != ".obj")
         return false;
+
+    std::string skel_file = filename + ".skel";
+    if (QFile(skel_file.c_str()).exists())
+        skeleton_->load(skel_file);
 
     return readObjFile(filename);
 }

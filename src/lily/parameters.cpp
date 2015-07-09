@@ -51,8 +51,8 @@ bool Parameters::save(const std::string& filename)
     // frame sequence information
     QDomElement sequenceElement = doc.createElement(QString("chosen_frame_sequence"));
     sequenceElement.setAttribute("start_frame", start_frame_);
-    sequenceElement.setAttribute("end_frame", end_frame_);
     sequenceElement.setAttribute("key_frame", key_frame_);
+    sequenceElement.setAttribute("end_frame", end_frame_);
     rootElement.appendChild(sequenceElement);
 
     QTextStream text_stream(&file);

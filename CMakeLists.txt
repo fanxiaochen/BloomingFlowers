@@ -37,6 +37,7 @@ QT5_ADD_RESOURCES(resource_srcs ${resources})
 
 find_package(3rdParty)
 include_directories(${SVD_INCLUDE})
+include_directories(${LEMON_INCLUDE})
 
 set(lily_inc    include/lily)
 set(lily_src    src/lily)
@@ -94,6 +95,7 @@ set(blooming_incs   ${blooming_inc}/point_cloud.h
                     ${blooming_inc}/deform_model.h
 					${blooming_inc}/elastic_model.h
 					${blooming_inc}/weighted_model.h
+					${blooming_inc}/skeleton.h
                     )
 
 set(blooming_srcs	${blooming_src}/point_cloud.cpp
@@ -104,6 +106,7 @@ set(blooming_srcs	${blooming_src}/point_cloud.cpp
                     ${blooming_src}/deform_model.cpp
 					${blooming_src}/elastic_model.cpp
 					${blooming_src}/weighted_model.cpp
+					${blooming_src}/skeleton.cpp
                     )
                     
 set(filesystem_incs	${filesystem_inc}/file_system_model.h
@@ -161,7 +164,7 @@ ENDIF (${CMAKE_BUILD_TOOL} MATCHES "devenv")
 set(link_libraies	${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
   ${OPENSCENEGRAPH_LIBRARIES}
   Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent Qt5::Xml
-  ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_KDTREE_LIBRARIES})
+  ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_KDTREE_LIBRARIES} ${LEMON_LIBRARY})
 
 set(exe_name BloomingFlower)
 add_executable(${exe_name} ${prelily_src} ${prelily_inc} ${ui_srcs} ${moc_srcs} ${resource_srcs} ${srcs} ${incs} ${svd_src})
