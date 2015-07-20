@@ -51,9 +51,14 @@ set(blooming_src    src/blooming)
 set(filesystem_inc  include/filesystem)
 set(filesystem_src  src/filesystem)
 
+set(solver_inc 		include/solver)
+set(solver_src		src/solver)
+
 include_directories(${PROJECT_SOURCE_DIR}/${lily_inc})
 include_directories(${PROJECT_SOURCE_DIR}/${blooming_inc})
 include_directories(${PROJECT_SOURCE_DIR}/${filesystem_inc})
+include_directories(${PROJECT_SOURCE_DIR}/${solver_inc})
+
 
 set(lily_incs       ${lily_inc}/main_window.h
                     ${lily_inc}/threaded_painter.h
@@ -125,8 +130,16 @@ set(filesystem_srcs	${filesystem_src}/file_system_model.cpp
                     ${filesystem_src}/registrator.cpp
                     )
 
-set(incs    ${lily_incs} ${blooming_incs} ${filesystem_incs})
-set(srcs    ${lily_srcs} ${blooming_srcs} ${filesystem_srcs})
+set(solver_incs 	${solver_inc}/data_fitting_term.h
+					${solver_inc}/arap_term.h
+					${solver_inc}/solver.h)
+
+set(solver_srcs		${solver_src}/data_fitting_term.cpp
+					${solver_src}/arap_term.cpp
+					${solver_src}/solver.cpp)
+
+set(incs    ${lily_incs} ${blooming_incs} ${filesystem_incs} ${solver_incs})
+set(srcs    ${lily_srcs} ${blooming_srcs} ${filesystem_srcs} ${solver_srcs})
 
 set(Headers     "Header Files")
 set(Sources     "Source Files")
@@ -134,10 +147,12 @@ set(Sources     "Source Files")
 set(header_lily         ${Headers}\\lily)
 set(header_blooming     ${Headers}\\blooming)
 set(header_filesystem   ${Headers}\\filesystem)
+set(header_solver		${Headers}\\solver)
 
 set(source_lily         ${Sources}\\lily)
 set(source_blooming     ${Sources}\\blooming)
 set(source_filesystem   ${Sources}\\filesystem)
+set(source_solver		${Sources}\\solver)
 
 # Organize files
 SOURCE_GROUP("Resources" FILES ${uis} ${resources})
@@ -145,10 +160,11 @@ SOURCE_GROUP("Generated" FILES ${ui_srcs} ${moc_srcs} ${resource_srcs})
 SOURCE_GROUP(${header_lily} FILES ${lily_incs})
 SOURCE_GROUP(${header_blooming} FILES ${blooming_incs})
 SOURCE_GROUP(${header_filesystem} FILES ${filesystem_incs})
+SOURCE_GROUP(${header_solver} FILES ${solver_incs})
 SOURCE_GROUP(${source_lily} FILES ${lily_srcs})
 SOURCE_GROUP(${source_blooming} FILES ${blooming_srcs})
 SOURCE_GROUP(${source_filesystem} FILES ${filesystem_srcs})
-
+SOURCE_GROUP(${source_solver} FILES ${solver_srcs})
 
 SET_SOURCE_FILES_PROPERTIES(${srcs} PROPERTIES OBJECT_DEPENDS "${ui_srcs}")
 
