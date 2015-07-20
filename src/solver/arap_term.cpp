@@ -6,6 +6,7 @@
 ARAPTerm::ARAPTerm(int petal_id)
     :petal_id_(petal_id)
 {
+    init();
 }
 
 void ARAPTerm::init()

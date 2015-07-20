@@ -194,16 +194,194 @@ void Solver::initTerms()
     }
 }
 
-void Solver::solve()
+double Solver::solve(int petal_id)
 {
+    // solve x, y ,z independently
+    for (size_t i = 0; i < 3; ++ i)
+    {
+        lu_solver_.analyzePattern(L_[petal_id][i]);
+        lu_solver_.factorize(L_[petal_id][i]);
 
+        Eigen::VectorXd next_pos = lu_solver_.solve(b_[petal_id].row(i).transpose());
+
+        PetalMatrix& petal_matrix = deform_petals_[petal_id]._petal_matrix;
+        int petal_size = petal_matrix.cols();
+        petal_matrix.row(i) = next_pos;
+    }
+
+    return energy(petal_id);
 }
 
-Flower* Solver::getFlower()
+double Solver::energy(int petal_id)
 {
-    return flower_;
+    DeformPetal& deform_petal = deform_petals_[petal_id];
+    CorresMatrix& corres_matrix = deform_petal._corres_matrix;
+    CloudMatrix& cloud_matrix = deform_petal._cloud_matrix;
+    PetalMatrix& petal_matrix = deform_petal._petal_matrix;
+    CovMatrix& cov_matrix = deform_petal._cov_matrix;
+    PetalMatrix& origin_petal = deform_petal._origin_petal;
+    RotList& rot_list = deform_petal._R_list;
+    WeightMatrix& weight_matrix = deform_petal._weight_matrix;
+    AdjList& adj_list = deform_petal._adj_list;
+
+    double e1 = 0, e2 = 0;
+
+    for (size_t k = 0, k_end = corres_matrix.rows(); k < k_end; ++ k)
+    {
+
+        for (size_t n = 0, n_end = corres_matrix.cols(); n < n_end; ++ n)
+        {
+            Eigen::Vector3d cm = cloud_matrix.col(n) - petal_matrix.col(k);
+            e1 += corres_matrix(k, n) * cm.transpose() * cov_matrix.col(k).asDiagonal().inverse() * cm;
+        }
+
+        for (size_t j = 0, j_end = adj_list[k].size(); j < j_end; ++ j)
+        {
+            Eigen::Vector3d mkj = petal_matrix.col(k)-petal_matrix.col(adj_list[k][j]);
+            Eigen::Vector3d pre_mkj = origin_petal.col(k)-origin_petal.col(adj_list[k][j]);
+            e2 += weight_matrix.coeffRef(k, adj_list[k][j]) * (mkj-rot_list[k]*pre_mkj).squaredNorm();
+        }
+    }
+
+    return (e1 + e2);
 }
 
+void Solver::e_step(int petal_id)
+{
+    std::cout << "E-Step:" << std::endl;
 
+    CorresMatrix& corres_mat = deform_petals_[petal_id]._corres_matrix;
+    WeightList& weight_list = deform_petals_[petal_id]._weight_list;
 
+    for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
+    {
+        for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
+        {
+            corres_mat(j, i) = gaussian(petal_id, j, i) * weight_list[j];
+        }
+    }
 
+    for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
+    {
+        double sum_gaussian = corres_mat.col(i).sum() + noise_p_;
+
+        for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
+        {
+            corres_mat(j, i) = corres_mat(j, i) / zero_correction(sum_gaussian);
+        }
+    }
+}
+
+double Solver::m_step(int petal_id)
+{
+    std::cout << "M-Step:" << std::endl;
+
+    int iter = 0;
+    double eps = 0;
+
+    double e = 0;
+
+    left_sys(petal_id);
+    right_sys(petal_id);
+
+    do {
+        double e_n = solve();
+        eps = std::fabs((e_n - e) / e_n);
+        e = e_n;
+
+        projection(petal_id);
+        update(petal_id);
+        right_sys(petal_id);
+
+    }while(eps > eps_ && iter < iter_num_);
+
+    return e;
+}
+
+void Solver::deform()
+{
+    for (size_t i = 0; i < petal_num_; ++ i)
+    {
+        std::cout << "Start Deforming..." << std::endl;
+        std::cout << "Petal " << i << std::endl;
+        deform(i);
+    }
+}
+
+void Solver::deform(int petal_id)
+{
+
+    int iter_num = 0;
+    double eps = 1;
+
+    double e = 0;
+
+    std::cout << "Start EM Iteration..." << std::endl;
+
+    do 
+    {
+        e_step(petal_id);
+
+        double e_n = m_step(petal_id);
+
+        eps = std::fabs((e_n - e) / e_n);
+        e = e_n;
+
+        std::cout << "In EM Iteration \t" << "iter: " << ++ iter_num << "\tdelta: " << eps << std::endl;
+
+    } while (iter_num < iter_num_ && eps > eps_ );
+
+    // flower deformed
+    deforming(petal_id);
+}
+
+void Solver::deforming(int petal_id)
+{
+    Petals& petals = flower_->getPetals();
+
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals.at(i);
+        PetalMatrix& pm = deform_petals_[i]._petal_matrix;
+
+        for (size_t j = 0, j_end = petal.getVertices()->size(); j < j_end; ++ j)
+        {
+            petal.getVertices()->at(j).x() = pm(0, j);
+            petal.getVertices()->at(j).y() = pm(1, j);
+            petal.getVertices()->at(j).z() = pm(2, j);
+        }
+
+        petal.updateNormals();
+    }
+}
+
+double Solver::zero_correction(double value)
+{
+    double min_double = std::numeric_limits<double>::min();
+    if (min_double > value)
+        return min_double;
+    return value;
+}
+
+void Solver::left_sys(int petal_id)
+{
+    for (int i = 0; i < 3; ++ i)
+        L_[petal_id][i] = data_term_[petal_id].A()[i] + arap_term_[petal_id].A()[i];
+}
+
+void Solver::right_sys(int petal_id)
+{
+    b_[petal_id] = data_term_[petal_id].b() + arap_term_[petal_id].b();
+}
+
+void Solver::projection(int petal_id)
+{
+    data_term_[petal_id].projection();
+    arap_term_[petal_id].projection();
+}
+
+void Solver::update(int petal_id)
+{
+    data_term_[petal_id].update();
+    arap_term_[petal_id].update();
+}

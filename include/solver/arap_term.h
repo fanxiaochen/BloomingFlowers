@@ -10,8 +10,8 @@ class ARAPTerm
 {
 public:
     ARAPTerm(int petal_id);
-    const Eigen::SparseMatrix<double>& const A(int i){ return A_[i]; }
-    const Eigen::Matrix3Xd& const b(int i){ return b_.row(i); }
+    inline std::vector<Eigen::SparseMatrix<double>>& A(){ return A_; }
+    inline Eigen::Matrix3Xd& b(){ return b_; }
 
     void init();
     void projection();

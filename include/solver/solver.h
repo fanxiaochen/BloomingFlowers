@@ -130,32 +130,37 @@ public:
     void setPointCloud(PointCloud* point_cloud);
 
     void initSolver();
-    void solve();
+    double solve();
+
+    void deform();
 
     Flower* getFlower() { return flower_; }
 
 protected:
-    void e_step();
-    double m_step();
+    void deform(int petal_id);
+    void deforming(int petal_id);
 
     void e_step(int petal_id);
+    double m_step(int petal_id);
 
-    //void initialize();
+    void left_sys(int petal_id);
+    void right_sys(int petal_id);
+
+    double solve(int petal_id);
+    double energy(int petal_id);
+
+    void projection(int petal_id);
+    void update(int petal_id);
 
     double gaussian(int petal_id, int m_id, int c_id);
-
-protected:
-    void projection();
-    void mls();
 
 protected:
     void initParas();
     void initTerms();
 
-    void build();
     void updateFlower();
 
-
+    double zero_correction(double value);
 
 private:
     Flower* flower_;
@@ -166,8 +171,10 @@ private:
 
     std::vector<Eigen::MatrixXd> M_;
     std::vector<AffTrans> T_;
-    std::vector<Eigen::SparseMatrix<double>> L_;
+    std::vector<std::vector<Eigen::SparseMatrix<double>>> L_; // x, y, z
     std::vector<Eigen::MatrixX3d> b_;
+
+    Eigen::SparseLU<Eigen::SparseMatrix<double> > lu_solver_;
 
     int petal_num_;
 };
