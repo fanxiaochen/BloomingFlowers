@@ -4,7 +4,7 @@
 
 int Solver::iter_num_ = 30;
 double Solver::eps_ = 1e-3;
-double Solver::lambda_ = 0.1;
+double Solver::lambda_ = 0.05;
 double Solver::noise_p_ = 0.0;
 std::vector<Solver::DeformPetal> Solver::deform_petals_;
 
@@ -265,7 +265,7 @@ void Solver::e_step(int petal_id)
     {
         for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
         {
-            corres_mat(j, i) = gaussian(petal_id, j, i) /** weight_list[j]*/;
+            corres_mat(j, i) = gaussian(petal_id, j, i) * weight_list[j];
         }
     }
 

@@ -80,11 +80,7 @@ void PointCloud::visualizePoints()
         {
             const Point& point = at(i);
             vertices->push_back(osg::Vec3(point.x, point.y, point.z));
-
-            osg::Vec4 color;
-            if (segment_flags_[i] == -1) color = osg::Vec4(0.2, 0.2, 0.2, 1.0);
-            else color = ColorMap::getInstance().getDiscreteColor(segment_flags_[i]);
-            colors->push_back(color);
+            colors->push_back(ColorMap::getInstance().getDiscreteColor(segment_flags_[i]));
         }
     }
 
@@ -196,40 +192,40 @@ osg::ref_ptr<PointCloud> PointCloud::getPetalCloud(int id)
 
 void PointCloud::flower_segmentation(Flower* flower)
 {
-    segment_flags_.resize(this->size(), -1);
+    segment_flags_.clear();
 
-    PetalOrder& petal_order = flower->getPetalOrder();
-    Petals& petals = flower->getPetals();
-    int petal_num = flower->getPetals().size();
+    std::vector<std::vector<int> > knns_idx;
+    std::vector<std::vector<float> > knns_dists;
 
-    std::vector<int> knn_idx;
-    int order = 0;
-    while (order < petal_num)
+    for (size_t i = 0, i_end = flower->getPetals().size(); i < i_end; ++ i)
     {
-        Petal& petal = petals[petal_order[order]];
-        petal.searchNearestIdx(this, knn_idx);
-        for (int i = 0, i_end = knn_idx.size(); i < i_end; ++ i)
+        std::vector<int> knn_idx;
+        std::vector<float> knn_dists;
+
+        Petal& petal = flower->getPetals().at(i);
+
+        searchNearestIdx(&petal, knn_idx, knn_dists);
+
+        knns_idx.push_back(knn_idx);
+        knns_dists.push_back(knn_dists);
+    }
+
+
+    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+    {
+        float min_dist = std::numeric_limits<float>::max();
+        int min_j = std::numeric_limits<int>::max();
+
+        for (size_t j = 0, j_end = knns_idx.size(); j < j_end; ++ j)
         {
-            if(segment_flags_[knn_idx[i]] == -1) segment_flags_[knn_idx[i]] = petal_order[order];
+            if (min_dist > knns_dists[j][i])
+            {
+                min_j = j;
+                min_dist = knns_dists[j][i];
+            }
         }
-        knn_idx.clear();
-        order++;
-    }
 
-    // region growing
-
-    std::vector<std::vector<int> > segment_indices(petal_num);
-    for (int i = 0, i_end = size(); i < i_end; ++ i)
-    {
-        if (segment_flags_[i] == -1) continue;
-        else segment_indices[segment_flags_[i]].push_back(i);
-    }
-
-    order = 0;
-    while (order < petal_num)
-    {
-        region_growing(segment_indices[petal_order[order]], petal_order[order]);
-        order ++;
+        segment_flags_.push_back(min_j);
     }
 
     segmented_ = true;
