@@ -6,13 +6,13 @@
 ARAPTerm::ARAPTerm(int petal_id)
     :petal_id_(petal_id)
 {
-    init();
 }
 
-void ARAPTerm::init()
+void ARAPTerm::build()
 {
     initRotation();
-    return;
+    buildA();
+    buildb();
 }
 
 void ARAPTerm::projection()
@@ -21,9 +21,9 @@ void ARAPTerm::projection()
     return;
 }
 
+// only need to update b
 void ARAPTerm::update()
 {
-    buildA();
     buildb();
 }
 
@@ -38,6 +38,8 @@ void ARAPTerm::buildA()
 
     std::vector<std::vector<Eigen::Triplet<double> > > weight_sums;
     weight_sums.resize(3); // for x,y,z coordinates
+
+    A_.resize(3);
 
     for (int i = 0; i < ver_num; ++i) 
     {

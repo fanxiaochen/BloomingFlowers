@@ -7,6 +7,7 @@
 #include "deform_model.h"
 #include "elastic_model.h"
 #include "weighted_model.h"
+#include "solver.h"
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system)
     :key_frame_(-1)
@@ -58,6 +59,15 @@ void TrackingSystem::wem_arap()
     return;
 }
 
+void TrackingSystem::lbs_arap()
+{
+    LATrackThread* track_thread = new LATrackThread(this);
+    connect(track_thread, SIGNAL(finished()), track_thread, SLOT(quit()));
+
+    track_thread->start();
+    return;
+}
+
 
 // em + arap registration
 void TrackingSystem::ea_registration(PointCloud& tracked_frame, Flower& tracking_template)
@@ -77,4 +87,11 @@ void TrackingSystem::ee_registration( PointCloud& tracked_frame, Flower& trackin
 {
 	ElasticModel elastic_model(&tracked_frame, &tracking_template);
 	elastic_model.deform();
+}
+
+// em + lbs + arap registration
+void TrackingSystem::la_registration( PointCloud& tracked_frame, Flower& tracking_template )
+{
+    Solver solver(&tracked_frame, &tracking_template);
+    solver.deform();
 }

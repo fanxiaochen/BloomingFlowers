@@ -2,6 +2,20 @@
 #include "point_cloud.h"
 #include "solver.h"
 
+int Solver::iter_num_ = 30;
+double Solver::eps_ = 1e-3;
+double Solver::lambda_ = 0.1;
+double Solver::noise_p_ = 0.0;
+std::vector<Solver::DeformPetal> Solver::deform_petals_;
+
+Solver::Solver(PointCloud* point_cloud, Flower* flower)
+{
+    point_cloud_ = point_cloud;
+    flower_ = flower;
+   
+    init();
+}
+
 void Solver::setFlower(Flower* flower)
 {
     flower_ = flower;
@@ -12,7 +26,7 @@ void Solver::setPointCloud(PointCloud* point_cloud)
     point_cloud_ = point_cloud;
 }
 
-void Solver::initSolver()
+void Solver::init()
 {
     initParas();
     initTerms();
@@ -22,6 +36,9 @@ void Solver::initParas()
 {
     Petals& petals = flower_->getPetals();
     petal_num_ = petals.size();
+
+    L_ = std::vector<std::vector<Eigen::SparseMatrix<double>>>(petal_num_, std::vector<Eigen::SparseMatrix<double>>(3));
+    b_.resize(petal_num_);
 
     deform_petals_.resize(petal_num_);
 
@@ -170,15 +187,6 @@ void Solver::initParas()
             cov_matrix.col(k) << pow(s_x/adj_size, 2.0), pow(s_y/adj_size, 2.0), pow(s_z/adj_size, 2.0); 
         }
     }
-
-    // init hard constraints
-    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
-    {
-        Petal& petal = petals[i];
-        HardCtrsIdx& hc_idx = deform_petals_[i]._hc_idx;
-        hc_idx = petal.getHardCtrsIndex();
-        std::sort(hc_idx.begin(), hc_idx.end());
-    }
 }
 
 void Solver::initTerms()
@@ -257,7 +265,7 @@ void Solver::e_step(int petal_id)
     {
         for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
         {
-            corres_mat(j, i) = gaussian(petal_id, j, i) * weight_list[j];
+            corres_mat(j, i) = gaussian(petal_id, j, i) /** weight_list[j]*/;
         }
     }
 
@@ -281,17 +289,18 @@ double Solver::m_step(int petal_id)
 
     double e = 0;
 
+    initbuild(petal_id);
     left_sys(petal_id);
     right_sys(petal_id);
 
     do {
-        double e_n = solve();
+        double e_n = solve(petal_id);
         eps = std::fabs((e_n - e) / e_n);
         e = e_n;
 
         projection(petal_id);
         update(petal_id);
-        right_sys(petal_id);
+        right_sys(petal_id); // the update only effects right side 
 
     }while(eps > eps_ && iter < iter_num_);
 
@@ -300,9 +309,9 @@ double Solver::m_step(int petal_id)
 
 void Solver::deform()
 {
+    std::cout << "Start Deforming..." << std::endl;
     for (size_t i = 0; i < petal_num_; ++ i)
     {
-        std::cout << "Start Deforming..." << std::endl;
         std::cout << "Petal " << i << std::endl;
         deform(i);
     }
@@ -363,10 +372,19 @@ double Solver::zero_correction(double value)
     return value;
 }
 
+void Solver::initbuild(int petal_id)
+{
+    data_term_[petal_id].build();
+    arap_term_[petal_id].build();
+}
+
 void Solver::left_sys(int petal_id)
 {
     for (int i = 0; i < 3; ++ i)
+    {
         L_[petal_id][i] = data_term_[petal_id].A()[i] + arap_term_[petal_id].A()[i];
+        L_[petal_id][i].makeCompressed();
+    }
 }
 
 void Solver::right_sys(int petal_id)
@@ -384,4 +402,19 @@ void Solver::update(int petal_id)
 {
     data_term_[petal_id].update();
     arap_term_[petal_id].update();
+}
+
+double Solver::gaussian(int petal_id, int m_id, int c_id)
+{
+    double p;
+
+    CovMatrix& cov_mat = deform_petals_[petal_id]._cov_matrix;
+    CloudMatrix& cloud_mat = deform_petals_[petal_id]._cloud_matrix;
+    PetalMatrix& petal_mat = deform_petals_[petal_id]._petal_matrix;
+
+    Eigen::Vector3d xu = cloud_mat.col(c_id) - petal_mat.col(m_id);
+    p = pow(2*M_PI, -3/2.0) * pow((cov_mat.col(m_id).asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
+        exp((-1/2.0)*xu.transpose()*cov_mat.col(m_id).asDiagonal().inverse()*xu);
+
+    return p;
 }

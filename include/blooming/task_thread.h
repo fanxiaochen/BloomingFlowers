@@ -50,5 +50,20 @@ protected:
 };
 
 
+// LBS + ARAP Tracking
+class LATrackThread: public QThread
+{
+public:
+    LATrackThread(TrackingSystem* tracking_system);
+    virtual ~LATrackThread();
+
+protected:
+    void run();
+
+protected:
+    TrackingSystem*	tracking_system_;
+};
+
+
 
 #endif

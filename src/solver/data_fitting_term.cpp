@@ -6,6 +6,12 @@ DataFittingTerm::DataFittingTerm(int petal_id)
 {
 }
 
+void DataFittingTerm::build()
+{
+    buildA();
+    buildb();
+}
+
 // no projection needed for data fitting
 void DataFittingTerm::projection()
 {
@@ -14,8 +20,7 @@ void DataFittingTerm::projection()
 
 void DataFittingTerm::update()
 {
-    buildA();
-    buildb();
+    return;
 }
 
 void DataFittingTerm::buildA()

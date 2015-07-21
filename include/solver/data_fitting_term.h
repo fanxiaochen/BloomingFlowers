@@ -13,6 +13,7 @@ public:
     inline std::vector<Eigen::SparseMatrix<double>>& A() { return A_; }
     inline Eigen::Matrix3Xd& b(){ return b_; }
     
+    void build();
     void projection();
     void update();
 

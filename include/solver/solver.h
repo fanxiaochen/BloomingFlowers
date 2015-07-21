@@ -18,13 +18,11 @@ public:
     typedef Eigen::Matrix3Xd CloudMatrix;
     typedef Eigen::Matrix3Xd PetalMatrix;
     typedef Eigen::Matrix3Xd CovMatrix;
-    typedef std::vector<int> VisList;
     typedef std::vector<double> WeightList;
     typedef std::vector<std::vector<int> > AdjList;
     typedef std::vector<Eigen::Vector3i > FaceList;
     typedef Eigen::SparseMatrix<double> WeightMatrix;
     typedef std::vector<Eigen::Matrix3d> RotList;
-    typedef std::vector<int> HardCtrsIdx;
 
 public:
     typedef struct 
@@ -34,13 +32,11 @@ public:
         CloudMatrix     _cloud_matrix;
         CorresMatrix    _corres_matrix;
         CovMatrix       _cov_matrix;
-        VisList         _vis_list;
         WeightList      _weight_list;
         AdjList         _adj_list;
         FaceList        _face_list;
         WeightMatrix    _weight_matrix;
         RotList         _R_list;
-        HardCtrsIdx     _hc_idx;
 
         void findSharedVertex(int pi, int pj, std::vector<int>& share_vertex)
         {
@@ -87,29 +83,6 @@ public:
 
             return ((alpha_cos/sqrt(1-alpha_cos*alpha_cos))+(beta_cos/sqrt(1-beta_cos*beta_cos)))/2;
         }
-
-        int isHardCtrs(int id)
-        {
-            // binary search
-            int k = 0, k_end = _hc_idx.size();
-
-            if (k_end == 0)
-                return -1;
-
-            while (k <= k_end)
-            {
-                int m = (k + k_end) / 2;
-
-                if (id == _hc_idx[m])
-                    return m;
-                else if (id < _hc_idx[m])
-                    k_end = m - 1;
-                else 
-                    k = m + 1;
-            }
-
-            return -1;
-        }
     }DeformPetal;
 
     typedef struct AffineTransform 
@@ -126,15 +99,12 @@ public:
     static double noise_p_;
 
 public:
+    Solver(PointCloud* point_cloud, Flower* flower);
+
     void setFlower(Flower* flower);
     void setPointCloud(PointCloud* point_cloud);
 
-    void initSolver();
-    double solve();
-
     void deform();
-
-    Flower* getFlower() { return flower_; }
 
 protected:
     void deform(int petal_id);
@@ -143,6 +113,7 @@ protected:
     void e_step(int petal_id);
     double m_step(int petal_id);
 
+    void initbuild(int petal_id);
     void left_sys(int petal_id);
     void right_sys(int petal_id);
 
@@ -155,11 +126,9 @@ protected:
     double gaussian(int petal_id, int m_id, int c_id);
 
 protected:
+    void init();
     void initParas();
     void initTerms();
-
-    void updateFlower();
-
     double zero_correction(double value);
 
 private:
@@ -172,7 +141,7 @@ private:
     std::vector<Eigen::MatrixXd> M_;
     std::vector<AffTrans> T_;
     std::vector<std::vector<Eigen::SparseMatrix<double>>> L_; // x, y, z
-    std::vector<Eigen::MatrixX3d> b_;
+    std::vector<Eigen::Matrix3Xd> b_;
 
     Eigen::SparseLU<Eigen::SparseMatrix<double> > lu_solver_;
 

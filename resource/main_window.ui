@@ -57,6 +57,7 @@
     <addaction name="actionEMARAP"/>
     <addaction name="actionEMElastic"/>
     <addaction name="actionWEMARAP"/>
+    <addaction name="actionLBSARAP"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTracking"/>
@@ -171,6 +172,11 @@
   <action name="actionWEMARAP">
    <property name="text">
     <string>WEM + ARAP</string>
+   </property>
+  </action>
+  <action name="actionLBSARAP">
+   <property name="text">
+    <string>WEM + LBS + ARAP</string>
    </property>
   </action>
  </widget>
