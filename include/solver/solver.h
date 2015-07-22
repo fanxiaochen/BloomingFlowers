@@ -23,6 +23,8 @@ public:
     typedef std::vector<Eigen::Vector3i > FaceList;
     typedef Eigen::SparseMatrix<double> WeightMatrix;
     typedef std::vector<Eigen::Matrix3d> RotList;
+    typedef Eigen::MatrixXd BiWeightMatrix;
+    typedef Eigen::MatrixXd AffineMatrix;
 
 public:
     typedef struct 
@@ -37,6 +39,8 @@ public:
         FaceList        _face_list;
         WeightMatrix    _weight_matrix;
         RotList         _R_list;
+        BiWeightMatrix  _biweight_matrix;
+        AffineMatrix    _affine_matrix;
 
         void findSharedVertex(int pi, int pj, std::vector<int>& share_vertex)
         {
@@ -85,11 +89,6 @@ public:
         }
     }DeformPetal;
 
-    typedef struct AffineTransform 
-    {
-        Eigen::MatrixXd _at;
-    }AffTrans;
-
     static std::vector<DeformPetal> deform_petals_;
 
     static int iter_num_;
@@ -109,6 +108,7 @@ public:
 protected:
     void deform(int petal_id);
     void deforming(int petal_id);
+    void lbs(int petal_id);
 
     void e_step(int petal_id);
     double m_step(int petal_id);
@@ -139,7 +139,6 @@ private:
     std::vector<ARAPTerm> arap_term_;
 
     std::vector<Eigen::MatrixXd> M_;
-    std::vector<AffTrans> T_;
     std::vector<std::vector<Eigen::SparseMatrix<double>>> L_; // x, y, z
     std::vector<Eigen::Matrix3Xd> b_;
 

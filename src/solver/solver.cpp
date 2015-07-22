@@ -39,6 +39,7 @@ void Solver::initParas()
 
     L_ = std::vector<std::vector<Eigen::SparseMatrix<double>>>(petal_num_, std::vector<Eigen::SparseMatrix<double>>(3));
     b_.resize(petal_num_);
+    M_.resize(petal_num_);
 
     deform_petals_.resize(petal_num_);
 
@@ -187,6 +188,29 @@ void Solver::initParas()
             cov_matrix.col(k) << pow(s_x/adj_size, 2.0), pow(s_y/adj_size, 2.0), pow(s_z/adj_size, 2.0); 
         }
     }
+
+    // init biharmonic weights
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals.at(i);
+        //deform_petals_[i]._biweight_matrix = petal.getBiweightMatrix();
+    }
+
+    // init M matrix
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        BiWeightMatrix& biweight_matrix = deform_petals_[i]._biweight_matrix;
+        PetalMatrix& petal_matrix = deform_petals_[i]._origin_petal;
+
+        int ver_num = petal_matrix.cols();
+        int hdl_num = biweight_matrix.cols();
+        Eigen::MatrixXd M(ver_num, 4*hdl_num);
+        for (size_t j = 0, j_end = hdl_num; j < j_end; ++ j)
+        {
+            M.block(4*j, 0, ver_num, 4) = biweight_matrix.col(j).asDiagonal() * petal_matrix;
+        }
+        M_[i] = M;
+    }
 }
 
 void Solver::initTerms()
@@ -204,18 +228,32 @@ void Solver::initTerms()
 
 double Solver::solve(int petal_id)
 {
-    // solve x, y ,z independently
+    // solve T
     for (size_t i = 0; i < 3; ++ i)
     {
-        lu_solver_.analyzePattern(L_[petal_id][i]);
-        lu_solver_.factorize(L_[petal_id][i]);
-
-        Eigen::VectorXd next_pos = lu_solver_.solve(b_[petal_id].row(i).transpose());
-
-        PetalMatrix& petal_matrix = deform_petals_[petal_id]._petal_matrix;
-        int petal_size = petal_matrix.cols();
-        petal_matrix.row(i) = next_pos;
+        Eigen::MatrixXd A = M_[petal_id].transpose() * (L_[petal_id][i] * M_[petal_id]);
+        Eigen::VectorXd b = M_[petal_id].transpose() * b_[petal_id].row(i).transpose();
+        
+        Eigen::VectorXd next_values = A.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
+        // new T
+        AffineMatrix& affine_matrix = deform_petals_[petal_id]._affine_matrix;
+        affine_matrix.col(i) = next_values;
     }
+
+    // update vertices
+    lbs(petal_id);
+
+    //// solve x, y ,z independently
+    //for (size_t i = 0; i < 3; ++ i)
+    //{
+    //    lu_solver_.analyzePattern(L_[petal_id][i]);
+    //    lu_solver_.factorize(L_[petal_id][i]);
+
+    //    Eigen::VectorXd next_pos = lu_solver_.solve(b_[petal_id].row(i).transpose());
+
+    //    PetalMatrix& petal_matrix = deform_petals_[petal_id]._petal_matrix;
+    //    petal_matrix.row(i) = next_pos;
+    //}
 
     return energy(petal_id);
 }
@@ -346,22 +384,27 @@ void Solver::deform(int petal_id)
 
 void Solver::deforming(int petal_id)
 {
+
     Petals& petals = flower_->getPetals();
+    Petal& petal = petals.at(petal_id);
+    PetalMatrix& pm = deform_petals_[petal_id]._petal_matrix;
 
-    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    for (size_t j = 0, j_end = petal.getVertices()->size(); j < j_end; ++ j)
     {
-        Petal& petal = petals.at(i);
-        PetalMatrix& pm = deform_petals_[i]._petal_matrix;
-
-        for (size_t j = 0, j_end = petal.getVertices()->size(); j < j_end; ++ j)
-        {
-            petal.getVertices()->at(j).x() = pm(0, j);
-            petal.getVertices()->at(j).y() = pm(1, j);
-            petal.getVertices()->at(j).z() = pm(2, j);
-        }
-
-        petal.updateNormals();
+        petal.getVertices()->at(j).x() = pm(0, j);
+        petal.getVertices()->at(j).y() = pm(1, j);
+        petal.getVertices()->at(j).z() = pm(2, j);
     }
+
+    petal.updateNormals();
+}
+
+void Solver::lbs(int petal_id)
+{
+    AffineMatrix& am = deform_petals_[petal_id]._affine_matrix;
+    PetalMatrix& pm = deform_petals_[petal_id]._petal_matrix;
+
+    pm = (M_[petal_id] * am).transpose();
 }
 
 double Solver::zero_correction(double value)
