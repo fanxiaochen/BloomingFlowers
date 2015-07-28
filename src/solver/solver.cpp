@@ -384,7 +384,7 @@ void Solver::deform(int petal_id)
 
 void Solver::deforming(int petal_id)
 {
-
+    // vertices
     Petals& petals = flower_->getPetals();
     Petal& petal = petals.at(petal_id);
     PetalMatrix& pm = deform_petals_[petal_id]._petal_matrix;
@@ -397,6 +397,26 @@ void Solver::deforming(int petal_id)
     }
 
     petal.updateNormals();
+
+    // handles
+    AffineMatrix& am = deform_petals_[petal_id]._affine_matrix;
+    int handle_count = 0;
+    osg::ref_ptr<Skeleton> skeleton = petal.getSkeleton();
+    for (size_t i = 0; i < skeleton->getBranches().size(); ++ i)
+    {
+        Skeleton::Branch& branch = skeleton->getBranch(i);
+        for (size_t j = 0; j < branch.size(); ++ j)
+        {
+            Point& p = branch.at(j);
+            Eigen::MatrixXd T = am.block<4,3>(handle_count*4,0);
+            Eigen::Vector3d np = T.transpose() * Eigen::Vector4d(p.x, p.y, p.z, 1);
+            p.x = np(0);
+            p.y = np(1);
+            p.z = np(2);
+
+            handle_count ++;
+        }
+    }
 }
 
 void Solver::lbs(int petal_id)

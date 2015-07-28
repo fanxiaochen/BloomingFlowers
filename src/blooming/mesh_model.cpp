@@ -232,12 +232,12 @@ bool MeshModel::load(const std::string& filename)
     if (extension != ".obj")
         return false;
 
-    std::string skel_file = filename + ".skel";
+   /* std::string skel_file = filename + ".skel";
     if (QFile(skel_file.c_str()).exists())
         skeleton_->load(skel_file);
 
     std::string bw_file = filename + ".bw";
-    loadBiharmonicWeights(bw_file);
+    loadBiharmonicWeights(bw_file);*/
 
     return readObjFile(filename);
 }
