@@ -1,4 +1,5 @@
 #include <random>
+#include <fstream>
 
 #include <boost/filesystem.hpp>
 
@@ -55,6 +56,8 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     this->getEdgeIndex() = mesh_model.getEdgeIndex();
     this->getHardCtrsIndex() = mesh_model.getHardCtrsIndex();
     this->getColorId() = mesh_model.getColorId();
+    *(this->getSkeleton()) = *(mesh_model.getSkeleton());
+    this->getBiharmonicWeights() = mesh_model.getBiharmonicWeights();
 }
 
 MeshModel::~MeshModel(void)
@@ -81,6 +84,8 @@ MeshModel& MeshModel::operator =(const MeshModel& mesh_model)
     edge_index_ = mesh_model.getEdgeIndex();
     hard_index_ = mesh_model.getHardCtrsIndex();
     color_id_ = mesh_model.color_id_;
+    skeleton_ = mesh_model.getSkeleton();
+    biharmonic_weights_ = mesh_model.getBiharmonicWeights();
 
     return *this;
 }
@@ -231,7 +236,44 @@ bool MeshModel::load(const std::string& filename)
     if (QFile(skel_file.c_str()).exists())
         skeleton_->load(skel_file);
 
+    std::string bw_file = filename + ".bw";
+    loadBiharmonicWeights(bw_file);
+
     return readObjFile(filename);
+}
+
+bool MeshModel::loadBiharmonicWeights(const std::string& filename)
+{
+    if (skeleton_->isEmpty()) 
+    {
+        std::cout << "empty skeletons!" << std::endl;
+        return false;
+    }
+
+    int cols = skeleton_->getJointNumber();
+    int rows = vertices_->size();
+
+    std::ifstream infile;
+    infile.open( filename.c_str());
+
+    std::string line;
+    int row_cnt = 0;
+    while (std::getline(infile, line))
+    {
+        std::istringstream iss(line);
+        Eigen::VectorXd vec(cols);
+        for (int i = 0; i < cols; ++ i)
+        {
+            if (!(iss >> vec[i]))
+                break;
+        }
+
+        biharmonic_weights_.row(row_cnt++) = vec;
+    }
+
+    assert(biharmonic_weights_.rows() == rows && biharmonic_weights_.cols() == cols);
+
+    return true;
 }
 
 bool MeshModel::readObjFile(const std::string& filename)

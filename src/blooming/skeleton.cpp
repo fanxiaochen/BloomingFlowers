@@ -6,6 +6,16 @@
 #include "main_window.h"
 #include "skeleton.h"
 
+Skeleton::Skeleton(const Skeleton& skeleton, Skeleton* this)
+{
+    this->branches_ = skeleton.getBranches();
+    this->joint_number_ = skeleton.getJointNumber();
+}
+
+//Skeleton operator = (const Skeleton& skeleton)
+//{
+//}
+
 void Skeleton::load(std::string file)
 {
     //load the skeleton file 
@@ -37,6 +47,7 @@ void Skeleton::load(std::string file)
                     Point p;
                     sem >> p.x >> p.y >> p.z;
                     branches_[i].push_back(p) ;
+                    joint_number_ ++; // count total joint number
                 }
             }
         }

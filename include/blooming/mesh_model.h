@@ -42,6 +42,7 @@ public:
     inline const std::vector<double>& getWeights() const { return weights_; }
     inline const size_t& getColorId() const { return color_id_; }
     inline const osg::ref_ptr<Skeleton> getSkeleton() const { return skeleton_; }
+    inline const Eigen::MatrixXd getBiharmonicWeights() const { return biharmonic_weights_; }
 
     inline std::string& getObjName() { return obj_name_; }
     inline std::string& getObjFile() { return obj_file_; }
@@ -63,6 +64,7 @@ public:
     inline std::vector<double>& getWeights() { return weights_; }
     inline size_t& getColorId() { return color_id_; }
     inline osg::ref_ptr<Skeleton> getSkeleton(){ return skeleton_; }
+    inline Eigen::MatrixXd getBiharmonicWeights() { return biharmonic_weights_; }
 
     // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
     void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
@@ -80,6 +82,8 @@ public:
     void updateNormals();
 
     void determineWeights(PointCloud* aligned_cloud, int petal_id);
+
+    bool loadBiharmonicWeights(const std::string& filename);
 
 protected:
     virtual void updateImpl(void);
@@ -124,6 +128,7 @@ protected:
     size_t                              color_id_; // for visualization
     
     osg::ref_ptr<Skeleton>              skeleton_;
+    Eigen::MatrixXd                     biharmonic_weights_;
 };
 
 #endif // MESH_MODEL_H
