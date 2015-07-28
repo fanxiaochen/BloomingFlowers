@@ -100,6 +100,7 @@ set(blooming_incs   ${blooming_inc}/point_cloud.h
 					${blooming_inc}/elastic_model.h
 					${blooming_inc}/weighted_model.h
 					${blooming_inc}/skeleton.h
+					${blooming_inc}/trajectory_model.h
                     )
 
 set(blooming_srcs	${blooming_src}/point_cloud.cpp
@@ -111,6 +112,7 @@ set(blooming_srcs	${blooming_src}/point_cloud.cpp
 					${blooming_src}/elastic_model.cpp
 					${blooming_src}/weighted_model.cpp
 					${blooming_src}/skeleton.cpp
+					${blooming_src}/trajectory_model.cpp
                     )
                     
 set(filesystem_incs	${filesystem_inc}/file_system_model.h
