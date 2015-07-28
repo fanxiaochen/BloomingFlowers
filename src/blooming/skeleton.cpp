@@ -6,15 +6,24 @@
 #include "main_window.h"
 #include "skeleton.h"
 
-Skeleton::Skeleton(const Skeleton& skeleton, Skeleton* this)
+Skeleton::Skeleton()
 {
-    this->branches_ = skeleton.getBranches();
-    this->joint_number_ = skeleton.getJointNumber();
+
 }
 
-//Skeleton operator = (const Skeleton& skeleton)
-//{
-//}
+Skeleton::Skeleton(const Skeleton& skeleton)
+{
+    this->branches_ = skeleton.branches_;
+    this->joint_number_ = skeleton.joint_number_;
+}
+
+Skeleton Skeleton::operator = (const Skeleton& skeleton)
+{
+    this->branches_ = skeleton.branches_;
+    this->joint_number_ = skeleton.joint_number_;
+
+    return *this;
+}
 
 void Skeleton::load(std::string file)
 {

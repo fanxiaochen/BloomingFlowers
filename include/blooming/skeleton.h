@@ -11,8 +11,9 @@ public:
     typedef std::vector<Branch> Branches;
 
 public:
+    Skeleton();
     Skeleton(const Skeleton& skeleton);
-  //  Skeleton operator = (const Skeleton& skeleton);
+    Skeleton operator = (const Skeleton& skeleton);
 
     void load(std::string file);
     bool isEmpty();
@@ -20,9 +21,12 @@ public:
     void show();
     void hide();
 
+    /*inline const Branches& getBranches() const { return branches_; }
+    inline const Branch& getBranch(int i) const { return branches_[i]; }*/
+
     osg::ref_ptr<Skeleton> sample(int sample_ratio);
-    inline Branches& getBranches(){ return branches_; }
-    inline Branch& getBranch(int i){ return branches_[i]; }
+    inline Branches& getBranches() { return branches_; }
+    inline Branch& getBranch(int i) { return branches_[i]; }
     inline int getJointNumber(){ return joint_number_; }
 
 protected:
