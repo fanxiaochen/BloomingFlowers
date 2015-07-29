@@ -7,11 +7,15 @@
 #include "skeleton.h"
 
 Skeleton::Skeleton()
+    :joint_number_(0),
+    show_skeleton_(true)
 {
 
 }
 
 Skeleton::Skeleton(const Skeleton& skeleton)
+    :joint_number_(0),
+    show_skeleton_(true)
 {
     this->branches_ = skeleton.branches_;
     this->joint_number_ = skeleton.joint_number_;
@@ -27,6 +31,11 @@ Skeleton Skeleton::operator = (const Skeleton& skeleton)
 
 void Skeleton::load(std::string file)
 {
+    if (!QFile(file.c_str()).exists())
+    {
+        std::cout << "no skeleton file founded!!!" << std::endl;
+        return;
+    }
     //load the skeleton file 
     std::ifstream infile;
     infile.open( file.c_str());
@@ -115,6 +124,8 @@ void Skeleton::updateImpl()
 
 void Skeleton::visualizeSkeleton(void)
 {
+    if (!show_skeleton_) return;
+
     osg::ref_ptr<osg::Geode> geode(new osg::Geode);
 
     for (int i = 0, branch_num = branches_.size(); i < branch_num; ++ i)

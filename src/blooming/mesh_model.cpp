@@ -24,7 +24,10 @@ MeshModel::MeshModel()
     vertex_normals_(new osg::Vec3Array),
     colors_(new osg::Vec4Array),
     color_id_(0),
-    skeleton_(new Skeleton)
+    skeleton_(new Skeleton),
+    has_texture_(false),
+    show_texture_(false),
+    show_skeleton_(false)
     /*face_normals_(new osg::Vec3Array),*/
 {
 }
@@ -35,7 +38,10 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     vertex_normals_(new osg::Vec3Array),
     colors_(new osg::Vec4Array),
     color_id_(0),
-    skeleton_(new Skeleton)
+    skeleton_(new Skeleton),
+    has_texture_(false),
+    show_texture_(false),
+    show_skeleton_(false)
     /*face_normals_(new osg::Vec3Array),*/
 {
     this->getObjName() = mesh_model.getObjName();
@@ -58,6 +64,8 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     this->getColorId() = mesh_model.getColorId();
     *(this->getSkeleton()) = *(mesh_model.getSkeleton());
     this->getBiharmonicWeights() = mesh_model.getBiharmonicWeights();
+    this->getHasTexture() = mesh_model.getHasTexture();
+    this->getShowTexture() = mesh_model.getShowTexture();
 }
 
 MeshModel::~MeshModel(void)
@@ -86,6 +94,8 @@ MeshModel& MeshModel::operator =(const MeshModel& mesh_model)
     color_id_ = mesh_model.color_id_;
     skeleton_ = mesh_model.getSkeleton();
     biharmonic_weights_ = mesh_model.getBiharmonicWeights();
+    has_texture_ = mesh_model.getHasTexture();
+    show_texture_ = mesh_model.getShowTexture();
 
     return *this;
 }
@@ -96,11 +106,9 @@ void MeshModel::visualizeMesh(void)
     osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry;
     geometry->setUseDisplayList(true);
     geometry->setVertexArray(vertices_);
-    /*colors_->push_back(ColorMap::getInstance().getDiscreteColor(color_id_));
-    geometry->setColorArray(colors_);
-    colors_->setBinding(osg::Array::BIND_OVERALL);*/
+    
 
-    if (!texcoords_->empty() && !map_Ka_.empty() && !map_Kd_.empty())
+    if (has_texture_ && show_texture_)
     {
         geometry->setTexCoordArray(0, texcoords_);
         osg::StateSet* stateset = this->getOrCreateStateSet();
@@ -129,6 +137,42 @@ void MeshModel::visualizeMesh(void)
         texture->setImage(image);
         stateset->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
     }
+    else
+    {
+        colors_->push_back(ColorMap::getInstance().getDiscreteColor(color_id_));
+        geometry->setColorArray(colors_);
+        colors_->setBinding(osg::Array::BIND_OVERALL);
+    }
+
+    /*if (!texcoords_->empty() && !map_Ka_.empty() && !map_Kd_.empty())
+    {
+    geometry->setTexCoordArray(0, texcoords_);
+    osg::StateSet* stateset = this->getOrCreateStateSet();
+
+    osg::Material* material = new osg::Material;
+    material->setColorMode(osg::Material::OFF); 
+    material->setAmbient(osg::Material::FRONT_AND_BACK, ambient_);
+    material->setDiffuse(osg::Material::FRONT_AND_BACK, diffuse_);
+    material->setSpecular(osg::Material::FRONT_AND_BACK, specular_);
+    material->setEmission(osg::Material::FRONT_AND_BACK, emission_);
+    stateset->setAttributeAndModes(material,osg::StateAttribute::OVERRIDE|osg::StateAttribute::ON);
+    stateset->setMode(GL_LIGHTING,osg::StateAttribute::OVERRIDE|osg::StateAttribute::ON);
+
+    osg::Image *image = osgDB::readImageFile(map_Kd_);
+    if (!image)
+    {
+    std::cout << "couldn't find texture." << std::endl;
+    }
+
+    osg::Texture2D *texture = new osg::Texture2D;
+    texture->setDataVariance(Object::DYNAMIC);
+    texture->setFilter(osg::Texture::MIN_FILTER, osg::Texture::LINEAR_MIPMAP_LINEAR);
+    texture->setFilter(osg::Texture::MAG_FILTER, osg::Texture::LINEAR);
+    texture->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP);
+    texture->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP);
+    texture->setImage(image);
+    stateset->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
+    }*/
 
     if (faces_.empty())
     {
@@ -158,30 +202,30 @@ void MeshModel::visualizeMesh(void)
     
 
 
-    if (!visibility_.empty())
+    /*if (!visibility_.empty())
     {
-        osg::ref_ptr<osg::Geode> vis_geo(new osg::Geode);
-        osg::ref_ptr<osg::Geometry> vis_geometry = new osg::Geometry;
-        osg::ref_ptr<osg::Vec3Array> vis_vetices = new osg::Vec3Array;
-        osg::ref_ptr<osg::Vec4Array> vis_colors = new osg::Vec4Array;
-        vis_colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 0.0f));
+    osg::ref_ptr<osg::Geode> vis_geo(new osg::Geode);
+    osg::ref_ptr<osg::Geometry> vis_geometry = new osg::Geometry;
+    osg::ref_ptr<osg::Vec3Array> vis_vetices = new osg::Vec3Array;
+    osg::ref_ptr<osg::Vec4Array> vis_colors = new osg::Vec4Array;
+    vis_colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 0.0f));
 
-        for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
-        {
-            if (visibility_[i] == 1)
-                vis_vetices->push_back(vertices_->at(i));
-        }
-
-        vis_geometry->setUseDisplayList(true);
-        vis_geometry->setVertexArray(vis_vetices);
-        vis_geometry->setColorArray(vis_colors);
-        vis_colors->setBinding(osg::Array::BIND_OVERALL);
-        vis_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vis_vetices->size()));
-        vis_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
-
-        vis_geo->addDrawable(vis_geometry);
-        content_root_->addChild(vis_geo);
+    for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
+    {
+    if (visibility_[i] == 1)
+    vis_vetices->push_back(vertices_->at(i));
     }
+
+    vis_geometry->setUseDisplayList(true);
+    vis_geometry->setVertexArray(vis_vetices);
+    vis_geometry->setColorArray(vis_colors);
+    vis_colors->setBinding(osg::Array::BIND_OVERALL);
+    vis_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vis_vetices->size()));
+    vis_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
+
+    vis_geo->addDrawable(vis_geometry);
+    content_root_->addChild(vis_geo);
+    }*/
 
     if (!hard_index_.empty())
     {
@@ -220,7 +264,7 @@ bool MeshModel::save(const std::string& filename, bool tex_flag)
 {
     ObjWriter obj_writer(this);
 
-    return obj_writer.save(filename, tex_flag);
+    return obj_writer.save(filename, has_texture_);
 }
 
 bool MeshModel::load(const std::string& filename)
@@ -232,26 +276,34 @@ bool MeshModel::load(const std::string& filename)
     if (extension != ".obj")
         return false;
 
-   /* std::string skel_file = filename + ".skel";
-    if (QFile(skel_file.c_str()).exists())
-        skeleton_->load(skel_file);
+    bool flag = readObjFile(filename);
 
-    std::string bw_file = filename + ".bw";
-    loadBiharmonicWeights(bw_file);*/
+    if (flag)
+    {
+        std::string skel_file = filename + ".skel";
+        if (QFile(skel_file.c_str()).exists())
+            skeleton_->load(skel_file);
 
-    return readObjFile(filename);
+        std::string bw_file = filename + ".bw";
+        if (QFile(bw_file.c_str()).exists())
+            loadBiharmonicWeights(bw_file);
+    }
+
+    return flag;
 }
 
 bool MeshModel::loadBiharmonicWeights(const std::string& filename)
 {
     if (skeleton_->isEmpty()) 
     {
-        std::cout << "empty skeletons!" << std::endl;
+        std::cout << "no biharmonic weights file founded!!!!" << std::endl;
         return false;
     }
 
     int cols = skeleton_->getJointNumber();
     int rows = vertices_->size();
+
+    biharmonic_weights_.resize(rows, cols);
 
     std::ifstream infile;
     infile.open( filename.c_str());
@@ -350,6 +402,8 @@ bool MeshModel::readObjFile(const std::string& filename)
     // only one material needed
     if (materials.size() == 1)
     {
+        has_texture_ = true;
+
         tinyobj::material_t mesh_material = materials.at(0);
         ambient_ = osg::Vec4(mesh_material.ambient[0], mesh_material.ambient[1], mesh_material.ambient[2], 1.0f);
         diffuse_ = osg::Vec4(mesh_material.diffuse[0], mesh_material.diffuse[1], mesh_material.diffuse[2], 1.0f);

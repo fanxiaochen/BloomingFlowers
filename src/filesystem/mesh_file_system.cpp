@@ -108,7 +108,10 @@ void MeshFileSystem::showMeshModel(const QPersistentModelIndex& index)
     mesh_model_map_[index] = mesh_model; 
 
     if (!mesh_model->getSkeleton()->isEmpty())
+    {
         mesh_model->getSkeleton()->show(); // show related skeleton
+        mesh_model->getSkeleton()->setHiddenState(true);
+    }
 
     return;
 }

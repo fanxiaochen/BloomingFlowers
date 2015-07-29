@@ -17,6 +17,7 @@ class TrackingSystem;
 class Parameters;
 class Registrator;
 class FlowersViewer;
+class QCheckBox;
 
 class MainWindow : public QMainWindow
 {
@@ -66,11 +67,14 @@ private slots:
     bool slotSaveParameters();
     bool slotLoadAxis();
     bool slotLoadFlowers();
-
+    bool slotSendCheckBoxRenderState();
 private:
     void loadSettings();
     void saveSettings();
     void saveStatusLog();
+
+private:
+    void setRenderingBox();
 
 private:
     Ui::MainWindowClass             ui_;
@@ -88,6 +92,8 @@ private:
     Parameters*                     parameters_;
     Registrator*                    registrator_;
     FlowersViewer*                  flowers_viewer_;
+
+    std::vector<QCheckBox*>         Check_list_;
 };
 
 class MainWindowInstancer

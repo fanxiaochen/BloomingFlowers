@@ -43,6 +43,9 @@ public:
     inline const size_t& getColorId() const { return color_id_; }
     inline const osg::ref_ptr<Skeleton> getSkeleton() const { return skeleton_; }
     inline const Eigen::MatrixXd getBiharmonicWeights() const { return biharmonic_weights_; }
+    inline const bool getShowTexture() const { return show_texture_; }
+    inline const bool getHasTexture() const { return has_texture_; }
+    inline const bool getShowSkeleton() const { return show_skeleton_; }
 
     inline std::string& getObjName() { return obj_name_; }
     inline std::string& getObjFile() { return obj_file_; }
@@ -65,6 +68,9 @@ public:
     inline size_t& getColorId() { return color_id_; }
     inline osg::ref_ptr<Skeleton> getSkeleton(){ return skeleton_; }
     inline Eigen::MatrixXd getBiharmonicWeights() { return biharmonic_weights_; }
+    inline bool& getShowTexture() { return show_texture_; }
+    inline bool& getHasTexture() { return has_texture_; }
+    inline bool& getShowSkeleton() { return show_skeleton_; }
 
     // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
     void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
@@ -129,6 +135,10 @@ protected:
     
     osg::ref_ptr<Skeleton>              skeleton_;
     Eigen::MatrixXd                     biharmonic_weights_;
+
+    bool                                has_texture_;
+    bool                                show_texture_;
+    bool                                show_skeleton_;
 };
 
 #endif // MESH_MODEL_H

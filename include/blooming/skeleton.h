@@ -37,6 +37,8 @@ protected:
 private:
     Branches branches_;
 
+    bool show_skeleton_;
+
     int joint_number_;
 
 };

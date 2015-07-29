@@ -6,6 +6,8 @@
 #include <QDockWidget>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QGroupBox>
+#include <QCheckBox>
 #include <QApplication>
 
 #include "main_window.h"
@@ -144,7 +146,8 @@ void MainWindow::init(void)
 
     mesh_widget_->setParent(mesh_viewer);
     mesh_viewer->setWidget(mesh_widget_);
-    
+
+    setRenderingBox();
 
     scene_widget_ = new SceneWidget(this);
     setCentralWidget(scene_widget_);
@@ -174,6 +177,77 @@ void MainWindow::init(void)
     // connect
 
     return;
+}
+
+void MainWindow::setRenderingBox()
+{
+    //CheckBox
+    std::vector<std::pair<QString,bool>> render_names;
+
+    render_names.push_back( std::make_pair("Show Texture", false));
+    render_names.push_back( std::make_pair("Show Skeleton", false));
+    render_names.push_back( std::make_pair("Show Trajectory", false));
+
+
+    QGroupBox* rendering_group = new QGroupBox(tr("Rendering Box"));
+    QVBoxLayout *layout = new QVBoxLayout();
+
+    for( int i = 0 ;i!= render_names.size(); ++i)
+    {
+        QCheckBox* render_box(new QCheckBox(render_names[i].first, this));
+        render_box->setChecked( render_names[i].second );
+        layout->addWidget(render_box);
+        Check_list_.push_back(render_box);
+        connect(render_box,SIGNAL(toggled(bool)), this, SLOT(slotSendCheckBoxRenderState(void)));
+    }
+
+    rendering_group->setLayout(layout);
+    ui_.toolBar->addWidget(rendering_group);
+
+}
+
+bool MainWindow::slotSendCheckBoxRenderState()
+{
+    MeshFileSystem* mesh_file_system = dynamic_cast<MeshFileSystem*>(mesh_files_);
+
+    int num = Check_list_.size();
+    for( size_t i = 0; i != num; ++i )
+    {
+        bool flag = Check_list_[i]->isChecked();
+        std::string name = Check_list_[i]->text().toStdString();
+        
+        if (name == "Show Texture")
+        {
+            QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
+            for (size_t i = 0, i_end = mesh_indexes.size(); i < i_end; ++ i)
+            {
+                osg::ref_ptr<MeshModel> mesh_model = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
+                mesh_model->getShowTexture() = flag;
+                mesh_model->expire();
+            }
+        }
+        else if (name == "Show Skeleton")
+        {
+            QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
+            for (size_t i = 0, i_end = mesh_indexes.size(); i < i_end; ++ i)
+            {
+                osg::ref_ptr<MeshModel> mesh_model = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
+                mesh_model->getShowSkeleton() = flag;
+                if (!mesh_model->getSkeleton()->isEmpty())
+                {
+                    mesh_model->getSkeleton()->setHiddenState(!flag);
+                    mesh_model->getSkeleton()->expire();
+                }
+                    
+            }
+        }
+        else
+        {
+
+        }
+    }
+
+    return true;
 }
 
 bool MainWindow::slotLoadPoints(void)
