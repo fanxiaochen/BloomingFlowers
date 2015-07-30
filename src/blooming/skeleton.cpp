@@ -73,6 +73,29 @@ void Skeleton::load(std::string file)
     infile.close() ;
 }
 
+void Skeleton::save(std::string file)
+{
+    if (isEmpty()) 
+    {
+        std::cout << "empty skeleton!!" << std::endl;
+        return;
+    }
+
+    std::ofstream outfile;
+    outfile.open( file.c_str());
+    
+    outfile << "CN " << branches_.size() << "\n";
+    for (size_t i = 0, i_end = branches_.size(); i < i_end; ++ i)
+    {
+        outfile << "CNN " << branches_[i].size() << "\n";
+        for (size_t j = 0, j_end = branches_[i].size(); j < j_end; ++ j)
+        {
+            outfile << branches_[i][j].x << " " << branches_[i][j].y << " " << branches_[i][j].z << "\n";
+        }
+    }
+    return;
+}
+
 bool Skeleton::isEmpty()
 {
     if (branches_.empty())

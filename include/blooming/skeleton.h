@@ -16,6 +16,7 @@ public:
     Skeleton operator = (const Skeleton& skeleton);
 
     void load(std::string file);
+    void save(std::string file);
     bool isEmpty();
 
     void show();

@@ -264,7 +264,19 @@ bool MeshModel::save(const std::string& filename, bool tex_flag)
 {
     ObjWriter obj_writer(this);
 
-    return obj_writer.save(filename, has_texture_);
+    bool flag = obj_writer.save(filename, has_texture_);
+
+    if (flag)
+    {
+        std::string original_skel_file = this->getObjFile() + ".skel";
+        if (QFile(original_skel_file.c_str()).exists())
+        {
+            std::string new_skel_file = filename + ".skel";
+            skeleton_->save(new_skel_file);
+        }
+    }
+
+    return flag;
 }
 
 bool MeshModel::load(const std::string& filename)
