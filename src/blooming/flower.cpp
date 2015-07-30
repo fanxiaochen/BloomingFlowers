@@ -73,11 +73,11 @@ void Flower::show()
         petal.getColorId() = i;
         MainWindow::getInstance()->getSceneWidget()->addSceneChild(&petal);
 
-        //if (!petal.getSkeleton()->isEmpty())
-        //{
-        //    petal.getSkeleton()->show(); // show related skeleton
-        //    //petal.getSkeleton()->setHiddenState(true);
-        //}
+        if (!petal.getSkeleton()->isEmpty())
+        {
+            petal.getSkeleton()->show(); // show related skeleton
+            //petal.getSkeleton()->setHiddenState(true);
+        }
     }
 }
 
