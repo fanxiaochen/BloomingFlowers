@@ -42,10 +42,10 @@ public:
     inline const std::vector<double>& getWeights() const { return weights_; }
     inline const size_t& getColorId() const { return color_id_; }
     inline const osg::ref_ptr<Skeleton> getSkeleton() const { return skeleton_; }
-    inline const Eigen::MatrixXd getBiharmonicWeights() const { return biharmonic_weights_; }
-    inline const bool getShowTexture() const { return show_texture_; }
-    inline const bool getHasTexture() const { return has_texture_; }
-    inline const bool getShowSkeleton() const { return show_skeleton_; }
+    inline const Eigen::MatrixXd& getBiharmonicWeights() const { return biharmonic_weights_; }
+    inline const bool& getShowTexture() const { return show_texture_; }
+    inline const bool& getHasTexture() const { return has_texture_; }
+    inline const bool& getShowSkeleton() const { return show_skeleton_; }
 
     inline std::string& getObjName() { return obj_name_; }
     inline std::string& getObjFile() { return obj_file_; }
@@ -67,7 +67,7 @@ public:
     inline std::vector<double>& getWeights() { return weights_; }
     inline size_t& getColorId() { return color_id_; }
     inline osg::ref_ptr<Skeleton> getSkeleton(){ return skeleton_; }
-    inline Eigen::MatrixXd getBiharmonicWeights() { return biharmonic_weights_; }
+    inline Eigen::MatrixXd& getBiharmonicWeights() { return biharmonic_weights_; }
     inline bool& getShowTexture() { return show_texture_; }
     inline bool& getHasTexture() { return has_texture_; }
     inline bool& getShowSkeleton() { return show_skeleton_; }

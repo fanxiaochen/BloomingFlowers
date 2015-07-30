@@ -193,23 +193,32 @@ void Solver::initParas()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         Petal& petal = petals.at(i);
-        //deform_petals_[i]._biweight_matrix = petal.getBiweightMatrix();
+        deform_petals_[i]._biweight_matrix = petal.getBiharmonicWeights();
     }
 
-    // init M matrix
+    // init M matrix and T matrix(affine transformation)
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         BiWeightMatrix& biweight_matrix = deform_petals_[i]._biweight_matrix;
-        PetalMatrix& petal_matrix = deform_petals_[i]._origin_petal;
+        PetalMatrix& original_matrix = deform_petals_[i]._origin_petal;
 
-        int ver_num = petal_matrix.cols();
+        int ver_num = original_matrix.cols();
         int hdl_num = biweight_matrix.cols();
         Eigen::MatrixXd M(ver_num, 4*hdl_num);
+
+        // convert original matrix to homogeneous coordinates
+        Eigen::MatrixXd petal_matrix(ver_num, 4);
+        petal_matrix.setOnes();
+        petal_matrix.block(0, 0, ver_num, 3) = original_matrix.transpose();
+        
         for (size_t j = 0, j_end = hdl_num; j < j_end; ++ j)
         {
-            M.block(4*j, 0, ver_num, 4) = biweight_matrix.col(j).asDiagonal() * petal_matrix;
+            M.block(0, 4*j, ver_num, 4) = biweight_matrix.col(j).asDiagonal() * petal_matrix;
         }
         M_[i] = M;
+
+        AffineMatrix& affine_matrix = deform_petals_[i]._affine_matrix;
+        affine_matrix.resize(4*hdl_num, 3);
     }
 }
 
@@ -303,7 +312,7 @@ void Solver::e_step(int petal_id)
     {
         for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
         {
-            corres_mat(j, i) = gaussian(petal_id, j, i) * weight_list[j];
+            corres_mat(j, i) = gaussian(petal_id, j, i) /** weight_list[j]*/;
         }
     }
 
