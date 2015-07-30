@@ -73,11 +73,11 @@ void Flower::show()
         petal.getColorId() = i;
         MainWindow::getInstance()->getSceneWidget()->addSceneChild(&petal);
 
-        if (!petal.getSkeleton()->isEmpty())
-        {
-            petal.getSkeleton()->show(); // show related skeleton
-            //petal.getSkeleton()->setHiddenState(true);
-        }
+        //if (!petal.getSkeleton()->isEmpty())
+        //{
+        //    petal.getSkeleton()->show(); // show related skeleton
+        //    //petal.getSkeleton()->setHiddenState(true);
+        //}
     }
 }
 
@@ -263,6 +263,17 @@ void Flower::initVisibility()
         petals_[i].initializeVisibility();
 }
 
+void Flower::setTextureState(bool is_shown)
+{
+    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+        petals_[i].getShowTexture() = is_shown;
+}
+
+void Flower::setSkeletonState(bool is_shown)
+{
+    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+        petals_[i].showSkeletonState(is_shown);
+}
 
 
 

@@ -42,6 +42,9 @@ public:
     void determineVisibility();
     void determineWeights(PointCloud* aligned_cloud);
 
+    void setTextureState(bool is_shown);
+    void setSkeletonState(bool is_shown);
+
 private:
     int contains(Petal* petal);
 
@@ -60,6 +63,8 @@ class FlowersViewer
 public:
     FlowersViewer(const std::string& flowers_folder);
     virtual ~FlowersViewer();
+
+    inline Flower& getCurrentFlower(){ return current_flower_; }
 
     void setFrame(int frame);
 

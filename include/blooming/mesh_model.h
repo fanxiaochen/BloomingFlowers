@@ -90,6 +90,8 @@ public:
 
     bool loadBiharmonicWeights(const std::string& filename);
 
+    void showSkeletonState(bool show_skeleton);
+
 protected:
     virtual void updateImpl(void);
     virtual void visualizeMesh(void);

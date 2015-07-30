@@ -67,8 +67,8 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     *skeleton_ = *mesh_model.skeleton_;
     biharmonic_weights_ = mesh_model.biharmonic_weights_;
     has_texture_ = mesh_model.has_texture_;
-    show_texture_ = show_texture_;
-    show_skeleton_ = show_skeleton_;
+    show_texture_ = mesh_model.show_texture_;
+    show_skeleton_ = mesh_model.show_skeleton_;
 }
 
 MeshModel::~MeshModel(void)
@@ -98,8 +98,8 @@ MeshModel& MeshModel::operator =(const MeshModel& mesh_model) // deep copy
     *skeleton_ = *mesh_model.skeleton_;
     biharmonic_weights_ = mesh_model.biharmonic_weights_;
     has_texture_ = mesh_model.has_texture_;
-    show_texture_ = show_texture_;
-    show_skeleton_ = show_skeleton_;
+    show_texture_ = mesh_model.show_texture_;
+    show_skeleton_ = mesh_model.show_skeleton_;
 
     return *this;
 }
@@ -262,6 +262,16 @@ void MeshModel::updateImpl()
 {
     visualizeMesh();
     return;
+}
+
+void MeshModel::showSkeletonState(bool show_skeleton)
+{
+    show_skeleton_ = show_skeleton;
+
+    if (show_skeleton_)
+        skeleton_->show();
+    else 
+        skeleton_->hide();
 }
 
 bool MeshModel::save(const std::string& filename, bool tex_flag)

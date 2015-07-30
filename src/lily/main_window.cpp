@@ -218,6 +218,7 @@ bool MainWindow::slotSendCheckBoxRenderState()
         
         if (name == "Show Texture")
         {
+            // for mesh viewer
             QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
             for (size_t i = 0, i_end = mesh_indexes.size(); i < i_end; ++ i)
             {
@@ -225,19 +226,42 @@ bool MainWindow::slotSendCheckBoxRenderState()
                 mesh_model->getShowTexture() = flag;
                 mesh_model->expire();
             }
+
+            // for flower viewer
+            if (flowers_viewer_ != NULL)
+            {
+                Flower& current_flower = flowers_viewer_->getCurrentFlower();
+                current_flower.setTextureState(flag);
+                current_flower.update();
+            }
+
         }
         else if (name == "Show Skeleton")
         {
+            // for mesh viewer
             QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
             for (size_t i = 0, i_end = mesh_indexes.size(); i < i_end; ++ i)
             {
                 osg::ref_ptr<MeshModel> mesh_model = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
-                mesh_model->getShowSkeleton() = flag;
+                if (!mesh_model->getSkeleton()->isEmpty())
+                {
+                    mesh_model->showSkeletonState(flag);
+                }
+                
+                /*mesh_model->getShowSkeleton() = flag;
                 if (!mesh_model->getSkeleton()->isEmpty())
                 {
                     mesh_model->getSkeleton()->setHiddenState(!flag);
                     mesh_model->getSkeleton()->expire();
-                }
+                }*/
+            }
+
+            // for flower viewer
+            if (flowers_viewer_ != NULL)
+            {
+                Flower& current_flower = flowers_viewer_->getCurrentFlower();
+                current_flower.setSkeletonState(flag);
+                current_flower.update();
             }
         }
         else
