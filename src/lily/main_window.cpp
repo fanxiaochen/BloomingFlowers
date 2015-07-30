@@ -238,7 +238,6 @@ bool MainWindow::slotSendCheckBoxRenderState()
                     mesh_model->getSkeleton()->setHiddenState(!flag);
                     mesh_model->getSkeleton()->expire();
                 }
-                    
             }
         }
         else

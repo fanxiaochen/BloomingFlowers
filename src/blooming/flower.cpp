@@ -72,6 +72,12 @@ void Flower::show()
         Petal& petal = petals_[i];
         petal.getColorId() = i;
         MainWindow::getInstance()->getSceneWidget()->addSceneChild(&petal);
+
+        if (!petal.getSkeleton()->isEmpty())
+        {
+            petal.getSkeleton()->show(); // show related skeleton
+            //petal.getSkeleton()->setHiddenState(true);
+        }
     }
 }
 
@@ -82,6 +88,8 @@ void Flower::update()
     {
         Petal& petal = petals_[i];
         petal.expire();
+
+        petal.getSkeleton()->expire();
     }
 }
 

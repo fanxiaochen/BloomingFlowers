@@ -14,14 +14,13 @@ public:
     MeshModel(const MeshModel& mesh_model);  // deep copy
     virtual ~MeshModel(void);
 
-    MeshModel& operator = (const MeshModel& mesh_model);
+    MeshModel& operator = (const MeshModel& mesh_model); // deep copy
 
     bool load(const std::string& filename);
     bool save(const std::string& filename, bool tex_flag = false);
   
     bool empty(void) const {return vertices_->empty();}
 
-    // for deep copy
     inline const std::string& getObjName() const { return obj_name_; }
     inline const std::string& getObjFile() const { return obj_file_; }
     inline const std::string& getMtlFile() const { return mtl_file_; }

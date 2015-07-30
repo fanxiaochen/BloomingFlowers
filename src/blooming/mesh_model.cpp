@@ -32,6 +32,8 @@ MeshModel::MeshModel()
 {
 }
 
+// a class is a natural friend class itself. In the class domain,
+// the private member could be accessed directly.
 MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     :vertices_(new osg::Vec3Array),
     texcoords_(new osg::Vec2Array),
@@ -44,58 +46,60 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     show_skeleton_(false)
     /*face_normals_(new osg::Vec3Array),*/
 {
-    this->getObjName() = mesh_model.getObjName();
-    this->getObjFile() = mesh_model.getObjFile();
-    this->getMtlFile() = mesh_model.getMtlFile();
-    *(this->getVertices()) = *(mesh_model.getVertices());
-    *(this->getTexcoords()) = *(mesh_model.getTexcoords());
-    *(this->getVertexNormals()) = *(mesh_model.getVertexNormals());
-    this->getFaces() = mesh_model.getFaces();
-    this->getAmbient() = mesh_model.getAmbient();
-    this->getDiffuse() = mesh_model.getDiffuse();
-    this->getSpecular() = mesh_model.getSpecular();
-    this->getEmission() = mesh_model.getEmission();
-    this->getMapKa() = mesh_model.getMapKa();
-    this->getMapKd() = mesh_model.getMapKd();
-    this->getAdjList() = mesh_model.getAdjList();
-    this->getWeights() = mesh_model.getWeights();
-    this->getEdgeIndex() = mesh_model.getEdgeIndex();
-    this->getHardCtrsIndex() = mesh_model.getHardCtrsIndex();
-    this->getColorId() = mesh_model.getColorId();
-    *(this->getSkeleton()) = *(mesh_model.getSkeleton());
-    this->getBiharmonicWeights() = mesh_model.getBiharmonicWeights();
-    this->getHasTexture() = mesh_model.getHasTexture();
-    this->getShowTexture() = mesh_model.getShowTexture();
+    obj_name_ = mesh_model.obj_name_;
+    obj_file_ = mesh_model.obj_file_;
+    mtl_file_ = mesh_model.mtl_file_;
+    *vertices_ = *mesh_model.vertices_;
+    *texcoords_ = *mesh_model.texcoords_;
+    *vertex_normals_ = *mesh_model.vertex_normals_;
+    faces_ = mesh_model.faces_;
+    ambient_ = mesh_model.ambient_;
+    diffuse_ = mesh_model.diffuse_;
+    specular_ = mesh_model.specular_;
+    emission_ = mesh_model.emission_;
+    map_Ka_ = mesh_model.map_Ka_;
+    map_Kd_ = mesh_model.map_Kd_;
+    adj_list_ = mesh_model.adj_list_;
+    weights_ = mesh_model.weights_;
+    edge_index_ = mesh_model.edge_index_;
+    hard_index_ = mesh_model.hard_index_;
+    color_id_ = mesh_model.color_id_;
+    *skeleton_ = *mesh_model.skeleton_;
+    biharmonic_weights_ = mesh_model.biharmonic_weights_;
+    has_texture_ = mesh_model.has_texture_;
+    show_texture_ = show_texture_;
+    show_skeleton_ = show_skeleton_;
 }
 
 MeshModel::~MeshModel(void)
 {
 }
 
-MeshModel& MeshModel::operator =(const MeshModel& mesh_model)
+MeshModel& MeshModel::operator =(const MeshModel& mesh_model) // deep copy
 {
-    obj_name_ = mesh_model.getObjName();
-    obj_file_ = mesh_model.getObjFile();
-    mtl_file_ = mesh_model.getMtlFile();
-    vertices_ = mesh_model.getVertices();
-    texcoords_ = mesh_model.getTexcoords();
-    vertex_normals_ = mesh_model.getVertexNormals();
-    faces_ = mesh_model.getFaces();
-    ambient_ = mesh_model.getAmbient();
-    diffuse_ = mesh_model.getDiffuse();
-    specular_ = mesh_model.getSpecular();
-    emission_ = mesh_model.getEmission();
-    map_Ka_ = mesh_model.getMapKa();
-    map_Kd_ = mesh_model.getMapKd();
-    adj_list_ = mesh_model.getAdjList();
-    weights_ = mesh_model.getWeights();
-    edge_index_ = mesh_model.getEdgeIndex();
-    hard_index_ = mesh_model.getHardCtrsIndex();
+    obj_name_ = mesh_model.obj_name_;
+    obj_file_ = mesh_model.obj_file_;
+    mtl_file_ = mesh_model.mtl_file_;
+    *vertices_ = *mesh_model.vertices_;
+    *texcoords_ = *mesh_model.texcoords_;
+    *vertex_normals_ = *mesh_model.vertex_normals_;
+    faces_ = mesh_model.faces_;
+    ambient_ = mesh_model.ambient_;
+    diffuse_ = mesh_model.diffuse_;
+    specular_ = mesh_model.specular_;
+    emission_ = mesh_model.emission_;
+    map_Ka_ = mesh_model.map_Ka_;
+    map_Kd_ = mesh_model.map_Kd_;
+    adj_list_ = mesh_model.adj_list_;
+    weights_ = mesh_model.weights_;
+    edge_index_ = mesh_model.edge_index_;
+    hard_index_ = mesh_model.hard_index_;
     color_id_ = mesh_model.color_id_;
-    skeleton_ = mesh_model.getSkeleton();
-    biharmonic_weights_ = mesh_model.getBiharmonicWeights();
-    has_texture_ = mesh_model.getHasTexture();
-    show_texture_ = mesh_model.getShowTexture();
+    *skeleton_ = *mesh_model.skeleton_;
+    biharmonic_weights_ = mesh_model.biharmonic_weights_;
+    has_texture_ = mesh_model.has_texture_;
+    show_texture_ = show_texture_;
+    show_skeleton_ = show_skeleton_;
 
     return *this;
 }
