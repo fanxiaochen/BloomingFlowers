@@ -22,7 +22,7 @@ MeshModel::MeshModel()
     :vertices_(new osg::Vec3Array),
     texcoords_(new osg::Vec2Array),
     vertex_normals_(new osg::Vec3Array),
-    colors_(new osg::Vec4Array),
+    //colors_(new osg::Vec4Array),
     color_id_(0),
     skeleton_(new Skeleton),
     has_texture_(false),
@@ -38,7 +38,7 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     :vertices_(new osg::Vec3Array),
     texcoords_(new osg::Vec2Array),
     vertex_normals_(new osg::Vec3Array),
-    colors_(new osg::Vec4Array),
+    //colors_(new osg::Vec4Array),
     color_id_(0),
     skeleton_(new Skeleton),
     has_texture_(false),
@@ -143,9 +143,13 @@ void MeshModel::visualizeMesh(void)
     }
     else
     {
-        colors_->push_back(ColorMap::getInstance().getDiscreteColor(color_id_));
-        geometry->setColorArray(colors_);
-        colors_->setBinding(osg::Array::BIND_OVERALL);
+        osg::StateSet* stateset = this->getOrCreateStateSet();
+        stateset->clear();
+
+        osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
+        colors->push_back(ColorMap::getInstance().getDiscreteColor(color_id_));
+        geometry->setColorArray(colors);
+        colors->setBinding(osg::Array::BIND_OVERALL);
     }
 
     /*if (!texcoords_->empty() && !map_Ka_.empty() && !map_Kd_.empty())
@@ -266,12 +270,19 @@ void MeshModel::updateImpl()
 
 void MeshModel::showSkeletonState(bool show_skeleton)
 {
+    if (show_skeleton_ == show_skeleton)
+        return;
+
     show_skeleton_ = show_skeleton;
 
-    if (show_skeleton_)
+    if (show_skeleton_ )
+    {
         skeleton_->show();
+    }
     else 
+    {
         skeleton_->hide();
+    }
 }
 
 bool MeshModel::save(const std::string& filename, bool tex_flag)
@@ -358,14 +369,14 @@ bool MeshModel::readObjFile(const std::string& filename)
 {
     QString obj_file(filename.c_str());
     obj_file_ = obj_file.toStdString();
+    mtl_file_ = obj_file_ + ".mtl";
 
-    QString mtl_file = obj_file;
+    /*QString mtl_file = obj_file;
     mtl_file = mtl_file.replace(mtl_file.indexOf("obj"), 3, "mtl");
-    mtl_file_ = mtl_file.toStdString();
-    mtl_file.resize(mtl_file.lastIndexOf('/')+1);
-    QString mtl_base(mtl_file);
-
-    obj_name_ = obj_file.replace(mtl_base, "").toStdString();
+    mtl_file_ = mtl_file.toStdString();*/
+    obj_file.resize(obj_file.lastIndexOf('/')+1);
+    QString mtl_base(obj_file);
+    obj_name_ = QString(obj_file_.c_str()).replace(mtl_base, "").toStdString();
 
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;

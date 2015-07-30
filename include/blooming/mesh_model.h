@@ -114,7 +114,7 @@ protected:
     osg::ref_ptr<osg::Vec3Array>        vertices_;
     osg::ref_ptr<osg::Vec2Array>        texcoords_;
     osg::ref_ptr<osg::Vec3Array>        vertex_normals_;
-    osg::ref_ptr<osg::Vec4Array>        colors_;
+    //osg::ref_ptr<osg::Vec4Array>        colors_;
     std::vector<std::vector<int> >      faces_;
 //	osg::ref_ptr<osg::Vec3Array>        face_normals_;
     std::vector<std::vector<int> >      adj_list_;

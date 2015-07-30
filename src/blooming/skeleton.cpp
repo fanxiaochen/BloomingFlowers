@@ -8,19 +8,21 @@
 
 Skeleton::Skeleton()
     :joint_number_(0),
-    show_skeleton_(true)
+    show_skeleton_(false)
 {
 
 }
 
 Skeleton::Skeleton(const Skeleton& skeleton)
     :joint_number_(0),
-    show_skeleton_(true)
+    show_skeleton_(false)
 {
     this->branches_ = skeleton.branches_;
     this->joint_number_ = skeleton.joint_number_;
 }
 
+// do not copy show_skeleton_, it's used in Flower Viewer
+// to record skeleton state of last frame...
 Skeleton Skeleton::operator = (const Skeleton& skeleton)
 {
     this->branches_ = skeleton.branches_;
@@ -147,8 +149,6 @@ void Skeleton::updateImpl()
 
 void Skeleton::visualizeSkeleton(void)
 {
-    if (!show_skeleton_) return;
-
     osg::ref_ptr<osg::Geode> geode(new osg::Geode);
 
     for (int i = 0, branch_num = branches_.size(); i < branch_num; ++ i)
@@ -181,10 +181,18 @@ void Skeleton::visualizeSkeleton(void)
 
 void Skeleton::show()
 {
-    MainWindow::getInstance()->getSceneWidget()->addSceneChild(this);
+    if (show_skeleton_ == false)
+    {
+        MainWindow::getInstance()->getSceneWidget()->addSceneChild(this);
+        show_skeleton_ = !show_skeleton_;
+    }
 }
 
 void Skeleton::hide()
 {
-    MainWindow::getInstance()->getSceneWidget()->removeSceneChild(this);
+    if (show_skeleton_ == true)
+    {
+        MainWindow::getInstance()->getSceneWidget()->removeSceneChild(this);
+        show_skeleton_ = !show_skeleton_;
+    }
 }

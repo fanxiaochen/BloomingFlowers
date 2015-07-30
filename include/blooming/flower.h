@@ -45,6 +45,9 @@ public:
     void setTextureState(bool is_shown);
     void setSkeletonState(bool is_shown);
 
+    bool getTextureState();
+    bool getSkeletonState();
+
 private:
     int contains(Petal* petal);
 
@@ -89,6 +92,9 @@ private:
 
     int start_frame_;
     int end_frame_;
+
+    bool texture_state_;
+    bool skeleton_state_;
 };
 
 #endif 

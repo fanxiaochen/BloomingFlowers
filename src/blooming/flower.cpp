@@ -275,13 +275,30 @@ void Flower::setSkeletonState(bool is_shown)
         petals_[i].showSkeletonState(is_shown);
 }
 
+// all petals have the same state
+bool Flower::getTextureState()
+{
+    if (petals_.empty()) return false;
+    return petals_[0].getShowTexture();
+}
+
+bool Flower::getSkeletonState()
+{
+    if (petals_.empty()) return false;
+    return petals_[0].getShowSkeleton();
+}
+
+
+
 
 
 FlowersViewer::FlowersViewer(const std::string& flowers_folder)
     :flowers_folder_(flowers_folder),
     current_frame_(-1),
     start_frame_(-1),
-    end_frame_(-1)
+    end_frame_(-1),
+    texture_state_(false),
+    skeleton_state_(false)
 {
 
 }
@@ -298,6 +315,10 @@ void FlowersViewer::setFrame(int frame)
 
 void FlowersViewer::getFlower(int frame)
 {
+    // store showing texture and skeleton flag
+    texture_state_ = current_flower_.getTextureState();
+    skeleton_state_ = current_flower_.getSkeletonState();
+
     current_frame_ = frame;
     Flower current_flower;
 
@@ -306,6 +327,9 @@ void FlowersViewer::getFlower(int frame)
 
     current_flower.load(flower_path);
     current_flower_ = current_flower;
+
+    current_flower_.setTextureState(texture_state_);
+    current_flower_.setSkeletonState(skeleton_state_);
 }
 
 void FlowersViewer::getFlower()

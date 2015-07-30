@@ -36,8 +36,9 @@ bool ObjWriter::save(const std::string& new_obj_file, bool tex_flag)
     if (tex_flag)
     {
         std::string obj_name = mesh_model_->getObjName();
-        std::string mtl_name = QString(obj_name.c_str()).replace(
-            QString(obj_name.c_str()).indexOf("obj"), 3, "mtl").toStdString();
+        std::string mtl_name = obj_name + ".mtl";
+        /*std::string mtl_name = QString(obj_name.c_str()).replace(
+            QString(obj_name.c_str()).indexOf("obj"), 3, "mtl").toStdString();*/
 
         fs << QString("mtllib %1").arg(QString(mtl_name.c_str())).toStdString() << "\n";
 
@@ -106,15 +107,15 @@ bool ObjWriter::save(const std::string& new_obj_file, bool tex_flag)
     if (tex_flag)
     {
         // mtl file
-        std::string new_mtl_file = new_obj_file;
-        new_mtl_file = QString(new_mtl_file.c_str()).replace(
-            QString(new_mtl_file.c_str()).indexOf("obj"), 3, "mtl").toStdString();
+        std::string new_mtl_file = new_obj_file + ".mtl";
+        /*new_mtl_file = QString(new_mtl_file.c_str()).replace(
+        QString(new_mtl_file.c_str()).indexOf("obj"), 3, "mtl").toStdString();*/
         QFile::copy(QString(mesh_model_->getMtlFile().c_str()), QString(new_mtl_file.c_str()));
 
         // tga file
-        std::string new_tga_file = new_obj_file;
-        new_tga_file = QString(new_tga_file.c_str()).replace(
-            QString(new_tga_file.c_str()).indexOf("obj"), 3, "tga").toStdString();
+        std::string new_tga_file = new_obj_file + ".tga";
+        /*new_tga_file = QString(new_tga_file.c_str()).replace(
+        QString(new_tga_file.c_str()).indexOf("obj"), 3, "tga").toStdString();*/
         QFile::copy(QString(mesh_model_->getMapKa().c_str()), QString(new_tga_file.c_str()));
     }
     

@@ -243,6 +243,7 @@ bool MainWindow::slotSendCheckBoxRenderState()
             for (size_t i = 0, i_end = mesh_indexes.size(); i < i_end; ++ i)
             {
                 osg::ref_ptr<MeshModel> mesh_model = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
+
                 if (!mesh_model->getSkeleton()->isEmpty())
                 {
                     mesh_model->showSkeletonState(flag);
