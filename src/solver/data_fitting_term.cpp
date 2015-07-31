@@ -28,11 +28,13 @@ void DataFittingTerm::buildA()
     Solver::DeformPetal& deform_petal = Solver::deform_petals_[petal_id_];
     Solver::CovMatrix& cov_matrix = deform_petal._cov_matrix;
     Solver::CorresMatrix& corres_matrix = deform_petal._corres_matrix;
+    Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
     int ver_num = deform_petal._petal_matrix.cols();
 
     std::vector<std::vector<Eigen::Triplet<double> > > diag_terms;
     diag_terms.resize(3); // for x,y,z coordinates
 
+    L_.resize(3);
     A_.resize(3);
 
     for (int i = 0; i < ver_num; ++i) 
@@ -55,9 +57,15 @@ void DataFittingTerm::buildA()
     diag_coeff_y.setFromTriplets(diag_terms[1].begin(), diag_terms[1].end());
     diag_coeff_z.setFromTriplets(diag_terms[2].begin(), diag_terms[2].end());
 
-    A_[0] = diag_coeff_x;
-    A_[1] = diag_coeff_y;
-    A_[2] = diag_coeff_z;
+    // L for Vertice Variables
+    L_[0] = diag_coeff_x;
+    L_[1] = diag_coeff_y;
+    L_[2] = diag_coeff_z;
+
+    // A for Affine Transform Variables
+    A_[0] = convert_affine.transpose() * (L_[0] * convert_affine);
+    A_[1] = convert_affine.transpose() * (L_[1] * convert_affine);
+    A_[2] = convert_affine.transpose() * (L_[2] * convert_affine);
 }
 
 void DataFittingTerm::buildb()
@@ -67,6 +75,7 @@ void DataFittingTerm::buildb()
     Solver::CloudMatrix& cloud_matrix = deform_petal._cloud_matrix;
     Solver::CorresMatrix& corres_matrix = deform_petal._corres_matrix;
     Solver::CovMatrix& cov_matrix = deform_petal._cov_matrix;
+    Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
     int ver_num = origin_petal.cols();
 
     b_.resize(3, ver_num);
@@ -82,6 +91,9 @@ void DataFittingTerm::buildb()
 
         b_.col(i) = Solver::lambda_*2*cov_matrix.col(i).asDiagonal().inverse()*weight_cloud;
     }
+
+    // for Affine Transform Variables
+    b_ = b_ * convert_affine;
 }
 
 double DataFittingTerm::zero_correction(double value)

@@ -37,9 +37,11 @@ void Solver::initParas()
     Petals& petals = flower_->getPetals();
     petal_num_ = petals.size();
 
-    L_ = std::vector<std::vector<Eigen::SparseMatrix<double>>>(petal_num_, std::vector<Eigen::SparseMatrix<double>>(3));
+  //  L_ = std::vector<std::vector<Eigen::SparseMatrix<double>>>(petal_num_, std::vector<Eigen::SparseMatrix<double>>(3));
+    A_ = std::vector<std::vector<Eigen::MatrixXd>>(petal_num_, std::vector<Eigen::MatrixXd>(3));
     b_.resize(petal_num_);
-    M_.resize(petal_num_);
+ //   M_.resize(petal_num_);
+
 
     deform_petals_.resize(petal_num_);
 
@@ -201,6 +203,7 @@ void Solver::initParas()
     {
         BiWeightMatrix& biweight_matrix = deform_petals_[i]._biweight_matrix;
         PetalMatrix& original_matrix = deform_petals_[i]._origin_petal;
+        ConvertAffineMatrix& convert_affine = deform_petals_[i]._convert_affine;
 
         int ver_num = original_matrix.cols();
         int hdl_num = biweight_matrix.cols();
@@ -215,7 +218,7 @@ void Solver::initParas()
         {
             M.block(0, 4*j, ver_num, 4) = biweight_matrix.col(j).asDiagonal() * petal_matrix;
         }
-        M_[i] = M;
+        convert_affine = M;
 
         AffineMatrix& affine_matrix = deform_petals_[i]._affine_matrix;
         affine_matrix.resize(4*hdl_num, 3);
@@ -240,9 +243,17 @@ double Solver::solve(int petal_id)
     // solve T
     for (size_t i = 0; i < 3; ++ i)
     {
-        Eigen::MatrixXd A = M_[petal_id].transpose() * (L_[petal_id][i] * M_[petal_id]);
-        Eigen::VectorXd b = M_[petal_id].transpose() * b_[petal_id].row(i).transpose();
-        
+        //Eigen::MatrixXd A = M_[petal_id].transpose() * (L_[petal_id][i] * M_[petal_id]);
+        //Eigen::VectorXd b = M_[petal_id].transpose() * b_[petal_id].row(i).transpose();
+        //
+        //Eigen::VectorXd next_values = A.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
+        //// new T
+        //AffineMatrix& affine_matrix = deform_petals_[petal_id]._affine_matrix;
+        //affine_matrix.col(i) = next_values;
+
+        Eigen::MatrixXd A = A_[petal_id][i];
+        Eigen::VectorXd b = b_[petal_id].row(i).transpose();
+
         Eigen::VectorXd next_values = A.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
         // new T
         AffineMatrix& affine_matrix = deform_petals_[petal_id]._affine_matrix;
@@ -432,8 +443,9 @@ void Solver::lbs(int petal_id)
 {
     AffineMatrix& am = deform_petals_[petal_id]._affine_matrix;
     PetalMatrix& pm = deform_petals_[petal_id]._petal_matrix;
+    ConvertAffineMatrix& cam = deform_petals_[petal_id]._convert_affine;
 
-    pm = (M_[petal_id] * am).transpose();
+    pm = (cam * am).transpose();
 }
 
 double Solver::zero_correction(double value)
@@ -454,8 +466,9 @@ void Solver::left_sys(int petal_id)
 {
     for (int i = 0; i < 3; ++ i)
     {
-        L_[petal_id][i] = data_term_[petal_id].A()[i] + arap_term_[petal_id].A()[i];
-        L_[petal_id][i].makeCompressed();
+        /*L_[petal_id][i] = data_term_[petal_id].A()[i] + arap_term_[petal_id].A()[i];
+        L_[petal_id][i].makeCompressed();*/
+        A_[petal_id][i] = data_term_[petal_id].A()[i] + arap_term_[petal_id].A()[i];
     }
 }
 

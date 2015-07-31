@@ -24,23 +24,25 @@ public:
     typedef Eigen::SparseMatrix<double> WeightMatrix;
     typedef std::vector<Eigen::Matrix3d> RotList;
     typedef Eigen::MatrixXd BiWeightMatrix;
+    typedef Eigen::MatrixXd ConvertAffineMatrix;
     typedef Eigen::MatrixXd AffineMatrix;
 
 public:
     typedef struct 
     {
-        PetalMatrix     _origin_petal;
-        PetalMatrix     _petal_matrix;
-        CloudMatrix     _cloud_matrix;
-        CorresMatrix    _corres_matrix;
-        CovMatrix       _cov_matrix;
-        WeightList      _weight_list;
-        AdjList         _adj_list;
-        FaceList        _face_list;
-        WeightMatrix    _weight_matrix;
-        RotList         _R_list;
-        BiWeightMatrix  _biweight_matrix;
-        AffineMatrix    _affine_matrix;
+        PetalMatrix         _origin_petal;
+        PetalMatrix         _petal_matrix;
+        CloudMatrix         _cloud_matrix;
+        CorresMatrix        _corres_matrix;
+        CovMatrix           _cov_matrix;
+        WeightList          _weight_list;
+        AdjList             _adj_list;
+        FaceList            _face_list;
+        WeightMatrix        _weight_matrix;
+        RotList             _R_list;
+        BiWeightMatrix      _biweight_matrix;
+        ConvertAffineMatrix _convert_affine;
+        AffineMatrix        _affine_matrix;
 
         void findSharedVertex(int pi, int pj, std::vector<int>& share_vertex)
         {
@@ -138,8 +140,9 @@ private:
     std::vector<DataFittingTerm> data_term_;
     std::vector<ARAPTerm> arap_term_;
 
-    std::vector<Eigen::MatrixXd> M_;
-    std::vector<std::vector<Eigen::SparseMatrix<double>>> L_; // x, y, z
+//    std::vector<Eigen::MatrixXd> M_;
+    std::vector<std::vector<Eigen::MatrixXd>> A_;
+//    std::vector<std::vector<Eigen::SparseMatrix<double>>> L_; // x, y, z
     std::vector<Eigen::Matrix3Xd> b_;
 
     Eigen::SparseLU<Eigen::SparseMatrix<double> > lu_solver_;

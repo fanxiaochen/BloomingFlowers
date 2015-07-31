@@ -34,11 +34,13 @@ void ARAPTerm::buildA()
     Solver::CorresMatrix& corres_matrix = deform_petal._corres_matrix;
     Solver::WeightMatrix& weight_matrix = deform_petal._weight_matrix;
     Solver::AdjList& adj_list = deform_petal._adj_list;
+    Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
     int ver_num = deform_petal._petal_matrix.cols();
 
     std::vector<std::vector<Eigen::Triplet<double> > > weight_sums;
     weight_sums.resize(3); // for x,y,z coordinates
 
+    L_.resize(3);
     A_.resize(3);
 
     for (int i = 0; i < ver_num; ++i) 
@@ -65,9 +67,15 @@ void ARAPTerm::buildA()
     diag_coeff_y.setFromTriplets(weight_sums[1].begin(), weight_sums[1].end());
     diag_coeff_z.setFromTriplets(weight_sums[2].begin(), weight_sums[2].end());
 
-    A_[0] = diag_coeff_x - weight_matrix;
-    A_[1] = diag_coeff_y - weight_matrix;
-    A_[2] = diag_coeff_z - weight_matrix;
+    // L for Vertice Variables
+    L_[0] = diag_coeff_x - weight_matrix;
+    L_[1] = diag_coeff_y - weight_matrix;
+    L_[2] = diag_coeff_z - weight_matrix;
+
+    // A for Affine Transforms Variables
+    A_[0] = convert_affine.transpose() * (L_[0] * convert_affine);
+    A_[1] = convert_affine.transpose() * (L_[1] * convert_affine);
+    A_[2] = convert_affine.transpose() * (L_[2] * convert_affine);
 }
 
 void ARAPTerm::buildb()
@@ -77,6 +85,7 @@ void ARAPTerm::buildb()
     Solver::AdjList& adj_list = deform_petal._adj_list;
     Solver::WeightMatrix& weight_matrix = deform_petal._weight_matrix;
     Solver::RotList& R_list = deform_petal._R_list;
+    Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
     int ver_num = origin_petal.cols();
 
     b_.resize(3, ver_num);
@@ -90,6 +99,9 @@ void ARAPTerm::buildb()
                 (R_list[i]+R_list[adj_list[i][j]])*(origin_petal.col(i) - origin_petal.col(adj_list[i][j]))).transpose();
         }
     }
+
+    //for Affine Transform Variables
+    b_ = b_ * convert_affine;
 }
 
 void ARAPTerm::initRotation()
