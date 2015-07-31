@@ -4,9 +4,12 @@
 
 int Solver::iter_num_ = 30;
 double Solver::eps_ = 1e-3;
-double Solver::lambda_ = 0.05;
+double Solver::lambda_data_fitting_ = 0.05;
+double Solver::lambda_skel_smooth_ = 0.05;
 double Solver::noise_p_ = 0.0;
 std::vector<Solver::DeformPetal> Solver::deform_petals_;
+
+
 
 Solver::Solver(PointCloud* point_cloud, Flower* flower)
 {
@@ -37,11 +40,8 @@ void Solver::initParas()
     Petals& petals = flower_->getPetals();
     petal_num_ = petals.size();
 
-  //  L_ = std::vector<std::vector<Eigen::SparseMatrix<double>>>(petal_num_, std::vector<Eigen::SparseMatrix<double>>(3));
     A_ = std::vector<std::vector<Eigen::MatrixXd>>(petal_num_, std::vector<Eigen::MatrixXd>(3));
     b_.resize(petal_num_);
- //   M_.resize(petal_num_);
-
 
     deform_petals_.resize(petal_num_);
 
@@ -223,6 +223,28 @@ void Solver::initParas()
         AffineMatrix& affine_matrix = deform_petals_[i]._affine_matrix;
         affine_matrix.resize(4*hdl_num, 3);
     }
+
+    for (size_t i = 0; i < petal_num_; ++ i)
+    {
+        Petal& petal = petals.at(i);
+        osg::ref_ptr<Skeleton> skeleton = petal.getSkeleton();
+        Skeleton::Branches branches = skeleton->getBranches();
+        int joint_number = skeleton->getJointNumber();
+
+        // form handle matrix by branch order
+        HandleMatrix& handle_matrix = deform_petals_[i]._handle_matrix;
+        handle_matrix.resize(joint_number, 3);
+        int handle_cnt = 0;
+        for (int p = 0; p < branches.size(); ++ p)
+        {
+            Skeleton::Branch branch = branches[p];
+            for (int q = 0; q < branch.size(); ++ q)
+            {
+                Point& point = branch[q];
+                handle_matrix.row(handle_cnt ++) << point.x, point.y, point.z;
+            }
+        }
+    }
 }
 
 void Solver::initTerms()
@@ -236,6 +258,11 @@ void Solver::initTerms()
     {
         arap_term_.push_back(ARAPTerm(i));
     }
+
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        skel_term_.push_back(SkelSmoothTerm(i));
+    }
 }
 
 double Solver::solve(int petal_id)
@@ -243,14 +270,6 @@ double Solver::solve(int petal_id)
     // solve T
     for (size_t i = 0; i < 3; ++ i)
     {
-        //Eigen::MatrixXd A = M_[petal_id].transpose() * (L_[petal_id][i] * M_[petal_id]);
-        //Eigen::VectorXd b = M_[petal_id].transpose() * b_[petal_id].row(i).transpose();
-        //
-        //Eigen::VectorXd next_values = A.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
-        //// new T
-        //AffineMatrix& affine_matrix = deform_petals_[petal_id]._affine_matrix;
-        //affine_matrix.col(i) = next_values;
-
         Eigen::MatrixXd A = A_[petal_id][i];
         Eigen::VectorXd b = b_[petal_id].row(i).transpose();
 
@@ -262,18 +281,6 @@ double Solver::solve(int petal_id)
 
     // update vertices
     lbs(petal_id);
-
-    //// solve x, y ,z independently
-    //for (size_t i = 0; i < 3; ++ i)
-    //{
-    //    lu_solver_.analyzePattern(L_[petal_id][i]);
-    //    lu_solver_.factorize(L_[petal_id][i]);
-
-    //    Eigen::VectorXd next_pos = lu_solver_.solve(b_[petal_id].row(i).transpose());
-
-    //    PetalMatrix& petal_matrix = deform_petals_[petal_id]._petal_matrix;
-    //    petal_matrix.row(i) = next_pos;
-    //}
 
     return energy(petal_id);
 }
@@ -460,33 +467,34 @@ void Solver::initbuild(int petal_id)
 {
     data_term_[petal_id].build();
     arap_term_[petal_id].build();
+    skel_term_[petal_id].build();
 }
 
 void Solver::left_sys(int petal_id)
 {
     for (int i = 0; i < 3; ++ i)
     {
-        /*L_[petal_id][i] = data_term_[petal_id].A()[i] + arap_term_[petal_id].A()[i];
-        L_[petal_id][i].makeCompressed();*/
-        A_[petal_id][i] = data_term_[petal_id].A()[i] + arap_term_[petal_id].A()[i];
+        A_[petal_id][i] = data_term_[petal_id].A()[i] + arap_term_[petal_id].A()[i] + skel_term_[petal_id].A()[i];
     }
 }
 
 void Solver::right_sys(int petal_id)
 {
-    b_[petal_id] = data_term_[petal_id].b() + arap_term_[petal_id].b();
+    b_[petal_id] = data_term_[petal_id].b() + arap_term_[petal_id].b() + skel_term_[petal_id].b();
 }
 
 void Solver::projection(int petal_id)
 {
     data_term_[petal_id].projection();
     arap_term_[petal_id].projection();
+    skel_term_[petal_id].projection();
 }
 
 void Solver::update(int petal_id)
 {
     data_term_[petal_id].update();
     arap_term_[petal_id].update();
+    skel_term_[petal_id].update();
 }
 
 double Solver::gaussian(int petal_id, int m_id, int c_id)

@@ -7,6 +7,7 @@
 
 #include "data_fitting_term.h"
 #include "arap_term.h"
+#include "skel_smooth_term.h"
 
 class Flower;
 class PointCloud;
@@ -26,6 +27,7 @@ public:
     typedef Eigen::MatrixXd BiWeightMatrix;
     typedef Eigen::MatrixXd ConvertAffineMatrix;
     typedef Eigen::MatrixXd AffineMatrix;
+    typedef Eigen::MatrixXd HandleMatrix;
 
 public:
     typedef struct 
@@ -43,6 +45,7 @@ public:
         BiWeightMatrix      _biweight_matrix;
         ConvertAffineMatrix _convert_affine;
         AffineMatrix        _affine_matrix;
+        HandleMatrix        _handle_matrix;
 
         void findSharedVertex(int pi, int pj, std::vector<int>& share_vertex)
         {
@@ -96,7 +99,8 @@ public:
     static int iter_num_;
     static double eps_;
 
-    static double lambda_;
+    static double lambda_data_fitting_;
+    static double lambda_skel_smooth_;
     static double noise_p_;
 
 public:
@@ -139,10 +143,9 @@ private:
 
     std::vector<DataFittingTerm> data_term_;
     std::vector<ARAPTerm> arap_term_;
+    std::vector<SkelSmoothTerm> skel_term_;
 
-//    std::vector<Eigen::MatrixXd> M_;
-    std::vector<std::vector<Eigen::MatrixXd>> A_;
-//    std::vector<std::vector<Eigen::SparseMatrix<double>>> L_; // x, y, z
+    std::vector<std::vector<Eigen::MatrixXd>> A_; // x, y, z
     std::vector<Eigen::Matrix3Xd> b_;
 
     Eigen::SparseLU<Eigen::SparseMatrix<double> > lu_solver_;

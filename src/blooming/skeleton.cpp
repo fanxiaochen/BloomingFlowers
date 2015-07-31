@@ -171,6 +171,17 @@ void Skeleton::visualizeSkeleton(void)
             osg::ShapeDrawable* drawable = new osg::ShapeDrawable(cylinder);
             drawable->setColor(ColorMap::getInstance().getDiscreteColor(8));
             geode->addDrawable(drawable);
+
+        }
+
+        for (int j = 0, points_num = branches_[i].size(); j < points_num; ++ j)
+        {
+            // create a sphere for each joint point
+            osg::Vec3 point(branches_[i][j].x, branches_[i][j].y, branches_[i][j].z);
+            osg::Sphere* sphere = new osg::Sphere(point, 1.5);
+            osg::ShapeDrawable* drawable = new osg::ShapeDrawable(sphere);
+            drawable->setColor(ColorMap::getInstance().getDiscreteColor(10));
+            geode->addDrawable(drawable);
         }
     }
 

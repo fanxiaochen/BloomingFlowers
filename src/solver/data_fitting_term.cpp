@@ -41,9 +41,9 @@ void DataFittingTerm::buildA()
     {
         double wi_x = 0, wi_y = 0, wi_z = 0;
 
-        wi_x += zero_correction(Solver::lambda_*(2/cov_matrix.col(i)[0])*corres_matrix.row(i).sum());
-        wi_y += zero_correction(Solver::lambda_*(2/cov_matrix.col(i)[1])*corres_matrix.row(i).sum());
-        wi_z += zero_correction(Solver::lambda_*(2/cov_matrix.col(i)[2])*corres_matrix.row(i).sum());
+        wi_x += zero_correction(Solver::lambda_data_fitting_*(2/cov_matrix.col(i)[0])*corres_matrix.row(i).sum());
+        wi_y += zero_correction(Solver::lambda_data_fitting_*(2/cov_matrix.col(i)[1])*corres_matrix.row(i).sum());
+        wi_z += zero_correction(Solver::lambda_data_fitting_*(2/cov_matrix.col(i)[2])*corres_matrix.row(i).sum());
 
         diag_terms[0].push_back(Eigen::Triplet<double>(i, i, wi_x));
         diag_terms[1].push_back(Eigen::Triplet<double>(i, i, wi_y));
@@ -89,7 +89,7 @@ void DataFittingTerm::buildb()
             weight_cloud += corres_matrix(i, n)*cloud_matrix.col(n);
         }
 
-        b_.col(i) = Solver::lambda_*2*cov_matrix.col(i).asDiagonal().inverse()*weight_cloud;
+        b_.col(i) = Solver::lambda_data_fitting_*2*cov_matrix.col(i).asDiagonal().inverse()*weight_cloud;
     }
 
     // for Affine Transform Variables
