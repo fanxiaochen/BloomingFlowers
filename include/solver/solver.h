@@ -28,6 +28,7 @@ public:
     typedef Eigen::MatrixXd ConvertAffineMatrix;
     typedef Eigen::MatrixXd AffineMatrix;
     typedef Eigen::MatrixXd HandleMatrix;
+    typedef std::vector<std::vector<int>> BranchList;
 
 public:
     typedef struct 
@@ -46,6 +47,7 @@ public:
         ConvertAffineMatrix _convert_affine;
         AffineMatrix        _affine_matrix;
         HandleMatrix        _handle_matrix;
+        BranchList          _branch_list;
 
         void findSharedVertex(int pi, int pj, std::vector<int>& share_vertex)
         {

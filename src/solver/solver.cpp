@@ -5,7 +5,7 @@
 int Solver::iter_num_ = 30;
 double Solver::eps_ = 1e-3;
 double Solver::lambda_data_fitting_ = 0.05;
-double Solver::lambda_skel_smooth_ = 0.05;
+double Solver::lambda_skel_smooth_ = 0.001;
 double Solver::noise_p_ = 0.0;
 std::vector<Solver::DeformPetal> Solver::deform_petals_;
 
@@ -224,26 +224,27 @@ void Solver::initParas()
         affine_matrix.resize(4*hdl_num, 3);
     }
 
+    // init handle matrix and branch size
     for (size_t i = 0; i < petal_num_; ++ i)
     {
         Petal& petal = petals.at(i);
         osg::ref_ptr<Skeleton> skeleton = petal.getSkeleton();
+        Skeleton::Joints joints = skeleton->getJoints();
         Skeleton::Branches branches = skeleton->getBranches();
         int joint_number = skeleton->getJointNumber();
 
-        // form handle matrix by branch order
+        // form handle matrix by joints
         HandleMatrix& handle_matrix = deform_petals_[i]._handle_matrix;
         handle_matrix.resize(joint_number, 3);
-        int handle_cnt = 0;
-        for (int p = 0; p < branches.size(); ++ p)
+        for (size_t j = 0; j < joint_number; ++ j)
         {
-            Skeleton::Branch branch = branches[p];
-            for (int q = 0; q < branch.size(); ++ q)
-            {
-                Point& point = branch[q];
-                handle_matrix.row(handle_cnt ++) << point.x, point.y, point.z;
-            }
+            handle_matrix.row(j) << joints[j].x, joints[j].y, joints[j].z;
         }
+
+        // store branch sizes
+        BranchList& branch_list = deform_petals_[i]._branch_list;
+        for (auto& branch : branches)
+            branch_list.push_back(branch);
     }
 }
 
@@ -427,22 +428,16 @@ void Solver::deforming(int petal_id)
 
     // handles
     AffineMatrix& am = deform_petals_[petal_id]._affine_matrix;
-    int handle_count = 0;
     osg::ref_ptr<Skeleton> skeleton = petal.getSkeleton();
-    for (size_t i = 0; i < skeleton->getBranches().size(); ++ i)
+    Skeleton::Joints& joints = skeleton->getJoints();
+    for (size_t i = 0; i < skeleton->getJointNumber(); ++ i)
     {
-        Skeleton::Branch& branch = skeleton->getBranch(i);
-        for (size_t j = 0; j < branch.size(); ++ j)
-        {
-            Point& p = branch.at(j);
-            Eigen::MatrixXd T = am.block<4,3>(handle_count*4,0);
-            Eigen::Vector3d np = T.transpose() * Eigen::Vector4d(p.x, p.y, p.z, 1);
-            p.x = np(0);
-            p.y = np(1);
-            p.z = np(2);
-
-            handle_count ++;
-        }
+        auto& joint = joints[i];
+        Eigen::MatrixXd T = am.block<4,3>(i*4,0);
+        Eigen::Vector3d np = T.transpose() * Eigen::Vector4d(joint.x, joint.y, joint.z, 1);
+        joint.x = np(0);
+        joint.y = np(1);
+        joint.z = np(2);
     }
 }
 

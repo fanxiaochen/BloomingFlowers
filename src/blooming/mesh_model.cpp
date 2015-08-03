@@ -293,10 +293,10 @@ bool MeshModel::save(const std::string& filename, bool tex_flag)
 
     if (flag)
     {
-        std::string original_skel_file = this->getObjFile() + ".skel";
+        std::string original_skel_file = this->getObjFile() + ".skel2";
         if (QFile(original_skel_file.c_str()).exists())
         {
-            std::string new_skel_file = filename + ".skel";
+            std::string new_skel_file = filename + ".skel2";
             skeleton_->save(new_skel_file);
         }
     }
@@ -317,7 +317,7 @@ bool MeshModel::load(const std::string& filename)
 
     if (flag)
     {
-        std::string skel_file = filename + ".skel";
+        std::string skel_file = filename + ".skel2";
         if (QFile(skel_file.c_str()).exists())
             skeleton_->load(skel_file);
 

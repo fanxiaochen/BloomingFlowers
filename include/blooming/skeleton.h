@@ -7,7 +7,8 @@
 class Skeleton: public Renderable
 {
 public:
-    typedef std::vector<Point> Branch;
+    typedef std::vector<Point> Joints;
+    typedef std::vector<int> Branch; // indices of joints
     typedef std::vector<Branch> Branches;
 
 public:
@@ -25,7 +26,8 @@ public:
     /*inline const Branches& getBranches() const { return branches_; }
     inline const Branch& getBranch(int i) const { return branches_[i]; }*/
 
-    osg::ref_ptr<Skeleton> sample(int sample_ratio);
+//    osg::ref_ptr<Skeleton> sample(int sample_ratio);
+    inline Joints& getJoints() { return joints_; }
     inline Branches& getBranches() { return branches_; }
     inline Branch& getBranch(int i) { return branches_[i]; }
     inline int getJointNumber(){ return joint_number_; }
@@ -36,6 +38,7 @@ protected:
     
 
 private:
+    Joints joints_;
     Branches branches_;
 
     bool show_skeleton_;

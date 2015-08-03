@@ -27,6 +27,7 @@ void SkelSmoothTerm::buildA()
 {
     Solver::DeformPetal& deform_petal = Solver::deform_petals_[petal_id_];
     Solver::HandleMatrix& handle_matrix = deform_petal._handle_matrix;
+    Solver::BranchList& branch_list = deform_petal._branch_list;
     int handle_number = handle_matrix.rows();
     A_.resize(3);
 
@@ -47,17 +48,30 @@ void SkelSmoothTerm::buildA()
     }
 
     // A for relationship between neighbor handles
-    Eigen::MatrixXd A(handle_number-2, handle_number);
-    A.setZero();
-    for (size_t i = 0; i < A.rows(); ++ i)
+    int a_cols = handle_number;
+    int a_rows = 0;
+    for (size_t i = 0; i < branch_list.size(); ++ i)
     {
-        A(i,i) = 1;
-        A(i, i+1) = -2;
-        A(i, i+2) = 1;
+        a_rows += (branch_list[i].size() - 2);
     }
 
+    Eigen::MatrixXd A(a_rows, a_cols);
+    A.setZero();
+    int row_count = 0;
+    for (size_t i = 0, i_end = branch_list.size(); i < i_end; ++ i)
+    {
+        std::vector<int> branch = branch_list[i];
+        for (size_t j = 1, j_end = branch.size()-1; j < j_end; ++ j)
+        {
+            A(row_count, branch[j]) = -2;
+            A(row_count, branch[j-1]) = 1;
+            A(row_count, branch[j+1]) = 1;
+            row_count++;
+        }
+    }
+   
     // lambda_skel_smooth matrix
-    Eigen::MatrixXd lambda_ss(handle_number-2, handle_number-2);
+    Eigen::MatrixXd lambda_ss(a_rows, a_rows);
     lambda_ss.setIdentity();
     lambda_ss = Solver::lambda_skel_smooth_ * lambda_ss;
 
