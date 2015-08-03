@@ -104,6 +104,16 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
             flowers_viewer_->next();
             flowers_viewer_->update();
             break;
+    case(Qt::Key_Left):
+            points_file->navigateToPreviousFrame();
+            flowers_viewer_->previous();
+            flowers_viewer_->update();
+            break;
+    case (Qt::Key_Right):
+            points_file->navigateToNextFrame();
+            flowers_viewer_->next();
+            flowers_viewer_->update();
+            break;
     default:
             QMainWindow::keyPressEvent(event);
             break;
