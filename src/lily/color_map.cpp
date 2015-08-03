@@ -67,7 +67,7 @@ static const double continuous[64][3] = {
   0.5000,    0,         0
 };
 
-static const double discrete[20][3] = {
+static const double discrete[22][3] = {
   0.7500,		0.9400,		0.6000,
   0.6900,		0.3725,		0.4353,
   0.5804,		0.0000,		0.8275,
@@ -87,7 +87,11 @@ static const double discrete[20][3] = {
   0.0230,		0.8627,		0.9843,
   1.0000,		0.5700,		0.0000,
   0.8000,		0.0000,		0.2000,
-  0.2000,		0.2000,		0.8000
+  0.2000,		0.2000,		0.8000,
+  //0.0000,       1.0000,     1.0000, // for skeleton
+  //1.0000,       0.6470,     0.0000  // for skeleton
+  0.4353,       0.5569,     0.7843, // for skeleton
+  0.1176,       0.3000,     0.8000 // for skeleton
 };
 
 ColorMap::ColorMap()
@@ -96,7 +100,7 @@ ColorMap::ColorMap()
     continuous_.push_back(osg::Vec4(continuous[i][0], continuous[i][1], continuous[i][2], 1.0f));
   }
 
-  for (size_t i = 0, iEnd = 20; i < iEnd; ++ i) {
+  for (size_t i = 0, iEnd = 22; i < iEnd; ++ i) {
     discrete_.push_back(osg::Vec4(discrete[i][0], discrete[i][1], discrete[i][2], 1.0f));
   }
 

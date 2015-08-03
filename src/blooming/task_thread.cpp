@@ -308,12 +308,12 @@ void LATrackThread::run()
     forward_flower->show();
 
     // LBS + ARAP tracking 
-    for (size_t i = key_frame + 1, i_end = end_frame;
+    for (size_t i = key_frame, i_end = end_frame;
         i <= i_end; ++ i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
 
-        forward_flower->determineWeights(aligned_cloud);  // weights of gmm based on aligned cloud
+        //forward_flower->determineWeights(aligned_cloud);  // weights of gmm based on aligned cloud
 
         forward_cloud = points_file_system->getPointCloud(i);
         forward_cloud->flower_segmentation(forward_flower);
@@ -324,7 +324,7 @@ void LATrackThread::run()
 
         points_file_system->hidePointCloud(i - 1);
         points_file_system->showPointCloud(i);
-        aligned_cloud = forward_cloud;
+        //aligned_cloud = forward_cloud;
     }
     forward_flower->hide();
 

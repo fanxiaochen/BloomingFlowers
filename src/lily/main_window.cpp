@@ -96,20 +96,20 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     case(Qt::Key_Down):
             points_file->navigateToNextFrame();
             break;
-    case(Qt::Key_PageUp):
+    case(Qt::Key_Left):
             flowers_viewer_->previous();
             flowers_viewer_->update();
             break;
-    case(Qt::Key_PageDown):
+    case(Qt::Key_Right):
             flowers_viewer_->next();
             flowers_viewer_->update();
             break;
-    case(Qt::Key_Left):
+    case(Qt::Key_PageUp):
             points_file->navigateToPreviousFrame();
             flowers_viewer_->previous();
             flowers_viewer_->update();
             break;
-    case (Qt::Key_Right):
+    case (Qt::Key_PageDown):
             points_file->navigateToNextFrame();
             flowers_viewer_->next();
             flowers_viewer_->update();

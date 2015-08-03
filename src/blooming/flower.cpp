@@ -101,6 +101,9 @@ void Flower::hide()
         //MainWindow::getInstance()->getSceneWidget()->removeSceneChild(&petal);  // will cause error
         petal.setHiddenState(true);
         petal.expire();
+
+        petal.getSkeleton()->setHiddenState(true);
+        petal.getSkeleton()->expire();
     }
 
 }
