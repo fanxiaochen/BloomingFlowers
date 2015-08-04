@@ -109,6 +109,8 @@ public:
   osg::ref_ptr<PointCloud> getPetalCloud(int id);
 
   std::vector<int>& getSegmentFlags() { return segment_flags_; }
+  
+  std::vector<int>& getTips() { return tip_indices_; }
 protected:
   virtual void clearData();
   virtual void updateImpl();
@@ -129,6 +131,8 @@ protected:
 
   std::vector<int>              segment_flags_;
   bool                          segmented_;
+
+  std::vector<int>              tip_indices_;
 
 };
 
