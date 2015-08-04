@@ -65,5 +65,20 @@ protected:
 };
 
 
+// Tip Detection
+class TipThread: public QThread
+{
+public:
+    TipThread(TrackingSystem* tracking_system);
+    virtual ~TipThread();
+
+protected:
+    void run();
+
+protected:
+    TrackingSystem*	tracking_system_;
+};
+
+
 
 #endif

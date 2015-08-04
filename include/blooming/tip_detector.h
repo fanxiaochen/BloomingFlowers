@@ -6,8 +6,11 @@
 
 class TipDetector
 {
+
 public:
+    TipDetector();
     TipDetector(PointCloud* point_cloud);
+    ~TipDetector();
 
     void setPointCloud(PointCloud* point_cloud);
     //void setTrajectoryModel(TrajectoryModel* trajectory_model);
@@ -22,20 +25,20 @@ private:
     bool boundary(int index);
     bool corner(int index);
 
-    std::vector<int> knn(int index, PointCloud* point_cloud); // index based on point cloud
+    pcl::IndicesPtr knn(int index, PointCloud::Ptr point_cloud); // index based on point cloud
 
 private:
-    PointCloud*         point_cloud_;
-    int                 bin_number_;
-    float               interval_;
-    std::vector<int>    bin_count_;
-    float               radius_;
+    boost::shared_ptr<PointCloud>   point_cloud_;
+    int                             bin_number_;
+    float                           interval_;
+    std::vector<int>                bin_count_;
+    float                           radius_;
 
-    std::vector<int>    boundary_indices_;
-    osg::ref_ptr<PointCloud> boundary_cloud_;
+    std::vector<int>                boundary_indices_;
+    boost::shared_ptr<PointCloud>   boundary_cloud_;
 
-    float               boundary_limit_;
-    float               corner_limit_;
+    float                           boundary_limit_;
+    float                           corner_limit_;
     //TrajectoryModel*		trajectory_model_;
 
 };

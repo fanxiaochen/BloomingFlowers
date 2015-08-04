@@ -14,7 +14,7 @@
    <enum>Qt::StrongFocus</enum>
   </property>
   <property name="windowTitle">
-   <string>ReDevelop</string>
+   <string>Blooming Flowers</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
@@ -59,8 +59,15 @@
     <addaction name="actionWEMARAP"/>
     <addaction name="actionLBSARAP"/>
    </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionTipDetection"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTracking"/>
+   <addaction name="menuTools"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">
@@ -177,6 +184,16 @@
   <action name="actionLBSARAP">
    <property name="text">
     <string>WEM + LBS + ARAP</string>
+   </property>
+  </action>
+  <action name="actionTip_Detection">
+   <property name="text">
+    <string>Tip Detection</string>
+   </property>
+  </action>
+  <action name="actionTipDetection">
+   <property name="text">
+    <string>Tip Detection</string>
    </property>
   </action>
  </widget>

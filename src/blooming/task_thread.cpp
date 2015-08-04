@@ -12,6 +12,7 @@
 #include "tracking_system.h"
 #include "task_thread.h"
 #include "deform_model.h"
+#include "tip_detector.h"
 
 
 EATrackThread::EATrackThread(TrackingSystem* tracking_system)
@@ -329,4 +330,43 @@ void LATrackThread::run()
     forward_flower->hide();
 
     std::cout << "LBS + ARAP Tracking Finished!" << std::endl;
+}
+
+
+TipThread::TipThread(TrackingSystem* tracking_system)
+    :QThread()
+{
+    tracking_system_ = tracking_system;
+}
+
+TipThread::~TipThread()
+{}
+
+void TipThread::run()
+{
+    std::cout << "Detecting Tips of Point Clouds..." << std::endl;
+
+    PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
+
+    int start_frame = points_file_system->getStartFrame();
+    int end_frame = points_file_system->getEndFrame();
+    TipDetector tip_detector;
+    for (int i = start_frame; i < start_frame+1; ++ i)
+    {
+        std::cout << "frame " << i << std::endl;
+        osg::ref_ptr<PointCloud> origin_cloud = points_file_system->getPointCloud(i);
+        PointCloud* point_cloud = new PointCloud;
+        for (size_t j = 0, j_end = origin_cloud->size(); j < j_end; ++ j)
+            point_cloud->push_back(origin_cloud->at(j));
+
+        tip_detector.setPointCloud(point_cloud);
+        tip_detector.detect(36, 5);
+
+        for (size_t j = 0, j_end = origin_cloud->size(); j < j_end; ++ j)
+            origin_cloud->at(j) = point_cloud->at(j);;
+
+        origin_cloud->expire();
+    }
+
+    std::cout << "Tips Detection Finished!" << std::endl;
 }

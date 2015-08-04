@@ -68,6 +68,15 @@ void TrackingSystem::lbs_arap()
     return;
 }
 
+void TrackingSystem::detectTip()
+{
+    TipThread* track_thread = new TipThread(this);
+    connect(track_thread, SIGNAL(finished()), track_thread, SLOT(quit()));
+
+    track_thread->start();
+    return;
+}
+
 
 // em + arap registration
 void TrackingSystem::ea_registration(PointCloud& tracked_frame, Flower& tracking_template)

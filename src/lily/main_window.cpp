@@ -184,6 +184,8 @@ void MainWindow::init(void)
 	connect(ui_.actionEMElastic, SIGNAL(triggered()), tracking_system_, SLOT(em_elastic()));
     connect(ui_.actionLBSARAP, SIGNAL(triggered()), tracking_system_, SLOT(lbs_arap()));
 	connect(ui_.actionLights, SIGNAL(triggered()), scene_widget_, SLOT(setLight()));
+
+    connect(ui_.actionTipDetection, SIGNAL(triggered()), tracking_system_, SLOT(detectTip()));
     // connect
 
     return;

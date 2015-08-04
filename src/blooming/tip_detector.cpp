@@ -5,18 +5,30 @@
 #include "point_cloud.h"
 #include "tip_detector.h"
 
-
-TipDetector::TipDetector(PointCloud* point_cloud)
-    :point_cloud_(point_cloud),
-    boundary_limit_(0.3),
-    corner_limit_(0.5)
+TipDetector::TipDetector()
+    :boundary_limit_(0.3),
+    corner_limit_(0.5),
+    boundary_cloud_(new PointCloud)
 {
 
 }
 
+TipDetector::TipDetector(PointCloud* point_cloud)
+    :point_cloud_(point_cloud),
+    boundary_limit_(0.3),
+    corner_limit_(0.5),
+    boundary_cloud_(new PointCloud)
+{
+
+}
+
+TipDetector::~TipDetector()
+{
+}
+
 void TipDetector::setPointCloud(PointCloud* point_cloud)
 {
-    point_cloud_ = point_cloud;
+    point_cloud_ = boost::shared_ptr<PointCloud>(point_cloud);
 }
 
 void TipDetector::detect(int bin_number, float radius)
@@ -37,6 +49,8 @@ void TipDetector::detect(int bin_number, float radius)
 
 void TipDetector::detectBoundary()
 {
+    boundary_indices_.clear();
+
     for (size_t i = 0, i_end = point_cloud_->size(); i < i_end; ++ i)
     {
         if (boundary(i)) 
@@ -44,15 +58,19 @@ void TipDetector::detectBoundary()
     }
 
     //build boundary point cloud
-    boundary_cloud_ = new PointCloud;
-    for (int i : boundary_indices_)
+
+    // clear() function is not unique
+    boundary_cloud_->pcl::PointCloud<Point>::clear();
+    for (int index : boundary_indices_)
     {
-        boundary_cloud_->push_back(point_cloud_->at(boundary_indices_[i]));
+        boundary_cloud_->push_back(point_cloud_->at(index));
     }
 }
 
 void TipDetector::detectCorner()
 {
+    point_cloud_->getTips().clear();
+
     for (size_t i = 0, i_end = boundary_indices_.size(); i < i_end; ++ i)
     {
         // if corner, it's tip
@@ -64,16 +82,14 @@ void TipDetector::detectCorner()
 // index based on point cloud
 bool TipDetector::boundary(int index)
 {
-    // knn
-    std::vector<int> knn_idx = knn(index, point_cloud_);
-
     // pca
     pcl::PCA<Point> pca;
     pcl::PointCloud<Point>::Ptr pcp(point_cloud_);
-    pcl::IndicesPtr ip(&knn_idx);
+    pcl::IndicesPtr knn_idx = knn(index, point_cloud_);
+    if (knn_idx->size() <= 2) return false; // at least three points for PCA
 
     pca.setInputCloud(pcp);
-    pca.setIndices(ip);
+    pca.setIndices(knn_idx);
     Eigen::Vector3f values = pca.getEigenValues();
     Eigen::Matrix3f evs = pca.getEigenVectors();
 
@@ -84,17 +100,18 @@ bool TipDetector::boundary(int index)
     Point& c = point_cloud_->at(index);
     Eigen::Vector3f center(c.x, c.y, c.z);
     
-    for (int i : knn_idx)
+    for (int i : *knn_idx)
     {
         Point& p = point_cloud_->at(i);
+        if (p == c) continue;
+
         Eigen::Vector3f point(p.x, p.y, p.z);
         float xlen = xvec.dot(point-center) / xvec.norm();
         float ylen = yvec.dot(point-center) / yvec.norm();
         float angle = atan (ylen/xlen) * 180 / M_PI;
-        int bin_idx = angle / interval_;
+        int bin_idx = (angle+180) / interval_;
         bin_count_[bin_idx] ++;
     }
-    
 
     // bin count
     int zero_cnt = 0;
@@ -104,7 +121,7 @@ bool TipDetector::boundary(int index)
             zero_cnt ++;
     }
 
-    if (float(zero_cnt)/bin_number_ < boundary_limit_)
+    if (float(zero_cnt)/bin_number_ > boundary_limit_)
         return true;
     else return false;
 }
@@ -112,16 +129,14 @@ bool TipDetector::boundary(int index)
 // index based on boundary points
 bool TipDetector::corner(int index)
 {
-    // knn
-    std::vector<int> knn_idx = knn(index, boundary_cloud_);
-
     // pca
     pcl::PCA<Point> pca;
-    pcl::PointCloud<Point>::Ptr pcp(boundary_cloud_.get());
-    pcl::IndicesPtr ip(&knn_idx);
+    pcl::PointCloud<Point>::Ptr pcp(boundary_cloud_);
+    pcl::IndicesPtr knn_idx = knn(index, boundary_cloud_);
+    if (knn_idx->size() <= 2) return false; // at least three points for PCA
 
     pca.setInputCloud(pcp);
-    pca.setIndices(ip);
+    pca.setIndices(knn_idx);
     Eigen::Vector3f values = pca.getEigenValues();
     Eigen::Matrix3f evs = pca.getEigenVectors();
 
@@ -133,19 +148,21 @@ bool TipDetector::corner(int index)
     else return false;
 }
 
-std::vector<int> TipDetector::knn(int index, PointCloud* point_cloud)
+pcl::IndicesPtr TipDetector::knn(int index, PointCloud::Ptr point_cloud)
 {
-    pcl::PointCloud<Point>::Ptr cloud (point_cloud);
+    //pcl::PointCloud<Point>::Ptr cloud (point_cloud);
 
     pcl::KdTreeFLANN<Point> kdtree;
-    kdtree.setInputCloud (cloud);
+    kdtree.setInputCloud (point_cloud);
 
     // Neighbors within radius search
-    std::vector<int> pointIdxRadiusSearch;
+    std::vector<int>* pointIdxRadiusSearch = new std::vector<int>;
     std::vector<float> pointRadiusSquaredDistance;
 
-    const Point& point = point_cloud_->at(index);
-    kdtree.radiusSearch (point, radius_, pointIdxRadiusSearch, pointRadiusSquaredDistance);
+    pcl::IndicesPtr knn_idx(pointIdxRadiusSearch);
 
-    return pointIdxRadiusSearch;
+    const Point& point = point_cloud_->at(index);
+    kdtree.radiusSearch (point, radius_, *pointIdxRadiusSearch, pointRadiusSquaredDistance);
+
+    return knn_idx;
 }
