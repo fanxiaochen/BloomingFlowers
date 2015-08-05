@@ -1,7 +1,7 @@
 
 #include <pcl/common/pca.h>
 #include <pcl/kdtree/kdtree_flann.h>
-
+#include "main_window.h"
 #include "point_cloud.h"
 #include "tip_detector.h"
 
@@ -35,16 +35,16 @@ void TipDetector::setPointCloud(PointCloud* point_cloud)
     point_cloud_ = boost::shared_ptr<PointCloud>(point_cloud, NullDeleter());
 }
 
-void TipDetector::detectTips(float knn_radius, int bin_number, float boundary_limit, float corner_limit)
+void TipDetector::detectTips(int bin_number, float knn_radius, float boundary_limit, float corner_limit)
 {
     // detect boundary points on point cloud
-    detectBoundary(knn_radius, bin_number, boundary_limit);
+    detectBoundary(bin_number, knn_radius, boundary_limit);
 
     // detect corners on boundary points
     detectCorner(corner_limit);
 }
 
-void TipDetector::detectBoundary(float knn_radius, int bin_number, float boundary_limit)
+void TipDetector::detectBoundary(int bin_number, float knn_radius, float boundary_limit)
 {
     bin_number_ = bin_number;
     radius_ = knn_radius;
@@ -154,7 +154,6 @@ bool TipDetector::corner(int index)
         Eigen::Vector3f point(p.x, p.y, p.z);
         float xlen = xvec.dot(point-center) / xvec.norm();
         float ylen = yvec.dot(point-center) / yvec.norm();
-
         plane_points->push_back([](float x, float y, float z){
             Point point;
             point.x = x;
@@ -163,7 +162,7 @@ bool TipDetector::corner(int index)
             return point;
         }(xlen, ylen, 0));
     }
-
+    
     // pca
     pcl::PCA<Point> pca;
     pcl::PointCloud<Point>::Ptr pcp(plane_points);
@@ -179,7 +178,7 @@ bool TipDetector::corner(int index)
 
     float min_lambda = values(1);
     float max_lambda = values(0);
-    std::cout << min_lambda / max_lambda << std::endl;
+    //std::cout << min_lambda / max_lambda << std::endl;
     if (min_lambda / max_lambda > corner_limit_)
         return true;
     else return false;
@@ -198,7 +197,7 @@ pcl::IndicesPtr TipDetector::knn(int index, PointCloud::Ptr point_cloud)
 
     pcl::IndicesPtr knn_idx(pointIdxRadiusSearch);
 
-    const Point& point = point_cloud_->at(index);
+    const Point& point = point_cloud->at(index);
     kdtree.radiusSearch (point, radius_, *pointIdxRadiusSearch, pointRadiusSquaredDistance);
 
     return knn_idx;

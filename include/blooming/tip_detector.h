@@ -24,9 +24,9 @@ public:
 
     void setPointCloud(PointCloud* point_cloud);
 
-    void detectBoundary(float knn_radius = 5, int bin_number = 12, float boundary_limit = 0.2);
+    void detectBoundary(int bin_number = 12, float knn_radius = 5, float boundary_limit = 0.2);
 
-    void detectTips(float knn_radius = 5, int bin_number = 12, float boundary_limit = 0.2, float corner_limit = 0.4);
+    void detectTips(int bin_number = 12, float knn_radius = 5, float boundary_limit = 0.2, float corner_limit = 0.3);
 
 private:
     // based on boundary
@@ -50,6 +50,8 @@ private:
 
     float                           boundary_limit_;
     float                           corner_limit_;
+
+    std::vector<osg::ref_ptr<PointCloud>>        plane_clouds_;
 
 };
 #endif

@@ -359,7 +359,7 @@ void TipThread::run()
         osg::ref_ptr<PointCloud> cloud = points_file_system->getPointCloud(i);
 
         tip_detector.setPointCloud(cloud);
-        tip_detector.detectTips(12, 12);
+        tip_detector.detectTips(12, 6);
 
         points_file_system->hidePointCloud(i - 1);
         points_file_system->showPointCloud(i);

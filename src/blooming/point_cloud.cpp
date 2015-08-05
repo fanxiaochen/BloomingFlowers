@@ -106,9 +106,9 @@ void PointCloud::visualizePoints()
             // create a sphere for each joint point
             const Point& p = at(tip_indices_[i]);
             osg::Vec3 point(p.x, p.y, p.z);
-            osg::Sphere* sphere = new osg::Sphere(point, 1.5);
+            osg::Sphere* sphere = new osg::Sphere(point, 2);
             osg::ShapeDrawable* drawable = new osg::ShapeDrawable(sphere);
-            drawable->setColor(ColorMap::getInstance().getDiscreteColor(10));
+            drawable->setColor(ColorMap::getInstance().getDiscreteColor(16));
             geode->addDrawable(drawable);
         }
     }
