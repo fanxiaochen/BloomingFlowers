@@ -111,6 +111,7 @@ public:
   std::vector<int>& getSegmentFlags() { return segment_flags_; }
   
   std::vector<int>& getTips() { return tip_indices_; }
+  std::vector<int>& getBoundary() { return boundary_indices_; }
 protected:
   virtual void clearData();
   virtual void updateImpl();
@@ -133,6 +134,7 @@ protected:
   bool                          segmented_;
 
   std::vector<int>              tip_indices_;
+  std::vector<int>              boundary_indices_;
 
 };
 

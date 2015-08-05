@@ -24,14 +24,14 @@ public:
 
     void setPointCloud(PointCloud* point_cloud);
 
+    void detectBoundary(float knn_radius = 5, int bin_number = 12, float boundary_limit = 0.2);
 
-    void detect(int bin_number, float radius);
+    void detectTips(float knn_radius = 5, int bin_number = 12, float boundary_limit = 0.2, float corner_limit = 0.4);
 
 private:
-    void detectBoundary();
-    void detectCorner();
+    // based on boundary
+    void detectCorner(float corner_limit);
 
-   // bool tip(int index);
     bool boundary(int index);
     bool corner(int index);
 
@@ -39,17 +39,17 @@ private:
 
 private:
     boost::shared_ptr<PointCloud>   point_cloud_;
+
     int                             bin_number_;
     float                           interval_;
-    //std::vector<int>                bin_count_;
     float                           radius_;
 
     std::vector<int>                boundary_indices_;
+    std::vector<Eigen::Matrix3f>    boundary_evs_;
     boost::shared_ptr<PointCloud>   boundary_cloud_;
 
     float                           boundary_limit_;
     float                           corner_limit_;
-    //TrajectoryModel*		trajectory_model_;
 
 };
 #endif

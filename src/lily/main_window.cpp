@@ -186,6 +186,7 @@ void MainWindow::init(void)
 	connect(ui_.actionLights, SIGNAL(triggered()), scene_widget_, SLOT(setLight()));
 
     connect(ui_.actionTipDetection, SIGNAL(triggered()), tracking_system_, SLOT(detectTip()));
+    connect(ui_.actionBoundaryDetection, SIGNAL(triggered()), tracking_system_, SLOT(detectBoundary()));
     // connect
 
     return;

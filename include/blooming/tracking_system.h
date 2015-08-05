@@ -39,6 +39,7 @@ public:
     void lbs_arap();
 
     void detectTip();
+    void detectBoundary();
 
 
 public:

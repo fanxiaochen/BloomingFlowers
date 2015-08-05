@@ -77,6 +77,15 @@ void TrackingSystem::detectTip()
     return;
 }
 
+void TrackingSystem::detectBoundary()
+{
+    BoundaryThread* track_thread = new BoundaryThread(this);
+    connect(track_thread, SIGNAL(finished()), track_thread, SLOT(quit()));
+
+    track_thread->start();
+    return;
+}
+
 
 // em + arap registration
 void TrackingSystem::ea_registration(PointCloud& tracked_frame, Flower& tracking_template)

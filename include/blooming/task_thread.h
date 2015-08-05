@@ -79,6 +79,18 @@ protected:
     TrackingSystem*	tracking_system_;
 };
 
+// Boundary Detection
+class BoundaryThread: public QThread
+{
+public:
+    BoundaryThread(TrackingSystem* tracking_system);
+    virtual ~BoundaryThread();
 
+protected:
+    void run();
+
+protected:
+    TrackingSystem*	tracking_system_;
+};
 
 #endif

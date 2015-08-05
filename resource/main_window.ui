@@ -64,6 +64,7 @@
      <string>Tools</string>
     </property>
     <addaction name="actionTipDetection"/>
+    <addaction name="actionBoundaryDetection"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTracking"/>
@@ -194,6 +195,11 @@
   <action name="actionTipDetection">
    <property name="text">
     <string>Tip Detection</string>
+   </property>
+  </action>
+  <action name="actionBoundaryDetection">
+   <property name="text">
+    <string>Boundary Detection</string>
    </property>
   </action>
  </widget>

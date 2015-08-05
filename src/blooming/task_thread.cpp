@@ -350,7 +350,7 @@ void TipThread::run()
 
     int start_frame = points_file_system->getStartFrame();
     int end_frame = points_file_system->getEndFrame();
-    osg::ref_ptr<PointCloud> origin_cloud = points_file_system->getPointCloud(0);
+    osg::ref_ptr<PointCloud> origin_cloud = points_file_system->getPointCloud(10);
     TipDetector tip_detector;
     /*for (int i = start_frame; i < start_frame+1; ++ i)
     {
@@ -369,7 +369,43 @@ void TipThread::run()
 
     }*/
     tip_detector.setPointCloud(origin_cloud.get());
-    tip_detector.detect(12, 7);
+    tip_detector.detectTips(10, 12, 0.2);
     origin_cloud->expire();
+    std::cout << "Tips Detection Finished!" << std::endl;
+}
+
+BoundaryThread::BoundaryThread(TrackingSystem* tracking_system)
+    :QThread()
+{
+    tracking_system_ = tracking_system;
+}
+
+BoundaryThread::~BoundaryThread()
+{}
+
+void BoundaryThread::run()
+{
+    std::cout << "Detecting Boundary of Point Clouds..." << std::endl;
+
+    PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
+
+    int start_frame = points_file_system->getStartFrame();
+    int end_frame = points_file_system->getEndFrame();
+    
+    TipDetector tip_detector;
+    for (int i = start_frame; i < end_frame; ++ i)
+    {
+        std::cout << "frame " << i << std::endl;
+
+        osg::ref_ptr<PointCloud> cloud = points_file_system->getPointCloud(i);
+
+        tip_detector.setPointCloud(cloud);
+        tip_detector.detectBoundary(12, 12);
+
+        points_file_system->hidePointCloud(i - 1);
+        points_file_system->showPointCloud(i);
+        cloud->expire();
+    }
+
     std::cout << "Tips Detection Finished!" << std::endl;
 }

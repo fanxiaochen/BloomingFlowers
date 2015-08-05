@@ -96,15 +96,28 @@ void PointCloud::visualizePoints()
     geode->addDrawable(geometry);
    
 
-    // for tips
-    if (!tip_indices_.empty())
+    //// for tips
+    //if (!tip_indices_.empty())
+    //{
+    //    for (size_t i = 0, i_end = tip_indices_.size(); i < i_end; ++ i)
+    //    {
+    //        // create a sphere for each joint point
+    //        const Point& p = at(tip_indices_[i]);
+    //        osg::Vec3 point(p.x, p.y, p.z);
+    //        osg::Sphere* sphere = new osg::Sphere(point, 1);
+    //        osg::ShapeDrawable* drawable = new osg::ShapeDrawable(sphere);
+    //        drawable->setColor(ColorMap::getInstance().getDiscreteColor(8));
+    //        geode->addDrawable(drawable);
+    //    }
+    //}
+
+    // for boundary
+    if (!boundary_indices_.empty())
     {
-        osg::ref_ptr<osg::Vec3Array>  tip_vecs = new osg::Vec3Array;
-        osg::ref_ptr<osg::Vec4Array>  tip_cols = new osg::Vec4Array;
-        for (size_t i = 0, i_end = tip_indices_.size(); i < i_end; ++ i)
+        for (size_t i = 0, i_end = boundary_indices_.size(); i < i_end; ++ i)
         {
             // create a sphere for each joint point
-            const Point& p = at(tip_indices_[i]);
+            const Point& p = at(boundary_indices_[i]);
             osg::Vec3 point(p.x, p.y, p.z);
             osg::Sphere* sphere = new osg::Sphere(point, 1);
             osg::ShapeDrawable* drawable = new osg::ShapeDrawable(sphere);

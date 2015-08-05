@@ -8,6 +8,8 @@
 TipDetector::TipDetector()
     :boundary_limit_(0.2),
     corner_limit_(0.2),
+    radius_(5),
+    bin_number_(12),
     boundary_cloud_(new PointCloud)
 {
 
@@ -17,6 +19,8 @@ TipDetector::TipDetector(PointCloud* point_cloud)
     :point_cloud_(point_cloud),
     boundary_limit_(0.2),
     corner_limit_(0.2),
+    radius_(5),
+    bin_number_(12),
     boundary_cloud_(new PointCloud)
 {
 
@@ -31,35 +35,34 @@ void TipDetector::setPointCloud(PointCloud* point_cloud)
     point_cloud_ = boost::shared_ptr<PointCloud>(point_cloud, NullDeleter());
 }
 
-void TipDetector::detect(int bin_number, float radius)
+void TipDetector::detectTips(float knn_radius, int bin_number, float boundary_limit, float corner_limit)
 {
-    bin_number_ = bin_number;
-    radius_ = radius;
-
-    interval_ = 360.0 / bin_number_;
-    //bin_count_ = std::vector<int>(bin_number_, 0);
-
     // detect boundary points on point cloud
-    detectBoundary();
+    detectBoundary(knn_radius, bin_number, boundary_limit);
 
     // detect corners on boundary points
-    detectCorner();
-
+    detectCorner(corner_limit);
 }
 
-void TipDetector::detectBoundary()
+void TipDetector::detectBoundary(float knn_radius, int bin_number, float boundary_limit)
 {
+    bin_number_ = bin_number;
+    radius_ = knn_radius;
+    boundary_limit_ = boundary_limit;
+    interval_ = 360.0 / bin_number_;
+
     boundary_indices_.clear();
+    boundary_evs_.clear();
 
     for (size_t i = 0, i_end = point_cloud_->size(); i < i_end; ++ i)
     {
         if (boundary(i)) 
             boundary_indices_.push_back(i);
     }
-    /*boundary(0);
-    boundary_indices_.push_back(0);*/
-    //build boundary point cloud
 
+    point_cloud_->getBoundary() = boundary_indices_;
+
+    //build boundary point cloud
      // clear() function is not unique
     boundary_cloud_->pcl::PointCloud<Point>::clear();
     for (int index : boundary_indices_)
@@ -68,13 +71,15 @@ void TipDetector::detectBoundary()
     }
 }
 
-void TipDetector::detectCorner()
+void TipDetector::detectCorner(float corner_limit)
 {
+    corner_limit_ = corner_limit;
+
     point_cloud_->getTips().clear();
 
     for (size_t i = 0, i_end = boundary_indices_.size(); i < i_end; ++ i)
     {
-        // if corner, it's tip
+        // based on boundary, if corner detected, here's the tip
         if (corner(i))
             point_cloud_->getTips().push_back(boundary_indices_[i]);
     }
@@ -93,6 +98,8 @@ bool TipDetector::boundary(int index)
     pca.setIndices(knn_idx);
     Eigen::Vector3f values = pca.getEigenValues();
     Eigen::Matrix3f evs = pca.getEigenVectors();
+
+    boundary_evs_.push_back(evs); // store eigen vectors for each point
 
     // projection
     Eigen::Vector3f xvec(evs(0, 0), evs(1, 0), evs(2, 0));
@@ -130,16 +137,45 @@ bool TipDetector::boundary(int index)
 // index based on boundary points
 bool TipDetector::corner(int index)
 {
-    // pca
-    pcl::PCA<Point> pca;
-    pcl::PointCloud<Point>::Ptr pcp(boundary_cloud_);
+    // projection into original plane
+    PointCloud::Ptr plane_points(new PointCloud);
+
+    Eigen::Matrix3f evs = boundary_evs_[boundary_indices_[index]];
+    Eigen::Vector3f xvec(evs(0, 0), evs(1, 0), evs(2, 0));
+    Eigen::Vector3f yvec(evs(0, 1), evs(1, 1), evs(2, 1));
+
+    Point& c = boundary_cloud_->at(index);
+    Eigen::Vector3f center(c.x, c.y, c.z);
     pcl::IndicesPtr knn_idx = knn(index, boundary_cloud_);
     if (knn_idx->size() <= 2) return false; // at least three points for PCA
+    for (int i : *knn_idx)
+    {
+        Point& p = boundary_cloud_->at(i);
+        Eigen::Vector3f point(p.x, p.y, p.z);
+        float xlen = xvec.dot(point-center) / xvec.norm();
+        float ylen = yvec.dot(point-center) / yvec.norm();
 
+        plane_points->push_back([](float x, float y, float z){
+            Point point;
+            point.x = x;
+            point.y = y;
+            point.z = z;
+            return point;
+        }(xlen, ylen, 0));
+    }
+
+    // pca
+    pcl::PCA<Point> pca;
+    pcl::PointCloud<Point>::Ptr pcp(plane_points);
     pca.setInputCloud(pcp);
-    pca.setIndices(knn_idx);
+    pca.setIndices([](int n){
+        pcl::IndicesPtr indices(new std::vector<int>);
+        for (int i = 0; i < n; ++ i)
+            indices->push_back(i);
+        return indices;
+    }(knn_idx->size()));
+
     Eigen::Vector3f values = pca.getEigenValues();
-    Eigen::Matrix3f evs = pca.getEigenVectors();
 
     float min_lambda = values(1);
     float max_lambda = values(0);
