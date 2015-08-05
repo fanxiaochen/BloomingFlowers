@@ -200,7 +200,8 @@ void MainWindow::setRenderingBox()
     render_names.push_back( std::make_pair("Show Texture", false));
     render_names.push_back( std::make_pair("Show Skeleton", false));
     render_names.push_back( std::make_pair("Show Trajectory", false));
-
+    render_names.push_back( std::make_pair("Show Boundary", false));
+    render_names.push_back( std::make_pair("Show Tips", false));
 
     QGroupBox* rendering_group = new QGroupBox(tr("Rendering Box"));
     QVBoxLayout *layout = new QVBoxLayout();
@@ -222,6 +223,7 @@ void MainWindow::setRenderingBox()
 bool MainWindow::slotSendCheckBoxRenderState()
 {
     MeshFileSystem* mesh_file_system = dynamic_cast<MeshFileSystem*>(mesh_files_);
+    PointsFileSystem* points_file_system = dynamic_cast<PointsFileSystem*>(points_files_);
 
     int num = Check_list_.size();
     for( size_t i = 0; i != num; ++i )
@@ -278,9 +280,35 @@ bool MainWindow::slotSendCheckBoxRenderState()
                 current_flower.update();
             }
         }
-        else
+        else if (name == "Show Boundary")
         {
+            PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
 
+            int start_frame = points_file_system->getStartFrame();
+            int end_frame = points_file_system->getEndFrame();
+
+            for (size_t i = start_frame, i_end = end_frame; i <= i_end; ++ i)
+            {
+                osg::ref_ptr<PointCloud> point_cloud = points_file_system->getPointCloud(i);
+                point_cloud->getShowBoundary() = flag;
+                point_cloud->expire();
+          
+            }
+        }
+        else if (name == "Show Tips")
+        {
+            PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
+
+            int start_frame = points_file_system->getStartFrame();
+            int end_frame = points_file_system->getEndFrame();
+
+            for (size_t i = start_frame, i_end = end_frame; i <= i_end; ++ i)
+            {
+                osg::ref_ptr<PointCloud> point_cloud = points_file_system->getPointCloud(i);
+                point_cloud->getShowTips() = flag;
+                point_cloud->expire();
+
+            }
         }
     }
 

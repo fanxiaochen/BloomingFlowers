@@ -253,6 +253,11 @@ void PointsFileSystem::showPointCloud(const std::string& filename)
     return;
 }
 
+osg::ref_ptr<PointCloud> PointsFileSystem::getPointCloud(QPersistentModelIndex index)
+{
+    return point_cloud_map_[index];
+}
+
 void PointsFileSystem::showPointCloud(const QPersistentModelIndex& index)
 {
     checked_indexes_.insert(index);

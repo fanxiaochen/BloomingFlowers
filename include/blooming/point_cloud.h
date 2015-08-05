@@ -112,6 +112,9 @@ public:
   
   std::vector<int>& getTips() { return tip_indices_; }
   std::vector<int>& getBoundary() { return boundary_indices_; }
+
+  bool& getShowBoundary() { return show_boundary_; }
+  bool& getShowTips() { return show_tips_; }
 protected:
   virtual void clearData();
   virtual void updateImpl();
@@ -135,6 +138,9 @@ protected:
 
   std::vector<int>              tip_indices_;
   std::vector<int>              boundary_indices_;
+
+  bool                          show_boundary_;
+  bool                          show_tips_;
 
 };
 

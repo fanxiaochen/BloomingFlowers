@@ -350,27 +350,22 @@ void TipThread::run()
 
     int start_frame = points_file_system->getStartFrame();
     int end_frame = points_file_system->getEndFrame();
-    osg::ref_ptr<PointCloud> origin_cloud = points_file_system->getPointCloud(10);
+
     TipDetector tip_detector;
-    /*for (int i = start_frame; i < start_frame+1; ++ i)
+    for (int i = start_frame; i <= end_frame; ++ i)
     {
-    std::cout << "frame " << i << std::endl;
+        std::cout << "frame " << i << std::endl;
 
-    PointCloud* point_cloud = new PointCloud;
-    for (size_t j = 0, j_end = origin_cloud->size(); j < j_end; ++ j)
-    point_cloud->push_back(origin_cloud->at(j));
+        osg::ref_ptr<PointCloud> cloud = points_file_system->getPointCloud(i);
 
-    tip_detector.setPointCloud(point_cloud);
-    tip_detector.detect(36, 5);
+        tip_detector.setPointCloud(cloud);
+        tip_detector.detectTips(12, 12);
 
-    for (size_t j = 0, j_end = origin_cloud->size(); j < j_end; ++ j)
-    origin_cloud->at(j) = point_cloud->at(j);;
-    origin_cloud->getTips() = point_cloud->getTips();
+        points_file_system->hidePointCloud(i - 1);
+        points_file_system->showPointCloud(i);
+        cloud->expire();
+    }
 
-    }*/
-    tip_detector.setPointCloud(origin_cloud.get());
-    tip_detector.detectTips(10, 12, 0.2);
-    origin_cloud->expire();
     std::cout << "Tips Detection Finished!" << std::endl;
 }
 
@@ -393,7 +388,7 @@ void BoundaryThread::run()
     int end_frame = points_file_system->getEndFrame();
     
     TipDetector tip_detector;
-    for (int i = start_frame; i < end_frame; ++ i)
+    for (int i = start_frame; i <= end_frame; ++ i)
     {
         std::cout << "frame " << i << std::endl;
 
@@ -407,5 +402,5 @@ void BoundaryThread::run()
         cloud->expire();
     }
 
-    std::cout << "Tips Detection Finished!" << std::endl;
+    std::cout << "Boundary Detection Finished!" << std::endl;
 }

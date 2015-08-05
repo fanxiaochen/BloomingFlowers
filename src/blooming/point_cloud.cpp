@@ -19,7 +19,9 @@
 #include "flower.h"
 
 PointCloud::PointCloud(void)
-    :segmented_(false)
+    :segmented_(false),
+    show_boundary_(false),
+    show_tips_(false)
 {
   
 }
@@ -96,23 +98,23 @@ void PointCloud::visualizePoints()
     geode->addDrawable(geometry);
    
 
-    //// for tips
-    //if (!tip_indices_.empty())
-    //{
-    //    for (size_t i = 0, i_end = tip_indices_.size(); i < i_end; ++ i)
-    //    {
-    //        // create a sphere for each joint point
-    //        const Point& p = at(tip_indices_[i]);
-    //        osg::Vec3 point(p.x, p.y, p.z);
-    //        osg::Sphere* sphere = new osg::Sphere(point, 1);
-    //        osg::ShapeDrawable* drawable = new osg::ShapeDrawable(sphere);
-    //        drawable->setColor(ColorMap::getInstance().getDiscreteColor(8));
-    //        geode->addDrawable(drawable);
-    //    }
-    //}
+    // for tips
+    if (show_tips_)
+    {
+        for (size_t i = 0, i_end = tip_indices_.size(); i < i_end; ++ i)
+        {
+            // create a sphere for each joint point
+            const Point& p = at(tip_indices_[i]);
+            osg::Vec3 point(p.x, p.y, p.z);
+            osg::Sphere* sphere = new osg::Sphere(point, 1.5);
+            osg::ShapeDrawable* drawable = new osg::ShapeDrawable(sphere);
+            drawable->setColor(ColorMap::getInstance().getDiscreteColor(10));
+            geode->addDrawable(drawable);
+        }
+    }
 
     // for boundary
-    if (!boundary_indices_.empty())
+    if (show_boundary_)
     {
         for (size_t i = 0, i_end = boundary_indices_.size(); i < i_end; ++ i)
         {
