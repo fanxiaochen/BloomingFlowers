@@ -1,7 +1,7 @@
 #ifndef TIP_DETECTOR_H
 #define TIP_DETECTOR_H
 #include <vector>
-
+#include <pcl/kdtree/kdtree_flann.h>
 #include "point_cloud.h"
 
 
@@ -51,7 +51,7 @@ private:
     float                           boundary_limit_;
     float                           corner_limit_;
 
-    std::vector<osg::ref_ptr<PointCloud>>        plane_clouds_;
+    pcl::KdTreeFLANN<Point>         kdtree_;
 
 };
 #endif

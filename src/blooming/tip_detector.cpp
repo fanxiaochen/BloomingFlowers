@@ -1,6 +1,6 @@
 
 #include <pcl/common/pca.h>
-#include <pcl/kdtree/kdtree_flann.h>
+
 #include "main_window.h"
 #include "point_cloud.h"
 #include "tip_detector.h"
@@ -54,6 +54,8 @@ void TipDetector::detectBoundary(int bin_number, float knn_radius, float boundar
     boundary_indices_.clear();
     boundary_evs_.clear();
 
+    kdtree_.setInputCloud (point_cloud_);
+
     for (size_t i = 0, i_end = point_cloud_->size(); i < i_end; ++ i)
     {
         if (boundary(i)) 
@@ -76,6 +78,8 @@ void TipDetector::detectCorner(float corner_limit)
     corner_limit_ = corner_limit;
 
     point_cloud_->getTips().clear();
+
+    kdtree_.setInputCloud (boundary_cloud_);
 
     for (size_t i = 0, i_end = boundary_indices_.size(); i < i_end; ++ i)
     {
@@ -186,11 +190,6 @@ bool TipDetector::corner(int index)
 
 pcl::IndicesPtr TipDetector::knn(int index, PointCloud::Ptr point_cloud)
 {
-    //pcl::PointCloud<Point>::Ptr cloud (point_cloud);
-
-    pcl::KdTreeFLANN<Point> kdtree;
-    kdtree.setInputCloud (point_cloud);
-
     // Neighbors within radius search
     std::vector<int>* pointIdxRadiusSearch = new std::vector<int>;
     std::vector<float> pointRadiusSquaredDistance;
@@ -198,7 +197,7 @@ pcl::IndicesPtr TipDetector::knn(int index, PointCloud::Ptr point_cloud)
     pcl::IndicesPtr knn_idx(pointIdxRadiusSearch);
 
     const Point& point = point_cloud->at(index);
-    kdtree.radiusSearch (point, radius_, *pointIdxRadiusSearch, pointRadiusSquaredDistance);
+    kdtree_.radiusSearch (point, radius_, *pointIdxRadiusSearch, pointRadiusSquaredDistance);
 
     return knn_idx;
 }
