@@ -101,16 +101,23 @@ void PointCloud::visualizePoints()
     // for tips
     if (show_tips_)
     {
+        osg::ref_ptr<osg::Vec3Array>  tvertices = new osg::Vec3Array;
+        osg::ref_ptr<osg::Vec4Array>  tcolors = new osg::Vec4Array;
         for (size_t i = 0, i_end = tip_indices_.size(); i < i_end; ++ i)
         {
-            // create a sphere for each point
-            const Point& p = at(tip_indices_[i]);
-            osg::Vec3 point(p.x, p.y, p.z);
-            osg::Sphere* sphere = new osg::Sphere(point, 2);
-            osg::ShapeDrawable* drawable = new osg::ShapeDrawable(sphere);
-            drawable->setColor(ColorMap::getInstance().getDiscreteColor(16));
-            geode->addDrawable(drawable);
+            const Point& point = at(tip_indices_[i]);
+            tvertices->push_back(osg::Vec3(point.x, point.y, point.z));
+            tcolors->push_back(ColorMap::getInstance().getDiscreteColor(18));
+
         }
+
+        osg::Geometry* tgeometry = new osg::Geometry;
+        tgeometry->setVertexArray(tvertices);
+        tgeometry->setColorArray(tcolors);
+        tgeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+        tgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, tvertices->size()));
+        tgeometry->getOrCreateStateSet()->setAttribute(new osg::Point(15.0f));
+        geode->addDrawable(tgeometry);
     }
 
     // for boundary
@@ -124,13 +131,6 @@ void PointCloud::visualizePoints()
             bvertices->push_back(osg::Vec3(point.x, point.y, point.z));
             bcolors->push_back(ColorMap::getInstance().getDiscreteColor(8));
 
-            //// create a sphere for each point
-            //const Point& p = at(boundary_indices_[i]);
-            //osg::Vec3 point(p.x, p.y, p.z);
-            //osg::Sphere* sphere = new osg::Sphere(point, 1);
-            //osg::ShapeDrawable* drawable = new osg::ShapeDrawable(sphere);
-            //drawable->setColor(ColorMap::getInstance().getDiscreteColor(8));
-            //geode->addDrawable(drawable);
         }
         osg::Geometry* bgeometry = new osg::Geometry;
         bgeometry->setVertexArray(bvertices);
