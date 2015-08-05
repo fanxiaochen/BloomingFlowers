@@ -350,23 +350,26 @@ void TipThread::run()
 
     int start_frame = points_file_system->getStartFrame();
     int end_frame = points_file_system->getEndFrame();
+    osg::ref_ptr<PointCloud> origin_cloud = points_file_system->getPointCloud(0);
     TipDetector tip_detector;
-    for (int i = start_frame; i < start_frame+1; ++ i)
+    /*for (int i = start_frame; i < start_frame+1; ++ i)
     {
-        std::cout << "frame " << i << std::endl;
-        osg::ref_ptr<PointCloud> origin_cloud = points_file_system->getPointCloud(i);
-        PointCloud* point_cloud = new PointCloud;
-        for (size_t j = 0, j_end = origin_cloud->size(); j < j_end; ++ j)
-            point_cloud->push_back(origin_cloud->at(j));
+    std::cout << "frame " << i << std::endl;
 
-        tip_detector.setPointCloud(point_cloud);
-        tip_detector.detect(36, 5);
+    PointCloud* point_cloud = new PointCloud;
+    for (size_t j = 0, j_end = origin_cloud->size(); j < j_end; ++ j)
+    point_cloud->push_back(origin_cloud->at(j));
 
-        for (size_t j = 0, j_end = origin_cloud->size(); j < j_end; ++ j)
-            origin_cloud->at(j) = point_cloud->at(j);;
+    tip_detector.setPointCloud(point_cloud);
+    tip_detector.detect(36, 5);
 
-        origin_cloud->expire();
-    }
+    for (size_t j = 0, j_end = origin_cloud->size(); j < j_end; ++ j)
+    origin_cloud->at(j) = point_cloud->at(j);;
+    origin_cloud->getTips() = point_cloud->getTips();
 
+    }*/
+    tip_detector.setPointCloud(origin_cloud.get());
+    tip_detector.detect(12, 7);
+    origin_cloud->expire();
     std::cout << "Tips Detection Finished!" << std::endl;
 }

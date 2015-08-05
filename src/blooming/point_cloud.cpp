@@ -65,6 +65,7 @@ void PointCloud::updateImpl()
 
 void PointCloud::visualizePoints()
 {
+    // for points
     osg::ref_ptr<osg::Vec3Array>  vertices = new osg::Vec3Array;
     osg::ref_ptr<osg::Vec4Array>  colors = new osg::Vec4Array;
 
@@ -90,8 +91,28 @@ void PointCloud::visualizePoints()
     geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
     geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, size()));
     geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
+
     osg::Geode* geode = new osg::Geode;
     geode->addDrawable(geometry);
+   
+
+    // for tips
+    if (!tip_indices_.empty())
+    {
+        osg::ref_ptr<osg::Vec3Array>  tip_vecs = new osg::Vec3Array;
+        osg::ref_ptr<osg::Vec4Array>  tip_cols = new osg::Vec4Array;
+        for (size_t i = 0, i_end = tip_indices_.size(); i < i_end; ++ i)
+        {
+            // create a sphere for each joint point
+            const Point& p = at(tip_indices_[i]);
+            osg::Vec3 point(p.x, p.y, p.z);
+            osg::Sphere* sphere = new osg::Sphere(point, 1);
+            osg::ShapeDrawable* drawable = new osg::ShapeDrawable(sphere);
+            drawable->setColor(ColorMap::getInstance().getDiscreteColor(8));
+            geode->addDrawable(drawable);
+        }
+    }
+    
     content_root_->addChild(geode);
 
     return;

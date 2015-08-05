@@ -6,8 +6,8 @@
 #include "tip_detector.h"
 
 TipDetector::TipDetector()
-    :boundary_limit_(0.3),
-    corner_limit_(0.5),
+    :boundary_limit_(0.2),
+    corner_limit_(0.2),
     boundary_cloud_(new PointCloud)
 {
 
@@ -15,8 +15,8 @@ TipDetector::TipDetector()
 
 TipDetector::TipDetector(PointCloud* point_cloud)
     :point_cloud_(point_cloud),
-    boundary_limit_(0.3),
-    corner_limit_(0.5),
+    boundary_limit_(0.2),
+    corner_limit_(0.2),
     boundary_cloud_(new PointCloud)
 {
 
@@ -28,7 +28,7 @@ TipDetector::~TipDetector()
 
 void TipDetector::setPointCloud(PointCloud* point_cloud)
 {
-    point_cloud_ = boost::shared_ptr<PointCloud>(point_cloud);
+    point_cloud_ = boost::shared_ptr<PointCloud>(point_cloud, NullDeleter());
 }
 
 void TipDetector::detect(int bin_number, float radius)
@@ -37,7 +37,7 @@ void TipDetector::detect(int bin_number, float radius)
     radius_ = radius;
 
     interval_ = 360.0 / bin_number_;
-    bin_count_ = std::vector<int>(bin_number_, 0);
+    //bin_count_ = std::vector<int>(bin_number_, 0);
 
     // detect boundary points on point cloud
     detectBoundary();
@@ -56,10 +56,11 @@ void TipDetector::detectBoundary()
         if (boundary(i)) 
             boundary_indices_.push_back(i);
     }
-
+    /*boundary(0);
+    boundary_indices_.push_back(0);*/
     //build boundary point cloud
 
-    // clear() function is not unique
+     // clear() function is not unique
     boundary_cloud_->pcl::PointCloud<Point>::clear();
     for (int index : boundary_indices_)
     {
@@ -99,7 +100,7 @@ bool TipDetector::boundary(int index)
 
     Point& c = point_cloud_->at(index);
     Eigen::Vector3f center(c.x, c.y, c.z);
-    
+    std::vector<int> bin_count = std::vector<int>(bin_number_, 0);
     for (int i : *knn_idx)
     {
         Point& p = point_cloud_->at(i);
@@ -108,14 +109,14 @@ bool TipDetector::boundary(int index)
         Eigen::Vector3f point(p.x, p.y, p.z);
         float xlen = xvec.dot(point-center) / xvec.norm();
         float ylen = yvec.dot(point-center) / yvec.norm();
-        float angle = atan (ylen/xlen) * 180 / M_PI;
+        float angle = atan2 (ylen, xlen) * 180 / M_PI;
         int bin_idx = (angle+180) / interval_;
-        bin_count_[bin_idx] ++;
+        bin_count[bin_idx] ++;
     }
 
     // bin count
     int zero_cnt = 0;
-    for (int count : bin_count_)
+    for (int count : bin_count)
     {
         if (count == 0)
             zero_cnt ++;
@@ -142,7 +143,7 @@ bool TipDetector::corner(int index)
 
     float min_lambda = values(1);
     float max_lambda = values(0);
-
+    std::cout << min_lambda / max_lambda << std::endl;
     if (min_lambda / max_lambda > corner_limit_)
         return true;
     else return false;
