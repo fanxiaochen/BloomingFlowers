@@ -331,7 +331,7 @@ void Solver::e_step(int petal_id)
     {
         for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
         {
-            corres_mat(j, i) = gaussian(petal_id, j, i) /** weight_list[j]*/;
+            corres_mat(j, i) = gaussian(petal_id, j, i) * weight_list[j];
         }
     }
 

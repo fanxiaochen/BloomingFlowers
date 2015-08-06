@@ -314,7 +314,7 @@ void LATrackThread::run()
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
 
-        //forward_flower->determineWeights(aligned_cloud);  // weights of gmm based on aligned cloud
+        forward_flower->determineWeights(aligned_cloud);  // weights of gmm based on aligned cloud
 
         forward_cloud = points_file_system->getPointCloud(i);
         forward_cloud->flower_segmentation(forward_flower);
@@ -325,7 +325,7 @@ void LATrackThread::run()
 
         points_file_system->hidePointCloud(i - 1);
         points_file_system->showPointCloud(i);
-        //aligned_cloud = forward_cloud;
+        aligned_cloud = forward_cloud;
     }
     forward_flower->hide();
 
@@ -359,7 +359,7 @@ void TipThread::run()
         osg::ref_ptr<PointCloud> cloud = points_file_system->getPointCloud(i);
 
         tip_detector.setPointCloud(cloud);
-        tip_detector.detectTips(12, 6);
+        tip_detector.detectTips(12, 12);
 
         points_file_system->hidePointCloud(i - 1);
         points_file_system->showPointCloud(i);
