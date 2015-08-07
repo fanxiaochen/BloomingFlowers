@@ -121,7 +121,7 @@ bool TipDetector::boundary(int index)
         float xlen = xvec.dot(point-center) / xvec.norm();
         float ylen = yvec.dot(point-center) / yvec.norm();
         float angle = atan2 (ylen, xlen) * 180 / M_PI;
-        int bin_idx = (angle+180) / interval_;
+        int bin_idx = int((angle+180) / interval_) % bin_number_;
         bin_count[bin_idx] ++;
     }
 

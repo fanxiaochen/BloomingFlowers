@@ -53,6 +53,7 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     *texcoords_ = *mesh_model.texcoords_;
     *vertex_normals_ = *mesh_model.vertex_normals_;
     faces_ = mesh_model.faces_;
+    gaussian_sphere_ = mesh_model.gaussian_sphere_;
     ambient_ = mesh_model.ambient_;
     diffuse_ = mesh_model.diffuse_;
     specular_ = mesh_model.specular_;
@@ -84,6 +85,7 @@ MeshModel& MeshModel::operator =(const MeshModel& mesh_model) // deep copy
     *texcoords_ = *mesh_model.texcoords_;
     *vertex_normals_ = *mesh_model.vertex_normals_;
     faces_ = mesh_model.faces_;
+    gaussian_sphere_ = mesh_model.gaussian_sphere_;
     ambient_ = mesh_model.ambient_;
     diffuse_ = mesh_model.diffuse_;
     specular_ = mesh_model.specular_;
@@ -452,6 +454,7 @@ bool MeshModel::readObjFile(const std::string& filename)
 
     recoverAdjList();
     extractEdgeVertices();
+    computeGaussianSphere();
 
     return true;
 }
@@ -492,6 +495,35 @@ void MeshModel::recoverAdjList()
         std::vector<int> adj_list(index_i.begin(), index_i.end());
         std::sort(adj_list.begin(), adj_list.end());
         adj_list_.push_back(adj_list);
+    }
+}
+
+void MeshModel::computeGaussianSphere()
+{
+    Eigen::Matrix3Xd pm(3, vertices_->size());
+
+    for (size_t j = 0, j_end = vertices_->size(); j < j_end; ++ j)
+        pm.col(j) << vertices_->at(j).x(), vertices_->at(j).y(), vertices_->at(j).z();
+    
+    gaussian_sphere_.resize(3, vertices_->size());
+
+    for (size_t k = 0, k_end = adj_list_.size(); k < k_end; ++ k)
+    {
+        Eigen::Vector3d c = pm.col(k);
+        int adj_size = adj_list_[k].size();
+        double s_x = 0, s_y = 0, s_z = 0;
+
+        for (size_t j = 0, j_end = adj_size; j < j_end; ++ j)
+        {
+            int id_j = adj_list_[k][j];
+            Eigen::Vector3d v = pm.col(id_j);
+
+            s_x += abs(c[0] - v[0]);
+            s_y += abs(c[1] - v[1]);
+            s_z += abs(c[2] - v[2]);
+        }
+
+        gaussian_sphere_.col(k) << pow(s_x/adj_size, 2.0), pow(s_y/adj_size, 2.0), pow(s_z/adj_size, 2.0); 
     }
 }
 
@@ -570,6 +602,43 @@ void MeshModel::searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_
     }
 }
 
+void MeshModel::searchNearestIdx(PointCloud* point_cloud, std::vector<int> indices, std::vector<int>& knn_idx)
+{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+
+    for (size_t i = 0, i_end = point_cloud->size(); i < i_end; ++ i)
+    {
+        const Point& point = point_cloud->at(i);
+
+        pcl::PointXYZ pcl_point(point.x, point.y, point.z);
+        cloud->push_back(pcl_point);
+    }
+
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+
+    kdtree.setInputCloud (cloud);
+
+    int K = 1;
+
+    // K nearest neighbor search
+
+    for (int index : indices)
+    {
+        osg::Vec3& point = this->getVertices()->at(index);
+
+        pcl::PointXYZ searchPoint;
+        std::vector<int> pointIdxNKNSearch(K);
+        std::vector<float> pointNKNSquaredDistance(K);
+
+        searchPoint.x = point.x();
+        searchPoint.y = point.y();
+        searchPoint.z = point.z();
+
+        if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+            knn_idx.push_back(pointIdxNKNSearch[0]);
+    }
+}
+
 void MeshModel::searchNearestIdx(const MeshModel& source_mesh, std::vector<int>& idx)
 {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
@@ -605,6 +674,7 @@ void MeshModel::searchNearestIdx(const MeshModel& source_mesh, std::vector<int>&
             idx.push_back(pointIdxNKNSearch[0]);
     }
 }
+
 
 int MeshModel::searchNearestIdx(osg::Vec3 point)
 {

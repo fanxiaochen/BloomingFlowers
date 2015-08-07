@@ -308,6 +308,8 @@ void LATrackThread::run()
     std::cout << "Forward Tracking..." << std::endl;
     forward_flower->show();
 
+    TipDetector tip_detector;
+
     // LBS + ARAP tracking 
     for (size_t i = key_frame, i_end = end_frame;
         i <= i_end; ++ i)
@@ -318,6 +320,9 @@ void LATrackThread::run()
 
         forward_cloud = points_file_system->getPointCloud(i);
         forward_cloud->flower_segmentation(forward_flower);
+
+        tip_detector.setPointCloud(forward_cloud);
+        tip_detector.detectTips(12, 12);  // detect tips
 
         tracking_system_->la_registration(*forward_cloud, *forward_flower);
         forward_flower->save(flowers_folder, i);

@@ -29,6 +29,7 @@ public:
     inline const osg::ref_ptr<osg::Vec3Array> getVertexNormals() const { return vertex_normals_; }
     inline const std::vector<std::vector<int> >& getFaces() const { return faces_; }
     inline const std::vector<std::vector<int> >& getAdjList() const { return adj_list_; }
+    inline const Eigen::Matrix3Xd& getGaussianSphere() const { return gaussian_sphere_; }
     inline const osg::Vec4& getAmbient() const { return ambient_; }
     inline const osg::Vec4& getDiffuse() const { return diffuse_; }
     inline const osg::Vec4& getSpecular() const { return specular_; }
@@ -53,6 +54,7 @@ public:
     inline osg::ref_ptr<osg::Vec2Array> getTexcoords() { return texcoords_; }
     inline osg::ref_ptr<osg::Vec3Array> getVertexNormals() { return vertex_normals_; }
     inline std::vector<std::vector<int> >& getFaces() { return faces_; }
+    inline Eigen::Matrix3Xd& getGaussianSphere() { return gaussian_sphere_; }
     inline osg::Vec4& getAmbient() { return ambient_; }
     inline osg::Vec4& getDiffuse() { return diffuse_; }
     inline osg::Vec4& getSpecular() { return specular_; }
@@ -73,6 +75,9 @@ public:
 
     // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
     void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
+
+    // source is this mesh with indices, target is the point_cloud, knn_idx is based on point_cloud
+    void searchNearestIdx(PointCloud* point_cloud, std::vector<int> indices, std::vector<int>& knn_idx);
 
     // source is point, target is this mesh, return index based on mesh
     int searchNearestIdx(osg::Vec3 point);
@@ -99,6 +104,7 @@ protected:
 private:
     bool readObjFile(const std::string& filename);
     void recoverAdjList();
+    void computeGaussianSphere();
 
     void findSharedVertices(int pi, int pj, std::vector<int>& shared_vertices);
     void extractEdgeVertices();
@@ -118,6 +124,8 @@ protected:
     std::vector<std::vector<int> >      faces_;
 //	osg::ref_ptr<osg::Vec3Array>        face_normals_;
     std::vector<std::vector<int> >      adj_list_;
+    
+    Eigen::Matrix3Xd                    gaussian_sphere_;
 
     osg::Vec4                           ambient_;
     osg::Vec4                           diffuse_;
@@ -131,6 +139,7 @@ protected:
     std::vector<int>                    hard_index_; // hard constraints 
     std::vector<int>                    visibility_; // the same size of vertices
     std::vector<double>                 weights_; // the same size of vertices
+
 
     size_t                              color_id_; // for visualization
     

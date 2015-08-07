@@ -280,6 +280,20 @@ void PointCloud::flower_segmentation(Flower* flower)
     segmented_ = true;
 }
 
+void PointCloud::region_matching(Flower* flower)
+{
+}
+
+osg::ref_ptr<PointCloud> PointCloud::getFittingCloud(int id)
+{
+    return match_regions_[id].second;
+}
+
+std::vector<int> PointCloud::getFittingMesh(int id)
+{
+    return match_regions_[id].first;
+}
+
 void PointCloud::region_growing(std::vector<int>& segment_index, int petal_id)
 {
     std::unordered_set<int> segment_set(segment_index.begin(), segment_index.end());

@@ -88,6 +88,9 @@ class MeshModel;
 
 class PointCloud : public QObject, public Renderable, public PclPointCloud
 {
+public:
+    typedef std::pair<std::vector<int>, osg::ref_ptr<PointCloud>> MatchRegion;
+    typedef std::vector<MatchRegion> MatchRegions;
 
 public:
   PointCloud(void);
@@ -115,6 +118,11 @@ public:
 
   bool& getShowBoundary() { return show_boundary_; }
   bool& getShowTips() { return show_tips_; }
+
+  void region_matching(Flower* flower);
+  osg::ref_ptr<PointCloud> getFittingCloud(int id);
+  std::vector<int> getFittingMesh(int id);
+
 protected:
   virtual void clearData();
   virtual void updateImpl();
@@ -135,6 +143,8 @@ protected:
 
   std::vector<int>              segment_flags_;
   bool                          segmented_;
+
+  MatchRegions                  match_regions_;
 
   std::vector<int>              tip_indices_;
   std::vector<int>              boundary_indices_;
