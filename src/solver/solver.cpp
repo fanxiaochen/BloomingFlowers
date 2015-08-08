@@ -4,8 +4,8 @@
 
 int Solver::iter_num_ = 30;
 double Solver::eps_ = 1e-3;
-double Solver::lambda_data_fitting_ = 0.01;
-double Solver::lambda_skel_smooth_ = 0.0;
+double Solver::lambda_data_fitting_ = 0.05;
+double Solver::lambda_skel_smooth_ = 0.001;
 double Solver::noise_p_ = 0.0;
 std::vector<Solver::DeformPetal> Solver::deform_petals_;
 
@@ -15,7 +15,7 @@ Solver::Solver(PointCloud* point_cloud, Flower* flower)
 {
     point_cloud_ = point_cloud;
     flower_ = flower;
-   
+
     init();
 }
 
@@ -60,17 +60,10 @@ void Solver::initParas()
         deform_petals_[i]._origin_petal = pm;
     }
 
-    // init key region indices
-    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
-    {
-        KeyRegionIndices& kri = deform_petals_[i]._region_indices;
-        kri = point_cloud_->getFittingMesh(i);
-    }
-
     // init cloud matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
-        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getFittingCloud(i);
+        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getPetalCloud(i);
         CloudMatrix cm(3, petal_cloud->size());
         if (petal_cloud != NULL)
         {
@@ -81,6 +74,35 @@ void Solver::initParas()
         }
 
         deform_petals_[i]._cloud_matrix = cm;
+    }
+
+
+    // init petal matrix
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals.at(i);
+        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getPetalCloud(i);
+        std::vector<int> knn_idx;
+        petal.searchNearestIdx(petal_cloud, knn_idx);
+
+        int petal_size = petal.getVertices()->size();
+        PetalMatrix pm(3, petal_size);
+
+        for (size_t j = 0, j_end = petal_size; j < j_end; ++ j)
+        {
+            pm.col(j) << petal_cloud->at(knn_idx[j]).x, petal_cloud->at(knn_idx[j]).y, petal_cloud->at(knn_idx[j]).z;
+        }
+
+        deform_petals_[i]._petal_matrix = pm;
+    }
+
+    // init correspondence matrix
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        CloudMatrix& cloud_mat = deform_petals_[i]._cloud_matrix;
+        PetalMatrix& petal_mat = deform_petals_[i]._petal_matrix;
+        CorresMatrix corres_mat = CorresMatrix::Zero(petal_mat.cols(), cloud_mat.cols());
+        deform_petals_[i]._corres_matrix = corres_mat;
     }
 
     // init weight list
@@ -118,7 +140,7 @@ void Solver::initParas()
         std::vector<Eigen::Triplet<double> > weight_list;
         DeformPetal& deform_petal = deform_petals_[i];
         WeightMatrix& weight_matrix = deform_petal._weight_matrix;
-        int ver_num = deform_petal._origin_petal.cols();
+        int ver_num = deform_petal._petal_matrix.cols();
 
         for (size_t i = 0; i != ver_num; ++i) 
         {
@@ -144,38 +166,29 @@ void Solver::initParas()
     // init covariance matrix 
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
-        Petal& petal = petals.at(i);
+        AdjList& adj_list = deform_petals_[i]._adj_list;
+        PetalMatrix& origin_petal = deform_petals_[i]._origin_petal;
         CovMatrix& cov_matrix = deform_petals_[i]._cov_matrix;
-        cov_matrix = petal.getGaussianSphere();
-    }
+        cov_matrix.resize(3, origin_petal.cols());
 
-    // init petal matrix
-    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
-    {
-        PetalMatrix& petal_matrix = deform_petals_[i]._petal_matrix;
-        petal_matrix = deform_petals_[i]._origin_petal;
-
-        KeyRegionIndices& kri = deform_petals_[i]._region_indices;
-        Petal& petal = petals.at(i);
-        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getFittingCloud(i);
-        std::vector<int> knn_idx;
-        petal.searchNearestIdx(petal_cloud, kri, knn_idx);
-
-        for (size_t j = 0, j_end = kri.size(); j < j_end; ++ j)
+        for (size_t k = 0, k_end = adj_list.size(); k < k_end; ++ k)
         {
-            petal_matrix.col(kri[j]) << 
-                petal_cloud->at(knn_idx[j]).x, petal_cloud->at(knn_idx[j]).y, petal_cloud->at(knn_idx[j]).z;
-        }
-    }
+            Eigen::Vector3d c = origin_petal.col(k);
+            int adj_size = adj_list[k].size();
+            double s_x = 0, s_y = 0, s_z = 0;
 
-    // init correspondence matrix
-    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
-    {
-        CloudMatrix& cloud_mat = deform_petals_[i]._cloud_matrix;
-        //PetalMatrix& petal_mat = deform_petals_[i]._petal_matrix;
-        KeyRegionIndices& region_indices = deform_petals_[i]._region_indices;
-        CorresMatrix corres_mat = CorresMatrix::Zero(region_indices.size(), cloud_mat.cols());
-        deform_petals_[i]._corres_matrix = corres_mat;
+            for (size_t j = 0, j_end = adj_size; j < j_end; ++ j)
+            {
+                int id_j = adj_list[k][j];
+                Eigen::Vector3d v = origin_petal.col(id_j);
+
+                s_x += abs(c[0] - v[0]);
+                s_y += abs(c[1] - v[1]);
+                s_z += abs(c[2] - v[2]);
+            }
+
+            cov_matrix.col(k) << pow(s_x/adj_size, 2.0), pow(s_y/adj_size, 2.0), pow(s_z/adj_size, 2.0); 
+        }
     }
 
     // init biharmonic weights
@@ -200,7 +213,7 @@ void Solver::initParas()
         Eigen::MatrixXd petal_matrix(ver_num, 4);
         petal_matrix.setOnes();
         petal_matrix.block(0, 0, ver_num, 3) = original_matrix.transpose();
-        
+
         for (size_t j = 0, j_end = hdl_num; j < j_end; ++ j)
         {
             M.block(0, 4*j, ver_num, 4) = biweight_matrix.col(j).asDiagonal() * petal_matrix;
@@ -318,7 +331,7 @@ void Solver::e_step(int petal_id)
     {
         for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
         {
-            corres_mat(j, i) = gaussian(petal_id, j, i) /** weight_list[j]*/;
+            corres_mat(j, i) = gaussian(petal_id, j, i) * weight_list[j];
         }
     }
 
@@ -486,11 +499,10 @@ double Solver::gaussian(int petal_id, int m_id, int c_id)
     CovMatrix& cov_mat = deform_petals_[petal_id]._cov_matrix;
     CloudMatrix& cloud_mat = deform_petals_[petal_id]._cloud_matrix;
     PetalMatrix& petal_mat = deform_petals_[petal_id]._petal_matrix;
-    KeyRegionIndices& kri = deform_petals_[petal_id]._region_indices;
 
-    Eigen::Vector3d xu = cloud_mat.col(c_id) - petal_mat.col(kri[m_id]);
-    p = pow(2*M_PI, -3/2.0) * pow((cov_mat.col(kri[m_id]).asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
-        exp((-1/2.0)*xu.transpose()*cov_mat.col(kri[m_id]).asDiagonal().inverse()*xu);
+    Eigen::Vector3d xu = cloud_mat.col(c_id) - petal_mat.col(m_id);
+    p = pow(2*M_PI, -3/2.0) * pow((cov_mat.col(m_id).asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
+        exp((-1/2.0)*xu.transpose()*cov_mat.col(m_id).asDiagonal().inverse()*xu);
 
     return p;
 }

@@ -81,18 +81,26 @@ void PointCloud::visualizePoints()
             colors->push_back(ColorMap::getInstance().getContinusColor(color_flags_[i]));
         }
         else {
-
             if (!segmented_)
             {
                 const Point& point = at(i);
                 vertices->push_back(osg::Vec3(point.x, point.y, point.z));
                 colors->push_back(osg::Vec4(point.r / 255.0, point.g / 255.0, point.b / 255.0, 0));
             }
-            else 
+            else
             {
-                const Point& point = at(i);
-                vertices->push_back(osg::Vec3(point.x, point.y, point.z));
-                colors->push_back(ColorMap::getInstance().getDiscreteColor(segment_flags_[i]));
+                if (segment_flags_[i] == -1)
+                {
+                    const Point& point = at(i);
+                    vertices->push_back(osg::Vec3(point.x, point.y, point.z));
+                    colors->push_back(osg::Vec4(point.r / 255.0, point.g / 255.0, point.b / 255.0, 0));
+                }
+                else 
+                {
+                    const Point& point = at(i);
+                    vertices->push_back(osg::Vec3(point.x, point.y, point.z));
+                    colors->push_back(ColorMap::getInstance().getDiscreteColor(segment_flags_[i]));
+                }
             }
         }
     }
@@ -249,46 +257,65 @@ osg::ref_ptr<PointCloud> PointCloud::getPetalCloud(int id)
     return petal_cloud;
 }
 
+//void PointCloud::flower_segmentation(Flower* flower)
+//{
+//    segment_flags_.clear();
+//
+//    std::vector<std::vector<int> > knns_idx;
+//    std::vector<std::vector<float> > knns_dists;
+//
+//    for (size_t i = 0, i_end = flower->getPetals().size(); i < i_end; ++ i)
+//    {
+//        std::vector<int> knn_idx;
+//        std::vector<float> knn_dists;
+//
+//        Petal& petal = flower->getPetals().at(i);
+//
+//        searchNearestIdx(&petal, knn_idx, knn_dists);
+//
+//        knns_idx.push_back(knn_idx);
+//        knns_dists.push_back(knn_dists);
+//    }
+//
+//
+//    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
+//    {
+//        float min_dist = std::numeric_limits<float>::max();
+//        int min_j = std::numeric_limits<int>::max();
+//
+//        for (size_t j = 0, j_end = knns_idx.size(); j < j_end; ++ j)
+//        {
+//            if (min_dist > knns_dists[j][i])
+//            {
+//                min_j = j;
+//                min_dist = knns_dists[j][i];
+//            }
+//        }
+//
+//        segment_flags_.push_back(min_j);
+//    }
+//
+//    segmented_ = true;
+//}
+
 void PointCloud::flower_segmentation(Flower* flower)
 {
-    segment_flags_.clear();
+    region_matching(flower);
 
-    std::vector<std::vector<int> > knns_idx;
-    std::vector<std::vector<float> > knns_dists;
+    segment_flags_ = std::vector<int>(this->size(), -1);
 
-    for (size_t i = 0, i_end = flower->getPetals().size(); i < i_end; ++ i)
+    for (size_t i = 0; i < match_regions_.size(); i ++)
     {
-        std::vector<int> knn_idx;
-        std::vector<float> knn_dists;
-
-        Petal& petal = flower->getPetals().at(i);
-
-        searchNearestIdx(&petal, knn_idx, knn_dists);
-
-        knns_idx.push_back(knn_idx);
-        knns_dists.push_back(knn_dists);
-    }
-
-
-    for (size_t i = 0, i_end = this->size(); i < i_end; ++ i)
-    {
-        float min_dist = std::numeric_limits<float>::max();
-        int min_j = std::numeric_limits<int>::max();
-
-        for (size_t j = 0, j_end = knns_idx.size(); j < j_end; ++ j)
+        std::vector<int>& indices = match_regions_[i].first;
+        for (size_t j = 0; j < indices.size(); j ++)
         {
-            if (min_dist > knns_dists[j][i])
-            {
-                min_j = j;
-                min_dist = knns_dists[j][i];
-            }
+            segment_flags_[indices[j]] = i;
         }
-
-        segment_flags_.push_back(min_j);
     }
 
     segmented_ = true;
 }
+
 
 void PointCloud::region_matching(Flower* flower)
 {
@@ -363,13 +390,13 @@ void PointCloud::region_matching(Flower* flower)
     for (size_t i = 0; i < match_regions_.size(); i ++)
     {
         MatchRegion mr;
-        mr.first = [](int n){
-            std::vector<int> indice;
-            for (size_t i = 0; i < n; ++i){
-                indice.push_back(i);
-            }
-            return indice;
-        }(petals[0].getVertices()->size());
+        /*mr.first = [](int n){
+        std::vector<int> indice;
+        for (size_t i = 0; i < n; ++i){
+        indice.push_back(i);
+        }
+        return indice;
+        }(petals[0].getVertices()->size());*/
         mr.second = new PointCloud;
         match_regions_[i] = mr;
     }
@@ -398,6 +425,7 @@ void PointCloud::region_matching(Flower* flower)
         }
         else {
             int petal_id = belongs[0];
+            match_regions_[petal_id].first.push_back(i);
             match_regions_[petal_id].second->push_back(this->at(i));
         }
     }

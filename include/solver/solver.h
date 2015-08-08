@@ -18,7 +18,6 @@ public:
     typedef Eigen::MatrixXd CorresMatrix;
     typedef Eigen::Matrix3Xd CloudMatrix;
     typedef Eigen::Matrix3Xd PetalMatrix;
-    typedef std::vector<int> KeyRegionIndices;
     typedef Eigen::Matrix3Xd CovMatrix;
     typedef std::vector<double> WeightList;
     typedef std::vector<std::vector<int> > AdjList;
@@ -36,7 +35,6 @@ public:
     {
         PetalMatrix         _origin_petal;
         PetalMatrix         _petal_matrix;
-        KeyRegionIndices    _region_indices; // petal region and cloud should be the same part
         CloudMatrix         _cloud_matrix;
         CorresMatrix        _corres_matrix;
         CovMatrix           _cov_matrix;
