@@ -282,6 +282,73 @@ void PointCloud::flower_segmentation(Flower* flower)
 
 void PointCloud::region_matching(Flower* flower)
 {
+    Petals& petals = flower->getPetals();
+
+    if (petals.size() == 1) return;
+
+    Eigen::MatrixXd P(this->size(), petals.size());
+
+    // compute p(point belongs to petal)
+    for (size_t i = 0, i_end = size(); i < i_end; ++ i)
+    {
+        const Point& point = at(i);
+        for (size_t j = 0, j_end = petals.size(); j < j_end; ++ j)
+        {
+            double p = 0;
+            Petal& petal = petals.at(j);
+            osg::ref_ptr<osg::Vec3Array> vertices = petal.getVertices();
+            for (size_t t = 0, t_end = vertices->size(); t < t_end; ++ t)
+            {
+                p += gaussian(t, i, &petal);
+            }
+
+            P(i, j) = p;
+        }
+    }
+
+    // each point's belongs
+    std::vector<std::vector<int>> belong_list(this->size());
+    double delta = 0.5;
+    for (size_t i = 0; i < P.rows(); ++ i)
+    {
+        std::vector<int> belongs;
+        Eigen::VectorXd pvec = P.row(i);
+        double k = pvec.maxCoeff();
+        for (size_t j = 0; j < pvec.rows(); ++ j)
+        {
+            if (pvec(j) / k > delta)
+            {
+                belongs.push_back(j);
+            }
+        }
+        belong_list.push_back(belongs);
+    }
+
+    // remove knn vertices from unconfident points
+    for (int i = 0; i < belong_list.size(); i ++)
+    {
+        std::vector<int> belongs = belong_list[i];
+        if (belongs.size() >= 2)
+        {
+            
+        }
+    }
+}
+
+double PointCloud::gaussian(int m_id, int c_id, Petal* petal)
+{
+    double p;
+
+    Eigen::Matrix3Xd& cov_mat = petal->getGaussianSphere();
+    osg::Vec3& vertice = petal->getVertices()->at(c_id);
+    Point& point = this->at(m_id);
+
+    Eigen::Vector3d xu = Eigen::Vector3d(vertice.x(), vertice.y(), vertice.z()) 
+        - Eigen::Vector3d(point.x, point.y, point.z);
+    p = pow(2*M_PI, -3/2.0) * pow((cov_mat.col(m_id).asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
+        exp((-1/2.0)*xu.transpose()*cov_mat.col(m_id).asDiagonal().inverse()*xu);
+
+    return p;
 }
 
 osg::ref_ptr<PointCloud> PointCloud::getFittingCloud(int id)

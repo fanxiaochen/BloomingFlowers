@@ -137,6 +137,9 @@ protected:
   // region growing
   void region_growing(std::vector<int>& segment_index, int petal_id);
 
+  // gaussian distribution
+  double gaussian(int m_id, int c_id, MeshModel* petal);
+
 
 protected:
   std::string                   filename_;
