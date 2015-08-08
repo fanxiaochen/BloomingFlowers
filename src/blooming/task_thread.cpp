@@ -297,6 +297,7 @@ void LATrackThread::run()
     Flower* forward_flower = new Flower(*flower);
     osg::ref_ptr<PointCloud> aligned_cloud = points_file_system->getPointCloud(key_frame);
     aligned_cloud->flower_segmentation(forward_flower);
+    aligned_cloud->region_matching(forward_flower);
     osg::ref_ptr<PointCloud> forward_cloud;
 
     std::string workspace = MainWindow::getInstance()->getWorkspace();
@@ -316,10 +317,11 @@ void LATrackThread::run()
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
 
-        forward_flower->determineWeights(aligned_cloud);  // weights of gmm based on aligned cloud
+        //forward_flower->determineWeights(aligned_cloud);  // weights of gmm based on aligned cloud
 
         forward_cloud = points_file_system->getPointCloud(i);
         forward_cloud->flower_segmentation(forward_flower);
+        //forward_cloud->region_matching(forward_flower);
 
         tip_detector.setPointCloud(forward_cloud);
         tip_detector.detectTips(12, 12);  // detect tips
@@ -408,4 +410,21 @@ void BoundaryThread::run()
     }
 
     std::cout << "Boundary Detection Finished!" << std::endl;
+}
+
+
+RegionMatchingThread::RegionMatchingThread(PointCloud* point_cloud, Flower* flower)
+{
+    point_cloud_ = point_cloud;
+    flower_ = flower;
+}
+
+RegionMatchingThread::~RegionMatchingThread()
+{
+
+}
+
+void RegionMatchingThread::run()
+{
+    point_cloud_->region_matching(flower_);
 }

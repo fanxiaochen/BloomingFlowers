@@ -2,6 +2,8 @@
 #ifndef MESH_MODEL_H
 #define MESH_MODEL_H
 
+#include <pcl/kdtree/kdtree_flann.h>
+
 #include "skeleton.h"
 #include "renderable.h"
 
@@ -97,6 +99,8 @@ public:
 
     void showSkeletonState(bool show_skeleton);
 
+    void buildSelfKdTree();
+
 protected:
     virtual void updateImpl(void);
     virtual void visualizeMesh(void);
@@ -111,6 +115,8 @@ private:
 
     // source is the source_mesh, target is this mesh, knn_idx is based on this mesh
     void searchNearestIdx(const MeshModel& source_mesh, std::vector<int>& knn_idx);
+
+    
 
 protected:
     std::string                         obj_name_;
@@ -149,6 +155,8 @@ protected:
     bool                                has_texture_;
     bool                                show_texture_;
     bool                                show_skeleton_;
+
+    pcl::KdTreeFLANN<pcl::PointXYZ>     kdtree_;
 };
 
 #endif // MESH_MODEL_H

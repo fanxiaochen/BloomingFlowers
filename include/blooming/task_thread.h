@@ -93,4 +93,19 @@ protected:
     TrackingSystem*	tracking_system_;
 };
 
+// region matching
+class RegionMatchingThread: public QThread
+{
+public:
+    RegionMatchingThread(PointCloud* point_cloud, Flower* flower);
+    virtual ~RegionMatchingThread();
+
+protected:
+    void run();
+
+protected:
+    PointCloud* point_cloud_;
+    Flower* flower_;
+};
+
 #endif

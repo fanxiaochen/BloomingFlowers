@@ -123,6 +123,8 @@ public:
   osg::ref_ptr<PointCloud> getFittingCloud(int id);
   std::vector<int> getFittingMesh(int id);
 
+  void region_segmentation(Flower* flower);
+
 protected:
   virtual void clearData();
   virtual void updateImpl();
@@ -147,13 +149,18 @@ protected:
   std::vector<int>              segment_flags_;
   bool                          segmented_;
 
+  std::vector<int>              color_flags_;
+
   MatchRegions                  match_regions_;
+
+  Eigen::MatrixXd               P_;
 
   std::vector<int>              tip_indices_;
   std::vector<int>              boundary_indices_;
 
   bool                          show_boundary_;
   bool                          show_tips_;
+  bool                          show_probs_;;
 
 };
 

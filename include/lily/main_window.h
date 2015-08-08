@@ -68,6 +68,9 @@ private slots:
     bool slotLoadAxis();
     bool slotLoadFlowers();
     bool slotSendCheckBoxRenderState();
+
+    bool region_probability();
+
 private:
     void loadSettings();
     void saveSettings();

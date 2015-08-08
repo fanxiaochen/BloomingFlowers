@@ -21,7 +21,8 @@
 PointCloud::PointCloud(void)
     :segmented_(false),
     show_boundary_(false),
-    show_tips_(false)
+    show_tips_(false),
+    show_probs_(false)
 {
   
 }
@@ -73,17 +74,26 @@ void PointCloud::visualizePoints()
 
     for (size_t i = 0, i_end = size(); i < i_end; i ++)
     {
-        if (!segmented_)
+        if (show_probs_)
         {
             const Point& point = at(i);
             vertices->push_back(osg::Vec3(point.x, point.y, point.z));
-            colors->push_back(osg::Vec4(point.r / 255.0, point.g / 255.0, point.b / 255.0, 0));
+            colors->push_back(ColorMap::getInstance().getContinusColor(color_flags_[i]));
         }
-        else 
-        {
-            const Point& point = at(i);
-            vertices->push_back(osg::Vec3(point.x, point.y, point.z));
-            colors->push_back(ColorMap::getInstance().getDiscreteColor(segment_flags_[i]));
+        else {
+
+            if (!segmented_)
+            {
+                const Point& point = at(i);
+                vertices->push_back(osg::Vec3(point.x, point.y, point.z));
+                colors->push_back(osg::Vec4(point.r / 255.0, point.g / 255.0, point.b / 255.0, 0));
+            }
+            else 
+            {
+                const Point& point = at(i);
+                vertices->push_back(osg::Vec3(point.x, point.y, point.z));
+                colors->push_back(ColorMap::getInstance().getDiscreteColor(segment_flags_[i]));
+            }
         }
     }
 
@@ -282,9 +292,27 @@ void PointCloud::flower_segmentation(Flower* flower)
 
 void PointCloud::region_matching(Flower* flower)
 {
+
     Petals& petals = flower->getPetals();
 
-    if (petals.size() == 1) return;
+    if (petals.size() == 1) 
+    {
+        match_regions_.resize(petals.size());
+        for (size_t i = 0; i < match_regions_.size(); i ++)
+        {
+            MatchRegion mr;
+            mr.first = [](int n){
+                std::vector<int> indice;
+                for (size_t i = 0; i < n; ++i){
+                    indice.push_back(i);
+                }
+                return indice;
+            }(petals[0].getVertices()->size());
+            mr.second = this;
+            match_regions_[i] = mr;
+        }
+        return;
+    }
 
     Eigen::MatrixXd P(this->size(), petals.size());
 
@@ -292,23 +320,29 @@ void PointCloud::region_matching(Flower* flower)
     for (size_t i = 0, i_end = size(); i < i_end; ++ i)
     {
         const Point& point = at(i);
+        std::vector<double> m(petals.size(), 0);
         for (size_t j = 0, j_end = petals.size(); j < j_end; ++ j)
         {
-            double p = 0;
             Petal& petal = petals.at(j);
             osg::ref_ptr<osg::Vec3Array> vertices = petal.getVertices();
             for (size_t t = 0, t_end = vertices->size(); t < t_end; ++ t)
             {
-                p += gaussian(t, i, &petal);
+                m[j] += gaussian(t, i, &petal);
             }
-
-            P(i, j) = p;
         }
+
+        double m_sum = 0;
+        for (size_t j = 0, j_end = petals.size(); j < j_end; ++ j)
+            m_sum += m[j];
+
+        for (size_t j = 0, j_end = petals.size(); j < j_end; ++ j)
+            P(i, j) = m[j]/m_sum;
     }
 
     // each point's belongs
+    // better way to determine belong lists??
     std::vector<std::vector<int>> belong_list(this->size());
-    double delta = 0.5;
+    double delta = 0.1;
     for (size_t i = 0; i < P.rows(); ++ i)
     {
         std::vector<int> belongs;
@@ -321,18 +355,67 @@ void PointCloud::region_matching(Flower* flower)
                 belongs.push_back(j);
             }
         }
-        belong_list.push_back(belongs);
+        belong_list[i] = belongs;
     }
 
-    // remove knn vertices from unconfident points
+    // build initial match regions
+    match_regions_.resize(petals.size());
+    for (size_t i = 0; i < match_regions_.size(); i ++)
+    {
+        MatchRegion mr;
+        mr.second = new PointCloud;
+        match_regions_[i] = mr;
+    }
+
+    // build self kdtree for petals
+    for (size_t i = 0; i < petals.size(); ++ i)
+    {
+        petals[i].buildSelfKdTree();
+    }
+
+    // fill the match regions
+    std::vector<std::unordered_set<int>> remove_set(petals.size());
     for (int i = 0; i < belong_list.size(); i ++)
     {
         std::vector<int> belongs = belong_list[i];
         if (belongs.size() >= 2)
         {
-            
+            Point& point = this->at(i);
+            osg::Vec3 vp(point.x, point.y, point.z);
+            for (int j = 0; j < belongs.size(); j ++)
+            {
+                Petal& petal = petals[belongs[j]];
+                int idx = petal.searchNearestIdx(vp); // use knn to find mesh vertices which should be removed
+                remove_set[belongs[j]].insert(idx);
+            }
+        }
+        else {
+            int petal_id = belongs[0];
+            match_regions_[petal_id].second->push_back(this->at(i));
         }
     }
+
+    for (size_t i = 0; i < match_regions_.size(); i ++)
+    {
+        MatchRegion& mr = match_regions_[i];
+        mr.first = [&](int n){
+            std::vector<int> ver_idx;
+            for (size_t j = 0; j < n; ++ j)
+            {
+                if (remove_set[i].find(j) == remove_set[i].end())
+                    ver_idx.push_back(j);
+            }
+            return ver_idx;
+        }(petals[i].getVertices()->size());
+    }
+
+    /*for (size_t i = 0; i < match_regions_.size(); i ++)
+    {
+        MainWindow::getInstance()->getSceneWidget()->addSceneChild(match_regions_[i].second);
+    }*/
+
+
+    std::cout << "finish region matching!" << std::endl;
 }
 
 double PointCloud::gaussian(int m_id, int c_id, Petal* petal)
@@ -340,13 +423,15 @@ double PointCloud::gaussian(int m_id, int c_id, Petal* petal)
     double p;
 
     Eigen::Matrix3Xd& cov_mat = petal->getGaussianSphere();
-    osg::Vec3& vertice = petal->getVertices()->at(c_id);
-    Point& point = this->at(m_id);
+    osg::Vec3& vertice = petal->getVertices()->at(m_id);
+    Point& point = this->at(c_id);
 
     Eigen::Vector3d xu = Eigen::Vector3d(vertice.x(), vertice.y(), vertice.z()) 
         - Eigen::Vector3d(point.x, point.y, point.z);
-    p = pow(2*M_PI, -3/2.0) * pow((cov_mat.col(m_id).asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
-        exp((-1/2.0)*xu.transpose()*cov_mat.col(m_id).asDiagonal().inverse()*xu);
+     p = pow(2*M_PI, -3/2.0) * pow((cov_mat.col(m_id).asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
+    exp((-1/2.0)*xu.transpose()*cov_mat.col(m_id).asDiagonal().inverse()*xu);
+    // direct distance
+   // p = xu.norm();
 
     return p;
 }
@@ -359,6 +444,52 @@ osg::ref_ptr<PointCloud> PointCloud::getFittingCloud(int id)
 std::vector<int> PointCloud::getFittingMesh(int id)
 {
     return match_regions_[id].first;
+}
+
+
+void PointCloud::region_segmentation(Flower* flower)
+{
+    Petals& petals = flower->getPetals();
+
+    P_.resize(this->size(), petals.size());
+
+    // compute p(point belongs to petal)
+    for (size_t i = 0, i_end = size(); i < i_end; ++ i)
+    {
+        const Point& point = at(i);
+        std::vector<double> m(petals.size(), 0);
+        for (size_t j = 0, j_end = petals.size(); j < j_end; ++ j)
+        {
+            Petal& petal = petals.at(j);
+            osg::ref_ptr<osg::Vec3Array> vertices = petal.getVertices();
+            for (size_t t = 0, t_end = vertices->size(); t < t_end; ++ t)
+            {
+                m[j] += gaussian(t, i, &petal);
+            }
+        }
+
+        double m_sum = 0;
+        for (size_t j = 0, j_end = petals.size(); j < j_end; ++ j)
+            m_sum += m[j];
+
+        std::vector<double> test;
+        for (size_t j = 0, j_end = petals.size(); j < j_end; ++ j)
+        {
+            P_(i, j) = m[j]/m_sum;
+            test.push_back(P_(i,j));
+        }
+
+        test.clear();
+    }
+
+    color_flags_.resize(this->size());
+    for (size_t i = 0, i_end = size(); i < i_end; ++ i)
+    {
+        color_flags_[i] = int(P_(i, 0) * 64);
+    }
+    //std::cout << P_ << std::endl;
+    show_probs_ = true;
+    expire();
 }
 
 void PointCloud::region_growing(std::vector<int>& segment_index, int petal_id)

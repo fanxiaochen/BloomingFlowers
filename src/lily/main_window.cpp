@@ -19,6 +19,7 @@
 #include "parameters.h"
 #include "registrator.h"
 #include "flower.h"
+#include "task_thread.h"
 
 
 MainWindow::MainWindow(void)
@@ -187,6 +188,7 @@ void MainWindow::init(void)
 
     connect(ui_.actionTipDetection, SIGNAL(triggered()), tracking_system_, SLOT(detectTip()));
     connect(ui_.actionBoundaryDetection, SIGNAL(triggered()), tracking_system_, SLOT(detectBoundary()));
+    connect(ui_.actionRegionProbability, SIGNAL(triggered()), this, SLOT(region_probability()));
     // connect
 
     return;
@@ -311,6 +313,32 @@ bool MainWindow::slotSendCheckBoxRenderState()
             }
         }
     }
+
+    return true;
+}
+
+// only one flower and point cloud needed
+bool MainWindow::region_probability()
+{
+    MeshFileSystem* mesh_file_system = dynamic_cast<MeshFileSystem*>(mesh_files_);
+    PointsFileSystem* points_file_system = dynamic_cast<PointsFileSystem*>(points_files_);
+
+    QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
+    // build flower structure, memory leak...
+    Flower* flower = new Flower;
+    for (size_t i = 0, i_end = mesh_indexes.size(); i < i_end; ++ i)
+    {
+        osg::ref_ptr<Petal> petal_template = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
+        flower->getPetals().push_back(*petal_template); // deep copy
+        mesh_file_system->hideMeshModel(mesh_indexes.values().at(i));
+    }
+  
+    QSet<QPersistentModelIndex> points_indexes = points_file_system->getCheckedIndexes();
+    osg::ref_ptr<PointCloud> point_cloud = points_file_system->getPointCloud(points_indexes.values().at(0));
+
+    RegionMatchingThread* rm_thread = new RegionMatchingThread(point_cloud, flower);
+    connect(rm_thread, SIGNAL(finished()), rm_thread, SLOT(quit()));
+    rm_thread->start();
 
     return true;
 }

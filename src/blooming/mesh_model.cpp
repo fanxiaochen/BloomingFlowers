@@ -678,19 +678,19 @@ void MeshModel::searchNearestIdx(const MeshModel& source_mesh, std::vector<int>&
 
 int MeshModel::searchNearestIdx(osg::Vec3 point)
 {
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+    /*pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
     for (size_t i = 0, i_end = this->getVertices()->size(); i < i_end; ++ i)
     {
-        const osg::Vec3& point = this->getVertices()->at(i);
+    const osg::Vec3& point = this->getVertices()->at(i);
 
-        pcl::PointXYZ pcl_point(point.x(), point.y(), point.z());
-        cloud->push_back(pcl_point);
+    pcl::PointXYZ pcl_point(point.x(), point.y(), point.z());
+    cloud->push_back(pcl_point);
     }
 
     pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
 
-    kdtree.setInputCloud (cloud);
+    kdtree.setInputCloud (cloud);*/
 
     int K = 1;
 
@@ -705,9 +705,24 @@ int MeshModel::searchNearestIdx(osg::Vec3 point)
     searchPoint.y = point.y();
     searchPoint.z = point.z();
 
-    if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+    if ( kdtree_.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
         index = pointIdxNKNSearch[0];
     return index;
+}
+
+void MeshModel::buildSelfKdTree()
+{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+
+    for (size_t i = 0, i_end = this->getVertices()->size(); i < i_end; ++ i)
+    {
+        const osg::Vec3& point = this->getVertices()->at(i);
+
+        pcl::PointXYZ pcl_point(point.x(), point.y(), point.z());
+        cloud->push_back(pcl_point);
+    }
+
+    kdtree_.setInputCloud (cloud);
 }
 
 
