@@ -113,6 +113,8 @@ public:
 
     void deform();
 
+    void global_deform();
+
 protected:
     void deform(int petal_id);
     void deforming(int petal_id);
@@ -132,6 +134,24 @@ protected:
     void update(int petal_id);
 
     double gaussian(int petal_id, int m_id, int c_id);
+
+
+    void global_deforming();
+    void lbs();
+
+    void e_step();
+    double m_step();
+
+    void initbuild();
+    void left_sys();
+    void right_sys();
+
+    double solve();
+    double energy();
+
+    void projection();
+    void update();
+
 
 protected:
     void init();
