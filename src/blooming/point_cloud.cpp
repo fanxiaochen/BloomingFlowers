@@ -363,31 +363,38 @@ void PointCloud::region_matching(Flower* flower)
     for (size_t i = 0; i < match_regions_.size(); i ++)
     {
         MatchRegion mr;
+        mr.first = [](int n){
+            std::vector<int> indice;
+            for (size_t i = 0; i < n; ++i){
+                indice.push_back(i);
+            }
+            return indice;
+        }(petals[0].getVertices()->size());
         mr.second = new PointCloud;
         match_regions_[i] = mr;
     }
 
-    // build self kdtree for petals
-    for (size_t i = 0; i < petals.size(); ++ i)
-    {
-        petals[i].buildSelfKdTree();
-    }
+    //// build self kdtree for petals
+    //for (size_t i = 0; i < petals.size(); ++ i)
+    //{
+    //    petals[i].buildSelfKdTree();
+    //}
 
     // fill the match regions
-    std::vector<std::unordered_set<int>> remove_set(petals.size());
+   // std::vector<std::unordered_set<int>> remove_set(petals.size());
     for (int i = 0; i < belong_list.size(); i ++)
     {
         std::vector<int> belongs = belong_list[i];
         if (belongs.size() >= 2)
         {
-            Point& point = this->at(i);
-            osg::Vec3 vp(point.x, point.y, point.z);
-            for (int j = 0; j < belongs.size(); j ++)
-            {
-                Petal& petal = petals[belongs[j]];
-                int idx = petal.searchNearestIdx(vp); // use knn to find mesh vertices which should be removed
-                remove_set[belongs[j]].insert(idx);
-            }
+            //Point& point = this->at(i);
+            //osg::Vec3 vp(point.x, point.y, point.z);
+            //for (int j = 0; j < belongs.size(); j ++)
+            //{
+            //    Petal& petal = petals[belongs[j]];
+            //    int idx = petal.searchNearestIdx(vp); // use knn to find mesh vertices which should be removed
+            //    remove_set[belongs[j]].insert(idx);
+            //}
         }
         else {
             int petal_id = belongs[0];
@@ -395,19 +402,19 @@ void PointCloud::region_matching(Flower* flower)
         }
     }
 
-    for (size_t i = 0; i < match_regions_.size(); i ++)
+    /*for (size_t i = 0; i < match_regions_.size(); i ++)
     {
-        MatchRegion& mr = match_regions_[i];
-        mr.first = [&](int n){
-            std::vector<int> ver_idx;
-            for (size_t j = 0; j < n; ++ j)
-            {
-                if (remove_set[i].find(j) == remove_set[i].end())
-                    ver_idx.push_back(j);
-            }
-            return ver_idx;
-        }(petals[i].getVertices()->size());
+    MatchRegion& mr = match_regions_[i];
+    mr.first = [&](int n){
+    std::vector<int> ver_idx;
+    for (size_t j = 0; j < n; ++ j)
+    {
+    if (remove_set[i].find(j) == remove_set[i].end())
+    ver_idx.push_back(j);
     }
+    return ver_idx;
+    }(petals[i].getVertices()->size());
+    }*/
 
     /*for (size_t i = 0; i < match_regions_.size(); i ++)
     {
