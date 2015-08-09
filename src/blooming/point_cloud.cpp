@@ -444,11 +444,11 @@ void PointCloud::region_matching(Flower* flower)
     }(petals[i].getVertices()->size());
     }*/
 
-    for (size_t i = 0; i < match_regions_.size(); i ++)
+    /*for (size_t i = 0; i < match_regions_.size(); i ++)
     {
         MainWindow::getInstance()->getSceneWidget()->addSceneChild(match_regions_[i].second);
     }
-
+*/
 
     std::cout << "finish region matching!" << std::endl;
 }

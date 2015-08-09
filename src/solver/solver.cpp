@@ -246,6 +246,15 @@ void Solver::initParas()
         for (auto& branch : branches)
             branch_list.push_back(branch);
     }
+
+    // init hard constraints
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals[i];
+        HardCtrsIdx& hc_idx = deform_petals_[i]._hc_idx;
+        hc_idx = petal.getHardCtrsIndex();
+        std::sort(hc_idx.begin(), hc_idx.end());
+    }
 }
 
 void Solver::initTerms()

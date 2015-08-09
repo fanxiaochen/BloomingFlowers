@@ -35,6 +35,7 @@ void ARAPTerm::buildA()
     Solver::WeightMatrix& weight_matrix = deform_petal._weight_matrix;
     Solver::AdjList& adj_list = deform_petal._adj_list;
     Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
+    Solver::HardCtrsIdx& hc_idx = deform_petal._hc_idx;
     int ver_num = deform_petal._petal_matrix.cols();
 
     std::vector<std::vector<Eigen::Triplet<double> > > weight_sums;
@@ -72,6 +73,26 @@ void ARAPTerm::buildA()
     L_[1] = diag_coeff_y - weight_matrix;
     L_[2] = diag_coeff_z - weight_matrix;
 
+    // hard constraint
+    for (int idx: hc_idx)
+    {
+        for (int col = 0; col < ver_num; ++ col)
+        {
+            if (col == idx)
+            {
+                L_[0].coeffRef(idx, idx) = 1;
+                L_[1].coeffRef(idx, idx) = 1;
+                L_[2].coeffRef(idx, idx) = 1;
+            }
+            else
+            {
+                L_[0].coeffRef(idx, col) = 0;
+                L_[1].coeffRef(idx, col) = 0;
+                L_[2].coeffRef(idx, col) = 0;
+            }
+        }
+    }
+
     // A for Affine Transforms Variables
     A_[0] = convert_affine.transpose() * (L_[0] * convert_affine);
     A_[1] = convert_affine.transpose() * (L_[1] * convert_affine);
@@ -86,6 +107,7 @@ void ARAPTerm::buildb()
     Solver::WeightMatrix& weight_matrix = deform_petal._weight_matrix;
     Solver::RotList& R_list = deform_petal._R_list;
     Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
+    Solver::HardCtrsIdx& hc_idx = deform_petal._hc_idx;
     int ver_num = origin_petal.cols();
 
     b_.resize(3, ver_num);
@@ -98,6 +120,12 @@ void ARAPTerm::buildb()
             b_.col(i) += ((weight_matrix.coeffRef(i, adj_list[i][j])/2)*
                 (R_list[i]+R_list[adj_list[i][j]])*(origin_petal.col(i) - origin_petal.col(adj_list[i][j]))).transpose();
         }
+    }
+
+    // hard constraint
+    for (int idx : hc_idx)
+    {
+        b_.col(idx) << origin_petal.col(idx);
     }
 
     //for Affine Transform Variables

@@ -29,6 +29,7 @@ public:
     typedef Eigen::MatrixXd AffineMatrix;
     typedef Eigen::MatrixXd HandleMatrix;
     typedef std::vector<std::vector<int>> BranchList;
+    typedef std::vector<int> HardCtrsIdx;
 
 public:
     typedef struct 
@@ -48,6 +49,7 @@ public:
         AffineMatrix        _affine_matrix;
         HandleMatrix        _handle_matrix;
         BranchList          _branch_list;
+        HardCtrsIdx         _hc_idx;
 
         void findSharedVertex(int pi, int pj, std::vector<int>& share_vertex)
         {
@@ -94,6 +96,30 @@ public:
 
             return ((alpha_cos/sqrt(1-alpha_cos*alpha_cos))+(beta_cos/sqrt(1-beta_cos*beta_cos)))/2;
         }
+
+        int isHardCtrs(int id)
+        {
+            // binary search
+            int k = 0, k_end = _hc_idx.size();
+
+            if (k_end == 0)
+                return -1;
+
+            while (k <= k_end)
+            {
+                int m = (k + k_end) / 2;
+
+                if (id == _hc_idx[m])
+                    return m;
+                else if (id < _hc_idx[m])
+                    k_end = m - 1;
+                else 
+                    k = m + 1;
+            }
+
+            return -1;
+        }
+
     }DeformPetal;
 
     static std::vector<DeformPetal> deform_petals_;
