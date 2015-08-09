@@ -116,7 +116,7 @@ private:
     // source is the source_mesh, target is this mesh, knn_idx is based on this mesh
     void searchNearestIdx(const MeshModel& source_mesh, std::vector<int>& knn_idx);
 
-    
+    double gaussian(int m_id, int c_id, PointCloud* segmented_cloud);
 
 protected:
     std::string                         obj_name_;

@@ -792,52 +792,99 @@ void MeshModel::updateNormals()
     }
 }
 
+//void MeshModel::determineWeights(PointCloud* aligned_cloud, int petal_id)
+//{
+//    weights_.clear();
+//
+//    PointCloud segmented_cloud;
+//    for (size_t k = 0, k_end = aligned_cloud->size(); k < k_end; ++ k)
+//    {
+//        if (aligned_cloud->getSegmentFlags()[k] != petal_id)
+//            continue;;
+//        segmented_cloud.push_back(Point(aligned_cloud->at(k)));
+//    }
+//
+//    int cloud_nums = segmented_cloud.size();
+//
+//    for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
+//    {
+//        const osg::Vec3& v = vertices_->at(i);
+//        double s_x = 0, s_y = 0, s_z = 0;
+//        int adj_size = adj_list_[i].size();
+//
+//        for (size_t j = 0, j_end = adj_size; j < j_end; ++ j)
+//        {
+//            const osg::Vec3& c = vertices_->at(adj_list_[i][j]);
+//            s_x += abs(v[0] - c[0]);
+//            s_y += abs(v[1] - c[1]);
+//            s_z += abs(v[2] - c[2]);
+//        }
+//
+//        s_x = pow(s_x / adj_size, 2);
+//        s_y = pow(s_y / adj_size, 2);
+//        s_z = pow(s_z / adj_size, 2);
+//
+//        int point_nums = 0;
+//        for (size_t k = 0, k_end = segmented_cloud.size(); k < k_end; ++ k)
+//        {
+//            const Point& p = segmented_cloud.at(k);
+//            if ((v[0]-p.x)*(v[0]-p.x)/s_x + (v[1]-p.y)*(v[1]-p.y)/s_y + (v[2]-p.z)*(v[2]-p.z)/s_z <= 1)
+//                point_nums ++;
+//        }
+//
+//        weights_.push_back(double(point_nums)/cloud_nums);
+//    }
+//
+//    // weight[edge] = 0
+//    for (size_t i = 0, i_end = edge_index_.size(); i < i_end; ++ i)
+//    {
+//       // weights_[edge_index_[i]] = 0;
+//    }
+//}
+
 void MeshModel::determineWeights(PointCloud* aligned_cloud, int petal_id)
 {
     weights_.clear();
 
-    PointCloud segmented_cloud;
-    for (size_t k = 0, k_end = aligned_cloud->size(); k < k_end; ++ k)
+    osg::ref_ptr<PointCloud> segmented_cloud = aligned_cloud->getPetalCloud(petal_id);
+    int cloud_nums = segmented_cloud->size();
+
+    int ver_num = vertices_->size();
+    weights_.resize(ver_num);
+
+    // compute gmm weights
+    std::vector<double> m(ver_num, 0);
+    for (size_t i = 0, i_end = ver_num; i < i_end; ++ i)
     {
-        if (aligned_cloud->getSegmentFlags()[k] != petal_id)
-            continue;;
-        segmented_cloud.push_back(Point(aligned_cloud->at(k)));
-    }
-
-    int cloud_nums = segmented_cloud.size();
-
-    for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
-    {
-        const osg::Vec3& v = vertices_->at(i);
-        double s_x = 0, s_y = 0, s_z = 0;
-        int adj_size = adj_list_[i].size();
-
-        for (size_t j = 0, j_end = adj_size; j < j_end; ++ j)
+        const osg::Vec3& vertice = vertices_->at(i);
+        
+        for (size_t j = 0, j_end = cloud_nums; j < j_end; ++ j)
         {
-            const osg::Vec3& c = vertices_->at(adj_list_[i][j]);
-            s_x += abs(v[0] - c[0]);
-            s_y += abs(v[1] - c[1]);
-            s_z += abs(v[2] - c[2]);
+           const Point& point = segmented_cloud->at(j);
+            m[i] += gaussian(i, j, segmented_cloud);
         }
-
-        s_x = pow(s_x / adj_size, 2);
-        s_y = pow(s_y / adj_size, 2);
-        s_z = pow(s_z / adj_size, 2);
-
-        int point_nums = 0;
-        for (size_t k = 0, k_end = segmented_cloud.size(); k < k_end; ++ k)
-        {
-            const Point& p = segmented_cloud.at(k);
-            if ((v[0]-p.x)*(v[0]-p.x)/s_x + (v[1]-p.y)*(v[1]-p.y)/s_y + (v[2]-p.z)*(v[2]-p.z)/s_z <= 1)
-                point_nums ++;
-        }
-
-        weights_.push_back(double(point_nums)/cloud_nums);
     }
 
-    // weight[edge] = 0
-    for (size_t i = 0, i_end = edge_index_.size(); i < i_end; ++ i)
-    {
-       // weights_[edge_index_[i]] = 0;
-    }
+    double m_sum = 0;
+    for (size_t i = 0, i_end = ver_num; i < i_end; ++ i)
+        m_sum += m[i];
+    for (size_t i = 0, i_end = ver_num; i < i_end; ++ i)
+        weights_[i] = m[i] / m_sum;
+
+}
+
+double MeshModel::gaussian(int m_id, int c_id, PointCloud* segmented_cloud)
+{
+    double p;
+
+    Eigen::Matrix3Xd& cov_mat = gaussian_sphere_;
+    osg::Vec3& vertice = vertices_->at(m_id);
+    Point& point = segmented_cloud->at(c_id);
+
+    Eigen::Vector3d xu = Eigen::Vector3d(vertice.x(), vertice.y(), vertice.z()) 
+        - Eigen::Vector3d(point.x, point.y, point.z);
+    p = pow(2*M_PI, -3/2.0) * pow((cov_mat.col(m_id).asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
+        exp((-1/2.0)*xu.transpose()*cov_mat.col(m_id).asDiagonal().inverse()*xu);
+
+    return p;
 }
