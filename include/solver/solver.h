@@ -136,7 +136,7 @@ protected:
     double gaussian(int petal_id, int m_id, int c_id);
 
 
-    void global_deforming();
+    /*void global_deforming();
     void lbs();
 
     void e_step();
@@ -150,7 +150,7 @@ protected:
     double energy();
 
     void projection();
-    void update();
+    void update();*/
 
 
 protected:

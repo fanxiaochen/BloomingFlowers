@@ -369,7 +369,7 @@ void PointCloud::region_matching(Flower* flower)
     // each point's belongs
     // better way to determine belong lists??
     std::vector<std::vector<int>> belong_list(this->size());
-    double delta = 0.1;
+    double delta = 0.001;
     for (size_t i = 0; i < P.rows(); ++ i)
     {
         std::vector<int> belongs;
@@ -444,10 +444,10 @@ void PointCloud::region_matching(Flower* flower)
     }(petals[i].getVertices()->size());
     }*/
 
-    /*for (size_t i = 0; i < match_regions_.size(); i ++)
+    for (size_t i = 0; i < match_regions_.size(); i ++)
     {
         MainWindow::getInstance()->getSceneWidget()->addSceneChild(match_regions_[i].second);
-    }*/
+    }
 
 
     std::cout << "finish region matching!" << std::endl;

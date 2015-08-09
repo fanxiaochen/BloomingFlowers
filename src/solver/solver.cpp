@@ -5,7 +5,7 @@
 int Solver::iter_num_ = 30;
 double Solver::eps_ = 1e-3;
 double Solver::lambda_data_fitting_ = 0.05;
-double Solver::lambda_skel_smooth_ = 0.001;
+double Solver::lambda_skel_smooth_ = 0;
 double Solver::noise_p_ = 0.0;
 std::vector<Solver::DeformPetal> Solver::deform_petals_;
 
@@ -507,127 +507,127 @@ double Solver::gaussian(int petal_id, int m_id, int c_id)
     return p;
 }
 
-void Solver::global_deform()
-{
-    std::cout << "Start Global Deform..." << std::endl;
-
-    int iter_num = 0;
-    double eps = 1;
-
-    double e = 0;
-
-    std::cout << "Start EM Iteration..." << std::endl;
-
-    do 
-    {
-        e_step();
-
-        double e_n = m_step();
-
-        eps = std::fabs((e_n - e) / e_n);
-        e = e_n;
-
-        std::cout << "In EM Iteration \t" << "iter: " << ++ iter_num << "\tdelta: " << eps << std::endl;
-
-    } while (iter_num < iter_num_ && eps > eps_ );
-
-    // flower deformed
-    global_deforming();
-}
-
-void Solver::global_deforming()
-{
-
-}
-
-void Solver::lbs()
-{
-
-}
-
-void Solver::e_step()
-{
-    std::cout << "E-Step:" << std::endl;
-
-    CorresMatrix& corres_mat = deform_petals_[petal_id]._corres_matrix;
-    WeightList& weight_list = deform_petals_[petal_id]._weight_list;
-
-    for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
-    {
-        for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
-        {
-            corres_mat(j, i) = gaussian(petal_id, j, i) * weight_list[j];
-        }
-    }
-
-    for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
-    {
-        double sum_gaussian = corres_mat.col(i).sum() + noise_p_;
-
-        for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
-        {
-            corres_mat(j, i) = corres_mat(j, i) / zero_correction(sum_gaussian);
-        }
-    }
-}
-
-double Solver::m_step()
-{
-    std::cout << "M-Step:" << std::endl;
-
-    int iter = 0;
-    double eps = 0;
-
-    double e = 0;
-
-    initbuild();
-    left_sys();
-    right_sys();
-
-    do {
-        double e_n = solve();
-        eps = std::fabs((e_n - e) / e_n);
-        e = e_n;
-
-        projection();
-        update();
-        right_sys(); // the update only effects right side 
-
-    }while(eps > eps_ && iter < iter_num_);
-
-    return e;
-}
-
-void Solver::initbuild()
-{
-    data_term_[petal_id].build();
-    arap_term_[petal_id].build();
-    skel_term_[petal_id].build();
-}
-
-void Solver::left_sys()
-{
-    for (int i = 0; i < 3; ++ i)
-    {
-        A_[petal_id][i] = data_term_[petal_id].A()[i] + arap_term_[petal_id].A()[i] + skel_term_[petal_id].A()[i];
-    }
-}
-
-void Solver::right_sys()
-{
-    b_[petal_id] = data_term_[petal_id].b() + arap_term_[petal_id].b() + skel_term_[petal_id].b();
-}
-
-void Solver::projection()
-{
-    data_term_[petal_id].projection();
-    arap_term_[petal_id].projection();
-    skel_term_[petal_id].projection();
-}
-
-void Solver::update()
-{
-    data_term_[petal_id].update();
-    arap_term_[petal_id].update();
-    skel_term_[petal_id].update();
-}
+//void Solver::global_deform()
+//{
+//    std::cout << "Start Global Deform..." << std::endl;
+//
+//    int iter_num = 0;
+//    double eps = 1;
+//
+//    double e = 0;
+//
+//    std::cout << "Start EM Iteration..." << std::endl;
+//
+//    do 
+//    {
+//        e_step();
+//
+//        double e_n = m_step();
+//
+//        eps = std::fabs((e_n - e) / e_n);
+//        e = e_n;
+//
+//        std::cout << "In EM Iteration \t" << "iter: " << ++ iter_num << "\tdelta: " << eps << std::endl;
+//
+//    } while (iter_num < iter_num_ && eps > eps_ );
+//
+//    // flower deformed
+//    global_deforming();
+//}
+//
+//void Solver::global_deforming()
+//{
+//
+//}
+//
+//void Solver::lbs()
+//{
+//
+//}
+//
+//void Solver::e_step()
+//{
+//    std::cout << "E-Step:" << std::endl;
+//
+//    CorresMatrix& corres_mat = deform_petals_[petal_id]._corres_matrix;
+//    WeightList& weight_list = deform_petals_[petal_id]._weight_list;
+//
+//    for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
+//    {
+//        for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
+//        {
+//            corres_mat(j, i) = gaussian(petal_id, j, i) * weight_list[j];
+//        }
+//    }
+//
+//    for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
+//    {
+//        double sum_gaussian = corres_mat.col(i).sum() + noise_p_;
+//
+//        for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
+//        {
+//            corres_mat(j, i) = corres_mat(j, i) / zero_correction(sum_gaussian);
+//        }
+//    }
+//}
+//
+//double Solver::m_step()
+//{
+//    std::cout << "M-Step:" << std::endl;
+//
+//    int iter = 0;
+//    double eps = 0;
+//
+//    double e = 0;
+//
+//    initbuild();
+//    left_sys();
+//    right_sys();
+//
+//    do {
+//        double e_n = solve();
+//        eps = std::fabs((e_n - e) / e_n);
+//        e = e_n;
+//
+//        projection();
+//        update();
+//        right_sys(); // the update only effects right side 
+//
+//    }while(eps > eps_ && iter < iter_num_);
+//
+//    return e;
+//}
+//
+//void Solver::initbuild()
+//{
+//    data_term_[petal_id].build();
+//    arap_term_[petal_id].build();
+//    skel_term_[petal_id].build();
+//}
+//
+//void Solver::left_sys()
+//{
+//    for (int i = 0; i < 3; ++ i)
+//    {
+//        A_[petal_id][i] = data_term_[petal_id].A()[i] + arap_term_[petal_id].A()[i] + skel_term_[petal_id].A()[i];
+//    }
+//}
+//
+//void Solver::right_sys()
+//{
+//    b_[petal_id] = data_term_[petal_id].b() + arap_term_[petal_id].b() + skel_term_[petal_id].b();
+//}
+//
+//void Solver::projection()
+//{
+//    data_term_[petal_id].projection();
+//    arap_term_[petal_id].projection();
+//    skel_term_[petal_id].projection();
+//}
+//
+//void Solver::update()
+//{
+//    data_term_[petal_id].update();
+//    arap_term_[petal_id].update();
+//    skel_term_[petal_id].update();
+//}

@@ -838,6 +838,6 @@ void MeshModel::determineWeights(PointCloud* aligned_cloud, int petal_id)
     // weight[edge] = 0
     for (size_t i = 0, i_end = edge_index_.size(); i < i_end; ++ i)
     {
-        weights_[edge_index_[i]] = 0;
+       // weights_[edge_index_[i]] = 0;
     }
 }
