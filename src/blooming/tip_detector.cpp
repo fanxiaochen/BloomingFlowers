@@ -266,6 +266,19 @@ void TipDetector::recoverPetalIndex(int cloud_index, int& petal_id, int& petal_i
     petal_index = -1;
 }
 
+bool TipDetector::onEdge(int petal_id, int petal_index)
+{
+    Petals& petals = flower_->getPetals();
+    Petal& petal = petals[petal_id];
+    std::vector<int>& edge_idx = petal.getEdgeIndex();
+    for (int index : edge_idx)
+    {
+        if (petal_index == index)
+            return true;
+    }
+    return false;
+}
+
 void TipDetector::buildCloudIndex()
 {
     point_cloud_ = boost::shared_ptr<PointCloud>(new PointCloud);
@@ -295,8 +308,11 @@ void TipDetector::recoverFlowerBoundaryIndex()
     {
         int petal_id, petal_index;
         recoverPetalIndex(index, petal_id, petal_index);
-        Petal& petal = flower_->getPetals().at(petal_id);
-        petal.getDetectedBoundary().push_back(petal_index);
+        if (onEdge(petal_id, petal_index))
+        {
+            Petal& petal = flower_->getPetals().at(petal_id);
+            petal.getDetectedBoundary().push_back(petal_index);
+        }
     }
 }
 
@@ -307,7 +323,10 @@ void TipDetector::recoverFlowerTipIndex()
     {
         int petal_id, petal_index;
         recoverPetalIndex(index, petal_id, petal_index);
-        Petal& petal = flower_->getPetals().at(petal_id);
-        petal.getDetectedTips().push_back(petal_index);
+        if (onEdge(petal_id, petal_index))
+        {
+            Petal& petal = flower_->getPetals().at(petal_id);
+            petal.getDetectedTips().push_back(petal_index);
+        }
     }
 }

@@ -45,6 +45,8 @@ private:
     void recoverFlowerTipIndex();
     void recoverFlowerBoundaryIndex();
     void recoverPetalIndex(int cloud_index, int& petal_id, int& petal_index);
+
+    bool onEdge(int petal_id, int petal_index);
     
 
 private:
