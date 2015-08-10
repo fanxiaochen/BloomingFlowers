@@ -42,12 +42,15 @@ public:
     inline const std::vector<int>& getHardCtrsIndex() const { return hard_index_; }
     inline const std::vector<int>& getVisibility() const { return visibility_; }
     inline const std::vector<double>& getWeights() const { return weights_; }
+    inline const std::vector<int>& getDetectedBoundary() const { return detected_boundary_; }
+    inline const std::vector<int>& getDetectedTips() const { return detected_tips_; }
     inline const size_t& getColorId() const { return color_id_; }
     inline const osg::ref_ptr<Skeleton> getSkeleton() const { return skeleton_; }
     inline const Eigen::MatrixXd& getBiharmonicWeights() const { return biharmonic_weights_; }
     inline const bool& getShowTexture() const { return show_texture_; }
     inline const bool& getHasTexture() const { return has_texture_; }
     inline const bool& getShowSkeleton() const { return show_skeleton_; }
+    inline const bool& getShowBoundary() const { return show_boundary_; }
 
     inline std::string& getObjName() { return obj_name_; }
     inline std::string& getObjFile() { return obj_file_; }
@@ -68,13 +71,15 @@ public:
     inline std::vector<int>& getHardCtrsIndex(){ return hard_index_; }
     inline std::vector<int>& getVisibility() { return visibility_; }
     inline std::vector<double>& getWeights() { return weights_; }
+    inline std::vector<int>& getDetectedBoundary() { return detected_boundary_; }
+    inline std::vector<int>& getDetectedTips() { return detected_tips_; }
     inline size_t& getColorId() { return color_id_; }
     inline osg::ref_ptr<Skeleton> getSkeleton(){ return skeleton_; }
     inline Eigen::MatrixXd& getBiharmonicWeights() { return biharmonic_weights_; }
     inline bool& getShowTexture() { return show_texture_; }
     inline bool& getHasTexture() { return has_texture_; }
     inline bool& getShowSkeleton() { return show_skeleton_; }
-
+    inline bool& getShowBoundary() { return show_boundary_; }
     // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
     void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
 
@@ -145,6 +150,8 @@ protected:
     std::vector<int>                    hard_index_; // hard constraints 
     std::vector<int>                    visibility_; // the same size of vertices
     std::vector<double>                 weights_; // the same size of vertices
+    std::vector<int>                    detected_boundary_;
+    std::vector<int>                    detected_tips_;
 
 
     size_t                              color_id_; // for visualization
@@ -155,6 +162,7 @@ protected:
     bool                                has_texture_;
     bool                                show_texture_;
     bool                                show_skeleton_;
+    bool                                show_boundary_;
 
     pcl::KdTreeFLANN<pcl::PointXYZ>     kdtree_;
 };

@@ -30,7 +30,7 @@ public:
     typedef Eigen::MatrixXd HandleMatrix;
     typedef std::vector<std::vector<int>> BranchList;
     typedef std::vector<int> HardCtrsIdx;
-
+    typedef std::vector<int> VisList;
 public:
     typedef struct 
     {
@@ -50,6 +50,7 @@ public:
         HandleMatrix        _handle_matrix;
         BranchList          _branch_list;
         HardCtrsIdx         _hc_idx;
+        VisList             _vis_list;
 
         void findSharedVertex(int pi, int pj, std::vector<int>& share_vertex)
         {

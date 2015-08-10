@@ -3,7 +3,7 @@
 #include <vector>
 #include <pcl/kdtree/kdtree_flann.h>
 #include "point_cloud.h"
-
+#include "flower.h"
 
 // fake deleter
 // since the same point cloud is referenced both by pcl smart pointer and 
@@ -16,13 +16,16 @@ struct NullDeleter {template<typename T> void operator()(T*) {} };
 
 class TipDetector
 {
-
+public:
+    typedef enum { POINTCLOUD_DETECTOR, FLOWER_DETECTOR } TipType;
 public:
     TipDetector();
     TipDetector(PointCloud* point_cloud);
+    TipDetector(Flower* flower);
     ~TipDetector();
 
     void setPointCloud(PointCloud* point_cloud);
+    void setFlower(Flower* flower);
 
     void detectBoundary(int bin_number = 12, float knn_radius = 5, float boundary_limit = 0.2);
 
@@ -37,8 +40,16 @@ private:
 
     pcl::IndicesPtr knn(int index, PointCloud::Ptr point_cloud); // index based on point cloud
 
+    void buildPetalMap();
+    void buildCloudIndex();
+    void recoverFlowerTipIndex();
+    void recoverFlowerBoundaryIndex();
+    void recoverPetalIndex(int cloud_index, int& petal_id, int& petal_index);
+    
+
 private:
     boost::shared_ptr<PointCloud>   point_cloud_;
+    boost::shared_ptr<Flower>       flower_;
 
     int                             bin_number_;
     float                           interval_;
@@ -52,6 +63,10 @@ private:
     float                           corner_limit_;
 
     pcl::KdTreeFLANN<Point>         kdtree_;
+
+    TipType                         type_;
+
+    std::vector<int>                petal_map_;
 
 };
 #endif

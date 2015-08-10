@@ -27,7 +27,8 @@ MeshModel::MeshModel()
     skeleton_(new Skeleton),
     has_texture_(false),
     show_texture_(false),
-    show_skeleton_(false)
+    show_skeleton_(false),
+    show_boundary_(true)
     /*face_normals_(new osg::Vec3Array),*/
 {
 }
@@ -43,7 +44,8 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     skeleton_(new Skeleton),
     has_texture_(false),
     show_texture_(false),
-    show_skeleton_(false)
+    show_skeleton_(false),
+    show_boundary_(true)
     /*face_normals_(new osg::Vec3Array),*/
 {
     obj_name_ = mesh_model.obj_name_;
@@ -64,12 +66,15 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     weights_ = mesh_model.weights_;
     edge_index_ = mesh_model.edge_index_;
     hard_index_ = mesh_model.hard_index_;
+    detected_boundary_ = mesh_model.detected_boundary_;
+    detected_tips_ = mesh_model.detected_tips_;
     color_id_ = mesh_model.color_id_;
     *skeleton_ = *mesh_model.skeleton_;
     biharmonic_weights_ = mesh_model.biharmonic_weights_;
     has_texture_ = mesh_model.has_texture_;
     show_texture_ = mesh_model.show_texture_;
     show_skeleton_ = mesh_model.show_skeleton_;
+    show_boundary_ = mesh_model.show_boundary_;
 }
 
 MeshModel::~MeshModel(void)
@@ -96,12 +101,15 @@ MeshModel& MeshModel::operator =(const MeshModel& mesh_model) // deep copy
     weights_ = mesh_model.weights_;
     edge_index_ = mesh_model.edge_index_;
     hard_index_ = mesh_model.hard_index_;
+    detected_boundary_ = mesh_model.detected_boundary_;
+    detected_tips_ = mesh_model.detected_tips_;
     color_id_ = mesh_model.color_id_;
     *skeleton_ = *mesh_model.skeleton_;
     biharmonic_weights_ = mesh_model.biharmonic_weights_;
     has_texture_ = mesh_model.has_texture_;
     show_texture_ = mesh_model.show_texture_;
     show_skeleton_ = mesh_model.show_skeleton_;
+    show_boundary_ = mesh_model.show_boundary_;
 
     return *this;
 }
@@ -259,6 +267,30 @@ void MeshModel::visualizeMesh(void)
 
         hc_geo->addDrawable(hc_geometry);
         content_root_->addChild(hc_geo);
+    }
+
+    if (show_boundary_ && !detected_boundary_.empty())
+    {
+        osg::ref_ptr<osg::Geode> bd_geo(new osg::Geode);
+        osg::ref_ptr<osg::Geometry> bd_geometry = new osg::Geometry;
+        osg::ref_ptr<osg::Vec3Array> bd_vetices = new osg::Vec3Array;
+        osg::ref_ptr<osg::Vec4Array> bd_colors = new osg::Vec4Array;
+        bd_colors->push_back(osg::Vec4(0.0f, 0.0f, 1.0f, 0.0f));
+
+        for (size_t i = 0, i_end = detected_boundary_.size(); i < i_end; ++ i)
+        {
+            bd_vetices->push_back(vertices_->at(detected_boundary_[i]));
+        }
+
+        bd_geometry->setUseDisplayList(true);
+        bd_geometry->setVertexArray(bd_vetices);
+        bd_geometry->setColorArray(bd_colors);
+        bd_colors->setBinding(osg::Array::BIND_OVERALL);
+        bd_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bd_vetices->size()));
+        bd_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
+
+        bd_geo->addDrawable(bd_geometry);
+        content_root_->addChild(bd_geo);
     }
 
     return;

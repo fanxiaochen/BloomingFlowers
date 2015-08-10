@@ -255,6 +255,14 @@ void Solver::initParas()
         hc_idx = petal.getHardCtrsIndex();
         std::sort(hc_idx.begin(), hc_idx.end());
     }
+
+    // init visible parts
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals[i];
+        VisList& vis_list = deform_petals_[i]._vis_list;
+        vis_list = petal.getVisibility();
+    }
 }
 
 void Solver::initTerms()
@@ -335,12 +343,13 @@ void Solver::e_step(int petal_id)
 
     CorresMatrix& corres_mat = deform_petals_[petal_id]._corres_matrix;
     WeightList& weight_list = deform_petals_[petal_id]._weight_list;
+    VisList& vis_list = deform_petals_[petal_id]._vis_list;
 
     for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
     {
         for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
         {
-            corres_mat(j, i) = gaussian(petal_id, j, i) * weight_list[j];
+            corres_mat(j, i) = gaussian(petal_id, j, i) * vis_list[j] * weight_list[j];
         }
     }
 

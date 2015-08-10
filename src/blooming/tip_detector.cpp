@@ -23,7 +23,18 @@ TipDetector::TipDetector(PointCloud* point_cloud)
     bin_number_(12),
     boundary_cloud_(new PointCloud)
 {
+    type_ = POINTCLOUD_DETECTOR;
+}
 
+TipDetector::TipDetector(Flower* flower)
+    :flower_(flower),
+    boundary_limit_(0.2),
+    corner_limit_(0.2),
+    radius_(5),
+    bin_number_(12),
+    boundary_cloud_(new PointCloud)
+{
+    type_ = FLOWER_DETECTOR;
 }
 
 TipDetector::~TipDetector()
@@ -33,19 +44,38 @@ TipDetector::~TipDetector()
 void TipDetector::setPointCloud(PointCloud* point_cloud)
 {
     point_cloud_ = boost::shared_ptr<PointCloud>(point_cloud, NullDeleter());
+    type_ = POINTCLOUD_DETECTOR;
+}
+
+void TipDetector::setFlower(Flower* flower)
+{
+    flower_ = boost::shared_ptr<Flower>(flower, NullDeleter());
+    type_ = FLOWER_DETECTOR;
 }
 
 void TipDetector::detectTips(int bin_number, float knn_radius, float boundary_limit, float corner_limit)
 {
-    // detect boundary points on point cloud
+    // build point cloud for flower
+    if (type_ == FLOWER_DETECTOR)
+        buildCloudIndex();
+
+    // detect boundary points on point cloud / flower
     detectBoundary(bin_number, knn_radius, boundary_limit);
 
     // detect corners on boundary points
     detectCorner(corner_limit);
+
+    //// recover flower boundary/corner index
+    //if (type_ == FLOWER_DETECTOR)
+    //    recoverFlowerIndex();
 }
 
 void TipDetector::detectBoundary(int bin_number, float knn_radius, float boundary_limit)
 {
+    // build point cloud for flower
+    if (type_ == FLOWER_DETECTOR && point_cloud_ == nullptr)
+        buildCloudIndex();
+
     bin_number_ = bin_number;
     radius_ = knn_radius;
     boundary_limit_ = boundary_limit;
@@ -71,6 +101,9 @@ void TipDetector::detectBoundary(int bin_number, float knn_radius, float boundar
     {
         boundary_cloud_->push_back(point_cloud_->at(index));
     }
+
+    if (type_ == FLOWER_DETECTOR)
+        recoverFlowerBoundaryIndex();
 }
 
 void TipDetector::detectCorner(float corner_limit)
@@ -87,6 +120,9 @@ void TipDetector::detectCorner(float corner_limit)
         if (corner(i))
             point_cloud_->getTips().push_back(boundary_indices_[i]);
     }
+
+    if (type_ == FLOWER_DETECTOR)
+        recoverFlowerTipIndex();
 }
 
 // index based on point cloud
@@ -200,4 +236,78 @@ pcl::IndicesPtr TipDetector::knn(int index, PointCloud::Ptr point_cloud)
     kdtree_.radiusSearch (point, radius_, *pointIdxRadiusSearch, pointRadiusSquaredDistance);
 
     return knn_idx;
+}
+
+void TipDetector::buildPetalMap()
+{
+    petal_map_.push_back(0);
+    int num = 0;
+    Petals& petals = flower_->getPetals();
+    for (Petal& petal : petals)
+    {
+        num += petal.getVertices()->size();
+        petal_map_.push_back(num);
+    }
+}
+
+void TipDetector::recoverPetalIndex(int cloud_index, int& petal_id, int& petal_index)
+{
+    for (int i = 0, i_end = petal_map_.size()-1; i < i_end; ++ i)
+    {
+        if (cloud_index >= petal_map_[i] && cloud_index < petal_map_[i+1])
+        {
+            petal_id = i;
+            petal_index = cloud_index - petal_map_[i];
+            return;
+        }
+    }
+
+    petal_id = -1;
+    petal_index = -1;
+}
+
+void TipDetector::buildCloudIndex()
+{
+    point_cloud_ = boost::shared_ptr<PointCloud>(new PointCloud);
+
+    Petals& petals = flower_->getPetals();
+    for (Petal& petal : petals)
+    {
+        osg::ref_ptr<osg::Vec3Array> vertices = petal.getVertices();
+        for (size_t i = 0, i_end = vertices->size(); i < i_end; ++ i)
+        {
+            osg::Vec3& vertice = vertices->at(i);
+            Point point;
+            point.x = vertice.x();
+            point.y = vertice.y();
+            point.z = vertice.z();
+            point_cloud_->push_back(point);
+        }
+    }
+
+    buildPetalMap();
+}
+
+void TipDetector::recoverFlowerBoundaryIndex()
+{
+    std::vector<int>& boundary_index = point_cloud_->getBoundary();
+    for (int index : boundary_index)
+    {
+        int petal_id, petal_index;
+        recoverPetalIndex(index, petal_id, petal_index);
+        Petal& petal = flower_->getPetals().at(petal_id);
+        petal.getDetectedBoundary().push_back(petal_index);
+    }
+}
+
+void TipDetector::recoverFlowerTipIndex()
+{
+    std::vector<int>& tip_index = point_cloud_->getTips();
+    for (int index : tip_index)
+    {
+        int petal_id, petal_index;
+        recoverPetalIndex(index, petal_id, petal_index);
+        Petal& petal = flower_->getPetals().at(petal_id);
+        petal.getDetectedTips().push_back(petal_index);
+    }
 }
