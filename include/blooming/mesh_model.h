@@ -100,6 +100,8 @@ public:
 
     void determineWeights(PointCloud* aligned_cloud, int petal_id);
 
+    void determineVisibility();
+
     bool loadBiharmonicWeights(const std::string& filename);
 
     void showSkeletonState(bool show_skeleton);

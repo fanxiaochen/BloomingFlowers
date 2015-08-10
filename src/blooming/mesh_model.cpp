@@ -64,6 +64,7 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     map_Kd_ = mesh_model.map_Kd_;
     adj_list_ = mesh_model.adj_list_;
     weights_ = mesh_model.weights_;
+    visibility_ = mesh_model.visibility_;
     edge_index_ = mesh_model.edge_index_;
     hard_index_ = mesh_model.hard_index_;
     detected_boundary_ = mesh_model.detected_boundary_;
@@ -99,6 +100,7 @@ MeshModel& MeshModel::operator =(const MeshModel& mesh_model) // deep copy
     map_Kd_ = mesh_model.map_Kd_;
     adj_list_ = mesh_model.adj_list_;
     weights_ = mesh_model.weights_;
+    visibility_ = mesh_model.visibility_;
     edge_index_ = mesh_model.edge_index_;
     hard_index_ = mesh_model.hard_index_;
     detected_boundary_ = mesh_model.detected_boundary_;
@@ -919,4 +921,14 @@ double MeshModel::gaussian(int m_id, int c_id, PointCloud* segmented_cloud)
         exp((-1/2.0)*xu.transpose()*cov_mat.col(m_id).asDiagonal().inverse()*xu);
 
     return p;
+}
+
+void MeshModel::determineVisibility()
+{
+    visibility_.resize(vertices_->size());
+    
+    for (int i : detected_boundary_)
+    {
+        visibility_[i] = 1;
+    }
 }

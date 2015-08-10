@@ -55,9 +55,9 @@ void TipDetector::setFlower(Flower* flower)
 
 void TipDetector::detectTips(int bin_number, float knn_radius, float boundary_limit, float corner_limit)
 {
-    // build point cloud for flower
-    if (type_ == FLOWER_DETECTOR)
-        buildCloudIndex();
+    //// build point cloud for flower
+    //if (type_ == FLOWER_DETECTOR)
+    //    buildCloudIndex();
 
     // detect boundary points on point cloud / flower
     detectBoundary(bin_number, knn_radius, boundary_limit);
@@ -73,7 +73,7 @@ void TipDetector::detectTips(int bin_number, float knn_radius, float boundary_li
 void TipDetector::detectBoundary(int bin_number, float knn_radius, float boundary_limit)
 {
     // build point cloud for flower
-    if (type_ == FLOWER_DETECTOR && point_cloud_ == nullptr)
+    if (type_ == FLOWER_DETECTOR)
         buildCloudIndex();
 
     bin_number_ = bin_number;

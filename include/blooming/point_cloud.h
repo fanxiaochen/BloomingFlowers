@@ -115,6 +115,9 @@ public:
   
   std::vector<int>& getTips() { return tip_indices_; }
   std::vector<int>& getBoundary() { return boundary_indices_; }
+  std::vector<std::vector<int>>& getBoundarySegments() { return boundary_segments_; }
+
+  osg::ref_ptr<PointCloud> getBoundary(int id);
 
   bool& getShowBoundary() { return show_boundary_; }
   bool& getShowTips() { return show_tips_; }
@@ -124,6 +127,8 @@ public:
   std::vector<int> getFittingMesh(int id);
 
   void region_segmentation(Flower* flower);
+
+  void boundary_segmentation();
 
 protected:
   virtual void clearData();
@@ -148,6 +153,7 @@ protected:
 
   std::vector<int>              segment_flags_;
   bool                          segmented_;
+  int                           segment_number_;
 
   std::vector<int>              color_flags_;
 
@@ -157,6 +163,8 @@ protected:
 
   std::vector<int>              tip_indices_;
   std::vector<int>              boundary_indices_;
+
+  std::vector<std::vector<int>> boundary_segments_;
 
   bool                          show_boundary_;
   bool                          show_tips_;

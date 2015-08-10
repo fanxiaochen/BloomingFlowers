@@ -313,7 +313,39 @@ void PointCloud::flower_segmentation(Flower* flower)
         }
     }
 
+    segment_number_ = match_regions_.size();
     segmented_ = true;
+
+    boundary_segmentation();
+}
+
+void PointCloud::boundary_segmentation()
+{
+    boundary_segments_.resize(segment_number_);
+
+    for (size_t i = 0, i_end = boundary_indices_.size(); i < i_end; ++ i)
+    {
+        int petal_id = segment_flags_[boundary_indices_[i]];
+        if (petal_id != -1)
+        {
+            boundary_segments_[petal_id].push_back(boundary_indices_[i]);
+        }
+    }
+}
+
+osg::ref_ptr<PointCloud> PointCloud::getBoundary(int id)
+{
+    osg::ref_ptr<PointCloud> petal_cloud = new PointCloud;
+
+    for (size_t i = 0, i_end = boundary_segments_[id].size(); i < i_end; ++ i)
+    {
+        petal_cloud->push_back(this->at(boundary_segments_[id][i]));
+    }
+
+    if (petal_cloud->size() == 0)
+        return NULL;
+
+    return petal_cloud;
 }
 
 

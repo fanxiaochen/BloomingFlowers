@@ -148,7 +148,7 @@ void DeformModel::e_step(int petal_id)
 // determine visibility
 void DeformModel::visibility()
 {
-    flower_->determineVisibility();
+   // flower_->determineVisibility();
 }
 
 

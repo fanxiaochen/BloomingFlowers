@@ -294,9 +294,15 @@ void LATrackThread::run()
         mesh_file_system->hideMeshModel(mesh_indexes.values().at(i));
     }
 
+    TipDetector tip_detector;
+
     Flower* forward_flower = new Flower(*flower);
-    osg::ref_ptr<PointCloud> aligned_cloud = points_file_system->getPointCloud(key_frame);
-    aligned_cloud->flower_segmentation(forward_flower);
+  //  osg::ref_ptr<PointCloud> aligned_cloud = points_file_system->getPointCloud(key_frame);
+
+    
+
+   // aligned_cloud->flower_segmentation(forward_flower);
+
     osg::ref_ptr<PointCloud> forward_cloud;
 
     std::string workspace = MainWindow::getInstance()->getWorkspace();
@@ -308,30 +314,44 @@ void LATrackThread::run()
     std::cout << "Forward Tracking..." << std::endl;
     forward_flower->show();
 
-    TipDetector tip_detector;
+    
 
     // LBS + ARAP tracking 
-    for (size_t i = key_frame+1, i_end = end_frame;
+    for (size_t i = key_frame, i_end = end_frame;
         i <= i_end; ++ i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
 
-        forward_flower->determineWeights(aligned_cloud);  // weights of gmm based on aligned cloud
-
         forward_cloud = points_file_system->getPointCloud(i);
+
+        std::cout << "detect flower boundary" << std::endl;
+        tip_detector.setFlower(forward_flower);
+        tip_detector.detectBoundary(12, 12);
+
+        std::cout << "detect point cloud boundary" << std::endl;
+        tip_detector.setPointCloud(forward_cloud);
+        tip_detector.detectBoundary(12, 12);
+
+        std::cout << "flower segmentation" << std::endl;
         forward_cloud->flower_segmentation(forward_flower);
+
+        std::cout << "determine weights and visibility" << std::endl;
+        forward_flower->determineWeights(forward_cloud);  // weights of gmm based on aligned cloud
+        forward_flower->determineVisibility(true); // visible or not
+
+
        // forward_cloud->region_matching(forward_flower);
 
         //tip_detector.setPointCloud(forward_cloud);
         //tip_detector.detectTips(12, 12);  // detect tips
-
+        std::cout << "registration" << std::endl;
         tracking_system_->la_registration(*forward_cloud, *forward_flower);
         forward_flower->save(flowers_folder, i);
         forward_flower->update();
 
         points_file_system->hidePointCloud(i - 1);
         points_file_system->showPointCloud(i);
-        aligned_cloud = forward_cloud;
+     //   aligned_cloud = forward_cloud;
     }
     forward_flower->hide();
 

@@ -260,6 +260,12 @@ void Flower::determineIntersection()
     }
 }
 
+void Flower::determineVisibility(bool testfunc)
+{
+    for (Petal& petal : petals_)
+        petal.determineVisibility();
+}
+
 void Flower::initVisibility()
 {
     for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
