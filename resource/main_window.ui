@@ -67,6 +67,7 @@
     <addaction name="actionBoundaryDetection"/>
     <addaction name="separator"/>
     <addaction name="actionRegionProbability"/>
+    <addaction name="actionCollision_Detection"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTracking"/>
@@ -207,6 +208,11 @@
   <action name="actionRegionProbability">
    <property name="text">
     <string>Region Probability</string>
+   </property>
+  </action>
+  <action name="actionCollision_Detection">
+   <property name="text">
+    <string>Collision Detection</string>
    </property>
   </action>
  </widget>

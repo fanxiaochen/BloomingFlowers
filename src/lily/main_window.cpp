@@ -189,6 +189,7 @@ void MainWindow::init(void)
     connect(ui_.actionTipDetection, SIGNAL(triggered()), tracking_system_, SLOT(detectTip()));
     connect(ui_.actionBoundaryDetection, SIGNAL(triggered()), tracking_system_, SLOT(detectBoundary()));
     connect(ui_.actionRegionProbability, SIGNAL(triggered()), this, SLOT(region_probability()));
+	connect(ui_.actionCollision_Detection, SIGNAL(triggered()), this, SLOT(collision_detection()));
     // connect
 
     return;
@@ -342,6 +343,32 @@ bool MainWindow::region_probability()
 
     return true;
 }
+
+
+
+// only flower is needed
+bool MainWindow::collision_detection()
+{
+	// build flower structure, memory leak...
+	Flower* flower = new Flower;
+
+	MeshFileSystem* mesh_file_system = dynamic_cast<MeshFileSystem*>(mesh_files_);
+	// for mesh viewer
+	QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
+	for (size_t i = 0, i_end = mesh_indexes.size(); i < i_end; ++ i)
+	{
+		osg::ref_ptr<Petal> petal_template = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
+		flower->getPetals().push_back(*petal_template); // deep copy
+	}
+
+	CollisionDetectionThread* cd_thread = new CollisionDetectionThread(flower);
+	flower->show();
+	connect(cd_thread, SIGNAL(finished()), cd_thread, SLOT(quit()));
+	cd_thread->start();
+
+	return true;
+}
+
 
 bool MainWindow::slotLoadPoints(void)
 {

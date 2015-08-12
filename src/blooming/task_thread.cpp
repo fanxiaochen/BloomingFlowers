@@ -13,6 +13,8 @@
 #include "task_thread.h"
 #include "deform_model.h"
 #include "tip_detector.h"
+#include "collision_detector.h"
+
 
 
 EATrackThread::EATrackThread(TrackingSystem* tracking_system)
@@ -496,3 +498,25 @@ void RegionMatchingThread::run()
 {
     point_cloud_->region_matching(flower_);
 }
+
+
+
+
+CollisionDetectionThread::CollisionDetectionThread( Flower* flower )
+{
+	flower_ = flower;
+}
+
+CollisionDetectionThread::~CollisionDetectionThread()
+{
+
+}
+
+void CollisionDetectionThread::run()
+{
+	CollisionDetector collision_detector;
+	collision_detector.setFlower( flower_ );
+	collision_detector.checkCollision();
+	flower_->update();
+}
+

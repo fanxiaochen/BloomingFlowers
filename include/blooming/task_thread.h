@@ -108,4 +108,20 @@ protected:
     Flower* flower_;
 };
 
+
+
+// collision detection
+class CollisionDetectionThread : public QThread
+{
+public:
+	CollisionDetectionThread( Flower* flower);
+	virtual ~CollisionDetectionThread();
+
+protected:
+	void run();
+
+protected:
+	Flower* flower_;
+};
+
 #endif

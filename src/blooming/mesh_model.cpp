@@ -28,7 +28,8 @@ MeshModel::MeshModel()
     has_texture_(false),
     show_texture_(false),
     show_skeleton_(false),
-    show_boundary_(true)
+    show_boundary_(true),
+	show_collision_(true)
     /*face_normals_(new osg::Vec3Array),*/
 {
 }
@@ -45,7 +46,8 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     has_texture_(false),
     show_texture_(false),
     show_skeleton_(false),
-    show_boundary_(true)
+    show_boundary_(true),
+	show_collision_(true)
     /*face_normals_(new osg::Vec3Array),*/
 {
     obj_name_ = mesh_model.obj_name_;
@@ -294,6 +296,33 @@ void MeshModel::visualizeMesh(void)
         bd_geo->addDrawable(bd_geometry);
         content_root_->addChild(bd_geo);
     }
+
+	if( show_collision_ && !intersected_triangles_.empty())
+	{
+		osg::ref_ptr<osg::Geode> inter_geo(new osg::Geode);
+		osg::ref_ptr<osg::Geometry> inter_geometry = new osg::Geometry;
+		osg::ref_ptr<osg::Vec3Array> inter_vetices = new osg::Vec3Array;
+		osg::ref_ptr<osg::Vec4Array> inter_colors = new osg::Vec4Array;
+		inter_colors->push_back(osg::Vec4(112/255.0f, 173/255.0f, 71/255.0f, 0.0f));   //²ÝÂÌÉ«
+
+		for (size_t i = 0, i_end = intersected_triangles_.size(); i < i_end; ++ i)
+		{
+			int t_idx = intersected_triangles_[i];
+			inter_vetices->push_back(vertices_->at( faces_[t_idx][0]));
+			inter_vetices->push_back(vertices_->at( faces_[t_idx][1]));
+			inter_vetices->push_back(vertices_->at( faces_[t_idx][2]));
+		}
+
+		inter_geometry->setUseDisplayList(true);
+		inter_geometry->setVertexArray(inter_vetices);
+		inter_geometry->setColorArray(inter_colors);
+		inter_colors->setBinding(osg::Array::BIND_OVERALL);
+		inter_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, inter_vetices->size()));
+		inter_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f));
+
+		inter_geo->addDrawable(inter_geometry);
+		content_root_->addChild(inter_geo);
+	}
 
     return;
 }

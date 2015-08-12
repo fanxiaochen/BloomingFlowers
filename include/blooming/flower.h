@@ -10,6 +10,7 @@ typedef MeshModel   Petal;
 typedef std::vector<Petal>  Petals;
 
 typedef std::unordered_map<int, int> PetalOrder;
+typedef Eigen::MatrixXi              PetalRelation;
 
 // Flower could not be template of osg::ref_ptr unless inherited from osg::Referenced
 class Flower: public osg::Referenced
@@ -24,6 +25,9 @@ public:
 
     inline const PetalOrder& getPetalOrder() const { return petal_order_; }
     inline PetalOrder& getPetalOrder() { return petal_order_; }
+
+	inline const PetalRelation& getPetalRelation() const { return petal_relation_;}
+	inline PetalRelation& getPetalRelation() { return  petal_relation_; }
 
     void save(const std::string& flower_path);
     void save(const std::string& flower_folder, int frame);
@@ -57,6 +61,8 @@ private:
 private:
     Petals                            petals_;
     PetalOrder                        petal_order_;
+
+	PetalRelation	                  petal_relation_;
 
 };
 

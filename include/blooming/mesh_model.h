@@ -80,6 +80,8 @@ public:
     inline bool& getHasTexture() { return has_texture_; }
     inline bool& getShowSkeleton() { return show_skeleton_; }
     inline bool& getShowBoundary() { return show_boundary_; }
+	inline std::vector<int>& getIntersectedTriangles()  { return intersected_triangles_; } 
+
     // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
     void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
 
@@ -107,6 +109,7 @@ public:
     void showSkeletonState(bool show_skeleton);
 
     void buildSelfKdTree();
+
 
 protected:
     virtual void updateImpl(void);
@@ -154,6 +157,7 @@ protected:
     std::vector<double>                 weights_; // the same size of vertices
     std::vector<int>                    detected_boundary_;
     std::vector<int>                    detected_tips_;
+	std::vector<int>                    intersected_triangles_;
 
 
     size_t                              color_id_; // for visualization
@@ -165,6 +169,7 @@ protected:
     bool                                show_texture_;
     bool                                show_skeleton_;
     bool                                show_boundary_;
+	bool                                show_collision_;
 
     pcl::KdTreeFLANN<pcl::PointXYZ>     kdtree_;
 };

@@ -70,6 +70,7 @@ private slots:
     bool slotSendCheckBoxRenderState();
 
     bool region_probability();
+	bool collision_detection();
 
 private:
     void loadSettings();
