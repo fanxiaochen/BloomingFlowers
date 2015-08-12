@@ -141,7 +141,7 @@ void PointCloud::visualizePoints()
     // for boundary
     if (show_boundary_)
     {
-        osg::ref_ptr<osg::Vec3Array>  bvertices = new osg::Vec3Array;
+        /*osg::ref_ptr<osg::Vec3Array>  bvertices = new osg::Vec3Array;
         osg::ref_ptr<osg::Vec4Array>  bcolors = new osg::Vec4Array;
         for (size_t i = 0, i_end = boundary_indices_.size(); i < i_end; ++ i)
         {
@@ -156,8 +156,9 @@ void PointCloud::visualizePoints()
         bgeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
         bgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bvertices->size()));
         bgeometry->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f));
-        geode->addDrawable(bgeometry);
-        /*for (size_t i = 0; i < boundary_segments_.size(); i ++)
+        geode->addDrawable(bgeometry);*/
+
+        for (size_t i = 0; i < boundary_segments_.size(); i ++)
         {
             osg::ref_ptr<osg::Vec3Array>  bvertices = new osg::Vec3Array;
             osg::ref_ptr<osg::Vec4Array>  bcolors = new osg::Vec4Array;
@@ -175,7 +176,7 @@ void PointCloud::visualizePoints()
             bgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bvertices->size()));
             bgeometry->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f));
             geode->addDrawable(bgeometry);
-        }*/
+        }
     }
     
     content_root_->addChild(geode);
@@ -502,9 +503,12 @@ void PointCloud::region_matching(Flower* flower)
     {
         std::vector<int> belongs = belong_list[i];
         
-        int petal_id = belongs[0];
-        match_regions_[petal_id].first.push_back(i);
-        match_regions_[petal_id].second->push_back(this->at(i));
+        if (belongs.size() == 1)
+        {
+            int petal_id = belongs[0];
+            match_regions_[petal_id].first.push_back(i);
+            match_regions_[petal_id].second->push_back(this->at(i));
+        }
     }
 
     /*for (size_t i = 0; i < match_regions_.size(); i ++)
