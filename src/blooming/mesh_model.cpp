@@ -759,7 +759,32 @@ void MeshModel::buildSelfKdTree()
     kdtree_.setInputCloud (cloud);
 }
 
+pcl::KdTreeFLANN<pcl::PointXYZ> MeshModel::buildKdTree()
+{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
+    for (size_t i = 0, i_end = this->getVertices()->size(); i < i_end; ++ i)
+    {
+        const osg::Vec3& point = this->getVertices()->at(i);
+
+        pcl::PointXYZ pcl_point(point.x(), point.y(), point.z());
+        cloud->push_back(pcl_point);
+    }
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    kdtree.setInputCloud (cloud);
+
+    return kdtree;
+}
+
+bool MeshModel::onDetectedBoundary(int index)
+{
+    for (int i : detected_boundary_)
+    {
+        if (i == index)
+            return true;
+    }
+    return false;
+}
 
 void MeshModel::initializeVisibility()
 {
@@ -923,24 +948,27 @@ double MeshModel::gaussian(int m_id, int c_id, PointCloud* segmented_cloud)
     return p;
 }
 
+
+// need to be considered
+// two ways to decide: high confident cloud and camera position
 void MeshModel::determineVisibility(PointCloud* aligned_cloud, int petal_id)
 {
-    osg::ref_ptr<PointCloud> segmented_cloud = aligned_cloud->getPetalCloud(petal_id);
-    int cloud_nums = segmented_cloud->size();
+    /*osg::ref_ptr<PointCloud> segmented_cloud = aligned_cloud->getPetalCloud(petal_id);
+    int cloud_nums = segmented_cloud->size();*/
 
     visibility_.resize(vertices_->size());
     
-    /*for (int i : detected_boundary_)
+    for (int i : detected_boundary_)
     {
-    visibility_[i] = 1;
-    }*/
+        visibility_[i] = 1;
+    }
 
-    std::vector<int> knn_idx;
+    /*std::vector<int> knn_idx;
     std::vector<float> knn_dists;
     segmented_cloud->searchNearestIdx(this, knn_idx, knn_dists);
 
     for (int i : knn_idx)
     {
-        visibility_[i] = 1;
-    }
+    visibility_[i] = 1;
+    }*/
 }

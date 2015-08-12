@@ -128,7 +128,11 @@ public:
 
   void region_segmentation(Flower* flower);
 
-  void boundary_segmentation();
+  void boundary_segmentation(Flower* flower);
+
+  void indicateSegmentFlags();
+
+  void filterNoiseBoundary(Flower* flower);
 
   // source is this point cloud, target is mesh_model, knn_idx is based on mesh_model
   void searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_idx, std::vector<float>& knn_dists);

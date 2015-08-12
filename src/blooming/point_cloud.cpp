@@ -145,9 +145,9 @@ void PointCloud::visualizePoints()
         osg::ref_ptr<osg::Vec4Array>  bcolors = new osg::Vec4Array;
         for (size_t i = 0, i_end = boundary_indices_.size(); i < i_end; ++ i)
         {
-            const Point& point = at(boundary_indices_[i]);
-            bvertices->push_back(osg::Vec3(point.x, point.y, point.z));
-            bcolors->push_back(ColorMap::getInstance().getDiscreteColor(8));
+        const Point& point = at(boundary_indices_[i]);
+        bvertices->push_back(osg::Vec3(point.x, point.y, point.z));
+        bcolors->push_back(ColorMap::getInstance().getDiscreteColor(8));
 
         }
         osg::Geometry* bgeometry = new osg::Geometry;
@@ -157,6 +157,25 @@ void PointCloud::visualizePoints()
         bgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bvertices->size()));
         bgeometry->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f));
         geode->addDrawable(bgeometry);
+        /*for (size_t i = 0; i < boundary_segments_.size(); i ++)
+        {
+            osg::ref_ptr<osg::Vec3Array>  bvertices = new osg::Vec3Array;
+            osg::ref_ptr<osg::Vec4Array>  bcolors = new osg::Vec4Array;
+            for (size_t j = 0, j_end = boundary_segments_[i].size(); j < j_end; ++ j)
+            {
+                const Point& point = at(boundary_segments_[i][j]);
+                bvertices->push_back(osg::Vec3(point.x, point.y, point.z));
+                bcolors->push_back(ColorMap::getInstance().getDiscreteColor(8));
+
+            }
+            osg::Geometry* bgeometry = new osg::Geometry;
+            bgeometry->setVertexArray(bvertices);
+            bgeometry->setColorArray(bcolors);
+            bgeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+            bgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bvertices->size()));
+            bgeometry->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f));
+            geode->addDrawable(bgeometry);
+        }*/
     }
     
     content_root_->addChild(geode);
@@ -298,11 +317,23 @@ osg::ref_ptr<PointCloud> PointCloud::getPetalCloud(int id)
 //    segmented_ = true;
 //}
 
+
 // segment high confident cloud for each petal, remove the low confident parts
+// segment boundary
 void PointCloud::flower_segmentation(Flower* flower)
 {
+    // compute cloud confidence by template flower and extract valid regions
     region_matching(flower);
 
+    // indicate segment flags for each point
+    indicateSegmentFlags();
+    
+    // segment boundary if detected with filtering noise
+    boundary_segmentation(flower);
+}
+
+void PointCloud::indicateSegmentFlags()
+{
     segment_flags_ = std::vector<int>(this->size(), -1);
 
     for (size_t i = 0; i < match_regions_.size(); i ++)
@@ -316,12 +347,12 @@ void PointCloud::flower_segmentation(Flower* flower)
 
     segment_number_ = match_regions_.size();
     segmented_ = true;
-
-    boundary_segmentation();
 }
 
-void PointCloud::boundary_segmentation()
+void PointCloud::boundary_segmentation(Flower* flower)
 {
+    Petals& petals = flower->getPetals();
+
     boundary_segments_.resize(segment_number_);
 
     for (size_t i = 0, i_end = boundary_indices_.size(); i < i_end; ++ i)
@@ -332,6 +363,46 @@ void PointCloud::boundary_segmentation()
             boundary_segments_[petal_id].push_back(boundary_indices_[i]);
         }
     }
+
+    // filtering noise
+    std::vector<std::vector<int>> tmp_bs(boundary_segments_.size());
+
+    for (size_t i = 0, i_end = boundary_segments_.size(); i < i_end; ++ i)
+    {
+        Petal& petal = petals[i];
+        pcl::KdTreeFLANN<pcl::PointXYZ> kdtree = petal.buildKdTree();
+        int K = 3;
+        std::vector<int>& boundary_segment = boundary_segments_[i];
+        for (size_t j = 0, j_end = boundary_segment.size(); j < j_end; ++ j)
+        {
+            Point& point = this->at(boundary_segment[j]);
+            pcl::PointXYZ searchPoint;
+            std::vector<int> pointIdxNKNSearch(K);
+            std::vector<float> pointNKNSquaredDistance(K);
+            searchPoint.x = point.x;
+            searchPoint.y = point.y;
+            searchPoint.z = point.z;
+            if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+            {
+                int t = 0;
+                for (; t < pointIdxNKNSearch.size(); ++ t)
+                {
+                    if (petal.onDetectedBoundary(pointIdxNKNSearch[t]))
+                        break;
+                }
+
+                if (t != pointIdxNKNSearch.size())
+                    tmp_bs[i].push_back(boundary_segment[j]);
+            }
+        }
+    }
+
+    boundary_segments_ = tmp_bs;
+}
+
+void PointCloud::filterNoiseBoundary(Flower* flower)
+{
+    
 }
 
 osg::ref_ptr<PointCloud> PointCloud::getBoundary(int id)
@@ -352,7 +423,6 @@ osg::ref_ptr<PointCloud> PointCloud::getBoundary(int id)
 
 void PointCloud::region_matching(Flower* flower)
 {
-
     Petals& petals = flower->getPetals();
 
     if (petals.size() == 1) 
@@ -402,7 +472,7 @@ void PointCloud::region_matching(Flower* flower)
     // each point's belongs
     // better way to determine belong lists??
     std::vector<std::vector<int>> belong_list(this->size());
-    double delta = 0.001;
+    double delta = 0.1;
     for (size_t i = 0; i < P.rows(); ++ i)
     {
         std::vector<int> belongs;
@@ -423,59 +493,19 @@ void PointCloud::region_matching(Flower* flower)
     for (size_t i = 0; i < match_regions_.size(); i ++)
     {
         MatchRegion mr;
-        /*mr.first = [](int n){
-        std::vector<int> indice;
-        for (size_t i = 0; i < n; ++i){
-        indice.push_back(i);
-        }
-        return indice;
-        }(petals[0].getVertices()->size());*/
         mr.second = new PointCloud;
         match_regions_[i] = mr;
     }
 
-    //// build self kdtree for petals
-    //for (size_t i = 0; i < petals.size(); ++ i)
-    //{
-    //    petals[i].buildSelfKdTree();
-    //}
-
     // fill the match regions
-   // std::vector<std::unordered_set<int>> remove_set(petals.size());
     for (int i = 0; i < belong_list.size(); i ++)
     {
         std::vector<int> belongs = belong_list[i];
-        if (belongs.size() >= 2)
-        {
-            //Point& point = this->at(i);
-            //osg::Vec3 vp(point.x, point.y, point.z);
-            //for (int j = 0; j < belongs.size(); j ++)
-            //{
-            //    Petal& petal = petals[belongs[j]];
-            //    int idx = petal.searchNearestIdx(vp); // use knn to find mesh vertices which should be removed
-            //    remove_set[belongs[j]].insert(idx);
-            //}
-        }
-        else {
-            int petal_id = belongs[0];
-            match_regions_[petal_id].first.push_back(i);
-            match_regions_[petal_id].second->push_back(this->at(i));
-        }
+        
+        int petal_id = belongs[0];
+        match_regions_[petal_id].first.push_back(i);
+        match_regions_[petal_id].second->push_back(this->at(i));
     }
-
-    /*for (size_t i = 0; i < match_regions_.size(); i ++)
-    {
-    MatchRegion& mr = match_regions_[i];
-    mr.first = [&](int n){
-    std::vector<int> ver_idx;
-    for (size_t j = 0; j < n; ++ j)
-    {
-    if (remove_set[i].find(j) == remove_set[i].end())
-    ver_idx.push_back(j);
-    }
-    return ver_idx;
-    }(petals[i].getVertices()->size());
-    }*/
 
     /*for (size_t i = 0; i < match_regions_.size(); i ++)
     {
@@ -498,8 +528,6 @@ double PointCloud::gaussian(int m_id, int c_id, Petal* petal)
         - Eigen::Vector3d(point.x, point.y, point.z);
      p = pow(2*M_PI, -3/2.0) * pow((cov_mat.col(m_id).asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
     exp((-1/2.0)*xu.transpose()*cov_mat.col(m_id).asDiagonal().inverse()*xu);
-    // direct distance
-   // p = xu.norm();
 
     return p;
 }

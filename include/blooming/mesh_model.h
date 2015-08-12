@@ -108,6 +108,10 @@ public:
 
     void buildSelfKdTree();
 
+    pcl::KdTreeFLANN<pcl::PointXYZ> buildKdTree();
+
+    bool onDetectedBoundary(int index);
+
 protected:
     virtual void updateImpl(void);
     virtual void visualizeMesh(void);
