@@ -317,7 +317,7 @@ void LATrackThread::run()
     
 
     // LBS + ARAP tracking 
-    for (size_t i = key_frame, i_end = end_frame;
+    for (size_t i = key_frame, i_end = key_frame+10;
         i <= i_end; ++ i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
@@ -326,11 +326,11 @@ void LATrackThread::run()
 
         std::cout << "detect flower boundary" << std::endl;
         tip_detector.setFlower(forward_flower);
-        tip_detector.detectBoundary(12, 12);
+        tip_detector.detectBoundary(12, 13);
 
         std::cout << "detect point cloud boundary" << std::endl;
         tip_detector.setPointCloud(forward_cloud);
-        tip_detector.detectBoundary(12, 12);
+        tip_detector.detectBoundary(12, 13);
 
         std::cout << "flower segmentation" << std::endl;
         forward_cloud->flower_segmentation(forward_flower);
@@ -340,10 +340,6 @@ void LATrackThread::run()
         forward_flower->determineVisibility(true); // visible or not
 
 
-       // forward_cloud->region_matching(forward_flower);
-
-        //tip_detector.setPointCloud(forward_cloud);
-        //tip_detector.detectTips(12, 12);  // detect tips
         std::cout << "registration" << std::endl;
         tracking_system_->la_registration(*forward_cloud, *forward_flower);
         forward_flower->save(flowers_folder, i);
