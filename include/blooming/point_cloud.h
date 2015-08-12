@@ -130,6 +130,9 @@ public:
 
   void boundary_segmentation();
 
+  // source is this point cloud, target is mesh_model, knn_idx is based on mesh_model
+  void searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_idx, std::vector<float>& knn_dists);
+
 protected:
   virtual void clearData();
   virtual void updateImpl();
@@ -137,9 +140,6 @@ protected:
 
   PointCloud* getPrevFrame(void);
   PointCloud* getNextFrame(void);
-
-  // source is this point cloud, target is mesh_model, knn_idx is based on mesh_model
-  void searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_idx, std::vector<float>& knn_dists);
 
   // region growing
   void region_growing(std::vector<int>& segment_index, int petal_id);

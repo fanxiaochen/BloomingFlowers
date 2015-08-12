@@ -63,7 +63,7 @@ void Solver::initParas()
     // init cloud matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
-        osg::ref_ptr<PointCloud> petal_cloud = /*point_cloud_->getPetalCloud(i);*/point_cloud_->getBoundary(i);
+        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getPetalCloud(i);/*point_cloud_->getBoundary(i)*/;
         CloudMatrix cm(3, petal_cloud->size());
         if (petal_cloud != NULL)
         {

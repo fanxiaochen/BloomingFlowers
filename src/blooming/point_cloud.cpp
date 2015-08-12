@@ -200,13 +200,13 @@ void PointCloud::searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_i
 
     for (size_t i = 0, i_end = mesh_model->getVertices()->size(); i < i_end; ++ i)
     {
-        // we only use visible vertices to segment point cloud
-        if (mesh_model->getVisibility().size() != 0 && mesh_model->getVisibility()[i] == 0)
-        {
-             pcl::PointXYZ pcl_point(0.0f, 0.0f, 0.0f);  // origin point is far from our dataset
-             cloud->push_back(pcl_point);
-             continue;
-        }
+        //// we only use visible vertices to segment point cloud
+        //if (mesh_model->getVisibility().size() != 0 && mesh_model->getVisibility()[i] == 0)
+        //{
+        //     pcl::PointXYZ pcl_point(0.0f, 0.0f, 0.0f);  // origin point is far from our dataset
+        //     cloud->push_back(pcl_point);
+        //     continue;
+        //}
 
         const osg::Vec3& point = mesh_model->getVertices()->at(i);
         pcl::PointXYZ pcl_point(point.x(), point.y(), point.z());
@@ -298,6 +298,7 @@ osg::ref_ptr<PointCloud> PointCloud::getPetalCloud(int id)
 //    segmented_ = true;
 //}
 
+// segment high confident cloud for each petal, remove the low confident parts
 void PointCloud::flower_segmentation(Flower* flower)
 {
     region_matching(flower);
@@ -401,7 +402,7 @@ void PointCloud::region_matching(Flower* flower)
     // each point's belongs
     // better way to determine belong lists??
     std::vector<std::vector<int>> belong_list(this->size());
-    double delta = 0.1;
+    double delta = 0.001;
     for (size_t i = 0; i < P.rows(); ++ i)
     {
         std::vector<int> belongs;

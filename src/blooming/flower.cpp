@@ -260,10 +260,12 @@ void Flower::determineIntersection()
     }
 }
 
-void Flower::determineVisibility(bool testfunc)
+void Flower::determineVisibility(PointCloud* aligned_cloud)
 {
-    for (Petal& petal : petals_)
-        petal.determineVisibility();
+    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+    {
+        petals_[i].determineVisibility(aligned_cloud, i);
+    }
 }
 
 void Flower::initVisibility()

@@ -41,7 +41,7 @@ public:
     void initVisibility();
     void determineVisibility();
     void determineWeights(PointCloud* aligned_cloud);
-    void determineVisibility(bool testfunc = true); // for test
+    void determineVisibility(PointCloud* aligned_cloud); // for test
 
     void setTextureState(bool is_shown);
     void setSkeletonState(bool is_shown);

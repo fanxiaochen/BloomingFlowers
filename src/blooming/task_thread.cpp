@@ -324,20 +324,20 @@ void LATrackThread::run()
 
         forward_cloud = points_file_system->getPointCloud(i);
 
-        std::cout << "detect flower boundary" << std::endl;
+        /*std::cout << "detect flower boundary" << std::endl;
         tip_detector.setFlower(forward_flower);
         tip_detector.detectBoundary(12, 13);
 
         std::cout << "detect point cloud boundary" << std::endl;
         tip_detector.setPointCloud(forward_cloud);
-        tip_detector.detectBoundary(12, 13);
+        tip_detector.detectBoundary(12, 13);*/
 
         std::cout << "flower segmentation" << std::endl;
         forward_cloud->flower_segmentation(forward_flower);
 
         std::cout << "determine weights and visibility" << std::endl;
         forward_flower->determineWeights(forward_cloud);  // weights of gmm based on aligned cloud
-        forward_flower->determineVisibility(true); // visible or not
+        forward_flower->determineVisibility(forward_cloud); // visible or not
 
 
         std::cout << "registration" << std::endl;
