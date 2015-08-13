@@ -316,7 +316,7 @@ void LATrackThread::run()
 
 
     // LBS + ARAP tracking 
-    for (size_t i = key_frame, i_end = key_frame;
+    for (size_t i = key_frame, i_end = end_frame;
         i <= i_end; ++ i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
@@ -336,7 +336,7 @@ void LATrackThread::run()
 
         std::cout << "determine weights and visibility" << std::endl;
         forward_flower->determineWeights(forward_cloud);  // weights of gmm based on aligned cloud
-        //forward_flower->determineVisibility(forward_cloud); // visible or not
+        forward_flower->determineVisibility(forward_cloud); // visible or not
 
 
         std::cout << "registration" << std::endl;

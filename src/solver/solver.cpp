@@ -115,7 +115,7 @@ void Solver::initLocalFittingParas()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         // a trick implementation: add global tracking result mesh to high confident petal parts
-        osg::ref_ptr<PointCloud> petal_cloud = /*point_cloud_->getPetalCloud(i);*/ new PointCloud;
+        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getPetalCloud(i); /*new PointCloud*/;
         PetalMatrix& petal_matrix = deform_petals_[i]._petal_matrix;
         for (size_t j = 0, j_end = petal_matrix.cols(); j < j_end; ++ j)
         {
@@ -691,7 +691,7 @@ void Solver::e_step(int petal_id)
     {
         for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
         {
-            corres_mat(j, i) = gaussian(petal_id, j, i)  vis_list[j]  * weight_list[j];
+            corres_mat(j, i) = gaussian(petal_id, j, i) * vis_list[j]  * weight_list[j];
         }
     }
 
