@@ -194,7 +194,6 @@ protected:
     void initLocalFittingParas();
     void initMeshParas();
     void initSkelParas();
-    void initParas();
     void initTerms();
     double zero_correction(double value);
 

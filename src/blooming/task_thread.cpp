@@ -348,43 +348,43 @@ void LATrackThread::run()
         points_file_system->showPointCloud(i);
      //   aligned_cloud = forward_cloud;
     }
-  //  forward_flower->hide();
+    forward_flower->hide();
 
 
-    //Flower* backward_flower = new Flower(*flower);
-    //osg::ref_ptr<PointCloud> backward_cloud;
+    Flower* backward_flower = new Flower(*flower);
+    osg::ref_ptr<PointCloud> backward_cloud;
 
-    //std::cout << "Backward Tracking..." << std::endl;
-    //backward_flower->show();
-    //for (int i = key_frame - 1, i_end = start_frame;
-    //    i >= i_end; -- i)
-    //{
-    //    std::cout << "tracking [frame " << i << "]" << std::endl;
-    //    backward_cloud = points_file_system->getPointCloud(i);
+    std::cout << "Backward Tracking..." << std::endl;
+    backward_flower->show();
+    for (int i = key_frame - 1, i_end = start_frame;
+        i >= i_end; -- i)
+    {
+        std::cout << "tracking [frame " << i << "]" << std::endl;
+        backward_cloud = points_file_system->getPointCloud(i);
 
-    //    std::cout << "detect flower boundary" << std::endl;
-    //    tip_detector.setFlower(backward_flower);
-    //    tip_detector.detectBoundary(12, 13);
+        std::cout << "detect flower boundary" << std::endl;
+        tip_detector.setFlower(backward_flower);
+        tip_detector.detectBoundary(12, 13);
 
-    //    std::cout << "detect point cloud boundary" << std::endl;
-    //    tip_detector.setPointCloud(backward_cloud);
-    //    tip_detector.detectBoundary(12, 13);
+        std::cout << "detect point cloud boundary" << std::endl;
+        tip_detector.setPointCloud(backward_cloud);
+        tip_detector.detectBoundary(12, 13);
 
-    //    std::cout << "flower segmentation" << std::endl;
-    //    backward_cloud->flower_segmentation(backward_flower);
+        std::cout << "flower segmentation" << std::endl;
+        backward_cloud->flower_segmentation(backward_flower);
 
-    //    std::cout << "determine weights and visibility" << std::endl;
-    //    backward_flower->determineWeights(backward_cloud);  // weights of gmm based on aligned cloud
-    //    backward_flower->determineVisibility(backward_cloud); // visible or not
+        std::cout << "determine weights and visibility" << std::endl;
+        backward_flower->determineWeights(backward_cloud);  // weights of gmm based on aligned cloud
+        backward_flower->determineVisibility(backward_cloud); // visible or not
 
-    //    tracking_system_->la_registration(*backward_cloud, *backward_flower);
-    //    backward_flower->save(flowers_folder, i);
-    //    backward_flower->update();
+        tracking_system_->la_registration(*backward_cloud, *backward_flower);
+        backward_flower->save(flowers_folder, i);
+        backward_flower->update();
 
-    //    points_file_system->hidePointCloud(i + 1);
-    //    points_file_system->showPointCloud(i);
+        points_file_system->hidePointCloud(i + 1);
+        points_file_system->showPointCloud(i);
 
-    //}
+    }
 
     std::cout << "LBS + ARAP Tracking Finished!" << std::endl;
 }
