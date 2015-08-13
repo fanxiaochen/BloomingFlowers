@@ -102,6 +102,7 @@ set(blooming_incs   ${blooming_inc}/point_cloud.h
 					${blooming_inc}/skeleton.h
 					${blooming_inc}/trajectory_model.h
 					${blooming_inc}/tip_detector.h
+					${blooming_inc}/collision_detector.h
                     )
 
 set(blooming_srcs	${blooming_src}/point_cloud.cpp
@@ -115,6 +116,7 @@ set(blooming_srcs	${blooming_src}/point_cloud.cpp
 					${blooming_src}/skeleton.cpp
 					${blooming_src}/trajectory_model.cpp
 					${blooming_src}/tip_detector.cpp
+					${blooming_src}/collision_detector.cpp
                     )
                     
 set(filesystem_incs	${filesystem_inc}/file_system_model.h
