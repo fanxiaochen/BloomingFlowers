@@ -142,7 +142,13 @@ public:
 
     void deform();
 
-    void global_deform();
+    // first stage deform
+    void init_global_deform(); // boundary fitting
+
+    // second stage deform
+    void init_local_deform(); // boundary+inner fitting
+
+    //void global_deform();
 
 protected:
     void deform(int petal_id);
@@ -184,6 +190,10 @@ protected:
 
 protected:
     void init();
+    void initGlobalFittingParas();
+    void initLocalFittingParas();
+    void initMeshParas();
+    void initSkelParas();
     void initParas();
     void initTerms();
     double zero_correction(double value);
