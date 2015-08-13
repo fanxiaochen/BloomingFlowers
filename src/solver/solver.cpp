@@ -63,7 +63,7 @@ void Solver::initParas()
     // init cloud matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
-        osg::ref_ptr<PointCloud> petal_cloud = /*point_cloud_->getPetalCloud(i);*/point_cloud_->getBoundary(i);
+        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getPetalCloud(i);
         CloudMatrix cm(3, petal_cloud->size());
         if (petal_cloud != NULL)
         {
@@ -76,6 +76,21 @@ void Solver::initParas()
         deform_petals_[i]._cloud_matrix = cm;
     }
 
+    // init boundary matrix
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getBoundary(i);
+        BoundaryMatrix bm(3, petal_cloud->size());
+        if (petal_cloud != NULL)
+        {
+            for (size_t j = 0, j_end = petal_cloud->size(); j < j_end; ++ j)
+            {
+                bm.col(j) << petal_cloud->at(j).x, petal_cloud->at(j).y, petal_cloud->at(j).z;
+            }
+        }
+
+        deform_petals_[i]._boundary_matrix = bm;
+    }
 
     // init petal matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)

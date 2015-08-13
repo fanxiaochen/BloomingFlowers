@@ -112,4 +112,8 @@ void TrackingSystem::la_registration( PointCloud& tracked_frame, Flower& trackin
 {
     Solver solver(&tracked_frame, &tracking_template);
     solver.deform();
+
+    // first stage -- global boundary tracking
+
+    // second stage -- local inner tracking
 }

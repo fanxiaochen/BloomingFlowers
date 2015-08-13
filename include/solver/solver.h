@@ -17,6 +17,7 @@ class Solver
 public:
     typedef Eigen::MatrixXd CorresMatrix;
     typedef Eigen::Matrix3Xd CloudMatrix;
+    typedef Eigen::Matrix3Xd BoundaryMatrix;
     typedef Eigen::Matrix3Xd PetalMatrix;
     typedef Eigen::Matrix3Xd CovMatrix;
     typedef std::vector<double> WeightList;
@@ -37,6 +38,7 @@ public:
         PetalMatrix         _origin_petal;
         PetalMatrix         _petal_matrix;
         CloudMatrix         _cloud_matrix;
+        BoundaryMatrix      _boundary_matrix;
         CorresMatrix        _corres_matrix;
         CovMatrix           _cov_matrix;
         WeightList          _weight_list;
