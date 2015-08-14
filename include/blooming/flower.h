@@ -29,6 +29,8 @@ public:
     void save(const std::string& flower_folder, int frame);
     void load(const std::string& flower_path);
 
+    void reorder();
+
     void clear();
 
     void show();

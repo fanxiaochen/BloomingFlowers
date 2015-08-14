@@ -293,6 +293,7 @@ void LATrackThread::run()
         flower->getPetals().push_back(*petal_template); // deep copy
         mesh_file_system->hideMeshModel(mesh_indexes.values().at(i));
     }
+    flower->reorder();
 
     TipDetector tip_detector;
 

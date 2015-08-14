@@ -21,6 +21,17 @@ Flower::~Flower()
 {
 }
 
+void Flower::reorder()
+{
+    std::sort(petals_.begin(), petals_.end(), [&](Petal& p1, Petal& p2){
+        std::string p1_name = p1.getObjName();
+        std::string p2_name = p2.getObjName();
+        if (p1_name < p2_name)
+            return true;
+        else return false;
+    });
+}
+
 void Flower::save(const std::string& flower_path)
 {
     for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
@@ -298,6 +309,9 @@ bool Flower::getSkeletonState()
     if (petals_.empty()) return false;
     return petals_[0].getShowSkeleton();
 }
+
+
+
 
 
 
