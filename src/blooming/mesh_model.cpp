@@ -988,7 +988,16 @@ void MeshModel::determineVisibility(PointCloud* aligned_cloud, int petal_id)
     {
         visibility_[i] = 1;
     }
-<<<<<<< HEAD
+
+	    /*std::vector<int> knn_idx;
+    std::vector<float> knn_dists;
+    segmented_cloud->searchNearestIdx(this, knn_idx, knn_dists);
+
+    for (int i : knn_idx)
+    {
+    visibility_[i] = 1;
+    }*/
+
 }
 
 
@@ -1146,15 +1155,6 @@ double MeshModel::disancePoint3Tri3( osg::Vec3& p, int tri_id, osg::Vec3& proj_p
 	return (proj_pos-p).length2();
 
 }
-=======
 
-    /*std::vector<int> knn_idx;
-    std::vector<float> knn_dists;
-    segmented_cloud->searchNearestIdx(this, knn_idx, knn_dists);
 
-    for (int i : knn_idx)
-    {
-    visibility_[i] = 1;
-    }*/
-}
->>>>>>> phenix
+
