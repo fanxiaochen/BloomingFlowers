@@ -114,8 +114,8 @@ void Solver::initLocalFittingParas()
     // init cloud matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
-        // a trick implementation: add global tracking result mesh to high confident petal parts
-        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getPetalCloud(i); /*new PointCloud*/;
+        // a tricky implementation: add global tracking result mesh to high confident petal parts
+        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getSamplingPetalCloud(i, 10); /*new PointCloud*/;
         PetalMatrix& petal_matrix = deform_petals_[i]._petal_matrix;
         for (size_t j = 0, j_end = petal_matrix.cols(); j < j_end; ++ j)
         {

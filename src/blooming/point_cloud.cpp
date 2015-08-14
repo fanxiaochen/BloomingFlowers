@@ -277,6 +277,38 @@ osg::ref_ptr<PointCloud> PointCloud::getPetalCloud(int id)
     return petal_cloud;
 }
 
+osg::ref_ptr<PointCloud> PointCloud::getSamplingPetalCloud(int id, int radio)
+{
+    osg::ref_ptr<PointCloud> petal_cloud = new PointCloud;
+
+    for (size_t i = 0, i_end = segment_flags_.size(); i < i_end; ++ i)
+    {
+        if (segment_flags_[i] == id)
+            petal_cloud->push_back(this->at(i));
+    }
+
+    if (petal_cloud->size() == 0)
+        return NULL;
+
+    // randomly sample
+    osg::ref_ptr<PointCloud> sampled_cloud = new PointCloud;
+
+    std::vector<int> indices;
+    int points_num = petal_cloud->size();
+    for (int i = 0; i < points_num; ++ i)
+        indices.push_back(i);
+
+    std::random_shuffle(indices.begin(), indices.end());
+
+    int end_indice = int(points_num / radio);
+    for (int i = 0; i < end_indice; ++ i)
+    {
+        sampled_cloud->push_back(petal_cloud->at(indices[i]));
+    }
+
+    return sampled_cloud;
+}
+
 //void PointCloud::flower_segmentation(Flower* flower)
 //{
 //    segment_flags_.clear();
@@ -399,11 +431,6 @@ void PointCloud::boundary_segmentation(Flower* flower)
     }
 
     boundary_segments_ = tmp_bs;
-}
-
-void PointCloud::filterNoiseBoundary(Flower* flower)
-{
-    
 }
 
 osg::ref_ptr<PointCloud> PointCloud::getBoundary(int id)
