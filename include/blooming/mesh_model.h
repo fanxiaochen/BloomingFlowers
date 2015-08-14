@@ -120,18 +120,14 @@ public:
 
     void buildSelfKdTree();
 
-<<<<<<< HEAD
-
 	bool computeProjectionInsideTri( int& tri_id, CollidingPoint& colliding_p );
 
 	// 计算点到某个三角形的最短距离,返回投影点
 	double disancePoint3Tri3( osg::Vec3& p, int tri_id, osg::Vec3& proj_pos); 
 
-=======
     pcl::KdTreeFLANN<pcl::PointXYZ> buildKdTree();
 
     bool onDetectedBoundary(int index);
->>>>>>> phenix
 
 protected:
     virtual void updateImpl(void);
