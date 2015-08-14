@@ -402,7 +402,7 @@ void CollisionDetector::resolveCollision()
 		for( int j =0; j!= 3; ++j )
 		{
 			CollidingPoint collding_p;
-			collding_p.tri_id_ = fp.second.first;
+			collding_p.petal_id_ = fp.second.first;
 			collding_p.vertex_id_ = vertices[j];
 			collding_p.p_ = petals[fp.second.first].getVertices()->at(collding_p.vertex_id_);
 
@@ -410,7 +410,7 @@ void CollisionDetector::resolveCollision()
 
 			if( isAHead == true)
 			{
-				VertexIndex v_idx = std::make_pair( collding_p.tri_id_, collding_p.vertex_id_);
+				VertexIndex v_idx = std::make_pair( collding_p.petal_id_, collding_p.vertex_id_);
 				if( map_collidings.find(v_idx) != map_collidings.end() )
 				{
 					if( map_collidings[v_idx].dis2_ > collding_p.dis2_)
@@ -441,7 +441,7 @@ void CollisionDetector::resolveCollision()
 	}
 	for( int i = 0; i!= colliding_points_.size(); ++i)
 	{
-		int tri_id = colliding_points_[i].tri_id_;
+		int tri_id = colliding_points_[i].petal_id_;
 		petals[tri_id].getIntersectedVertices().push_back( colliding_points_[i].vertex_id_ );
 	}
 }

@@ -11,7 +11,7 @@ class PointCloud;
 
 struct CollidingPoint
 {
-	int             tri_id_;
+	int             petal_id_;
 	int             vertex_id_;
 	osg::Vec3       p_;
 	osg::Vec3		closest_p_;  // the closest surface point
