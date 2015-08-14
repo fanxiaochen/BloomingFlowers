@@ -517,6 +517,7 @@ void CollisionDetectionThread::run()
 	CollisionDetector collision_detector;
 	collision_detector.setFlower( flower_ );
 	collision_detector.checkCollision();
+	collision_detector.resolveCollision();
 	flower_->update();
 }
 

@@ -1,4 +1,4 @@
-#include <random>
+﻿#include <random>
 #include <fstream>
 
 #include <boost/filesystem.hpp>
@@ -297,20 +297,17 @@ void MeshModel::visualizeMesh(void)
         content_root_->addChild(bd_geo);
     }
 
-	if( show_collision_ && !intersected_triangles_.empty())
+	if( show_collision_ && !intersected_vertices_.empty())
 	{
 		osg::ref_ptr<osg::Geode> inter_geo(new osg::Geode);
 		osg::ref_ptr<osg::Geometry> inter_geometry = new osg::Geometry;
 		osg::ref_ptr<osg::Vec3Array> inter_vetices = new osg::Vec3Array;
 		osg::ref_ptr<osg::Vec4Array> inter_colors = new osg::Vec4Array;
-		inter_colors->push_back(osg::Vec4(112/255.0f, 173/255.0f, 71/255.0f, 0.0f));   //����ɫ
+		inter_colors->push_back(osg::Vec4(112/255.0f, 173/255.0f, 71/255.0f, 0.0f));   //草绿色
 
-		for (size_t i = 0, i_end = intersected_triangles_.size(); i < i_end; ++ i)
+		for (size_t i = 0, i_end = intersected_vertices_.size(); i < i_end; ++ i)
 		{
-			int t_idx = intersected_triangles_[i];
-			inter_vetices->push_back(vertices_->at( faces_[t_idx][0]));
-			inter_vetices->push_back(vertices_->at( faces_[t_idx][1]));
-			inter_vetices->push_back(vertices_->at( faces_[t_idx][2]));
+			inter_vetices->push_back(vertices_->at( intersected_vertices_[i] ));
 		}
 
 		inter_geometry->setUseDisplayList(true);
@@ -960,4 +957,160 @@ void MeshModel::determineVisibility()
     {
         visibility_[i] = 1;
     }
+}
+
+
+bool MeshModel::computeProjectionInsideTri( int& tri_id, CollidingPoint& colliding_p )
+{
+	std::vector<int>& vertex_id = faces_[tri_id];
+	osg::Vec3& A = vertices_->at(vertex_id[0]);
+	osg::Vec3& B = vertices_->at(vertex_id[1]); 
+	osg::Vec3& C = vertices_->at(vertex_id[2]);
+	osg::Vec3 normal = (B-A)^(C-A);
+	osg::Vec3& p = colliding_p.p_;
+
+	if( (p - A) * normal > 0 )
+	{
+		osg::Vec3 proj_pos;
+		double dis2 = disancePoint3Tri3( p, tri_id,proj_pos);
+		colliding_p.closest_p_ = proj_pos;
+		colliding_p.dis2_ = dis2;
+		colliding_p.normal_ = normal;
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+
+}
+
+
+// reference: http://www.geometrictools.com/Documentation/DistancePoint3Triangle3.pdf
+// 没有完整测试，假设没问题。
+double MeshModel::disancePoint3Tri3( osg::Vec3& p, int tri_id, osg::Vec3& proj_pos )
+{
+	std::vector<int>& vertex_id = faces_[tri_id];
+	osg::Vec3& A = vertices_->at(vertex_id[0]);
+	osg::Vec3& B = vertices_->at(vertex_id[1]); 
+	osg::Vec3& C = vertices_->at(vertex_id[2]);
+
+	osg::Vec3 E0 = A-B;
+	osg::Vec3 E1 = C-B;
+	osg::Vec3 D = B-p;
+
+	float a = E0*E0;
+	float b = E0*E1;
+	float c = E1*E1;
+	float d = E0*D;
+	float e = E1*D;
+	float f = D*D;
+	float det = a*c-d*d;
+	float s = b*e-c*d;    
+	float t = b*d-a*e;
+
+	if( s+t <= det )
+	{
+		if( s <0 )
+		{
+			if( t < 0)
+			{
+				// region 4
+				float tmp0 = d;
+				float tmp1 = e ;
+				if ( tmp1 > tmp0 ) // minimum on edge s=0
+				{	
+					s = 0 ;
+					t = ( tmp1 <= 0 ? 1 : ( e >= 0 ? 0 : e/c ) ) ;
+				}
+				else // minimum on edge t=0
+				{
+					t = 0 ;
+					s = ( tmp1 <= 0 ? 1 : ( d >= 0 ? 0 : d/a ) ) ;
+				}
+			}
+			else
+			{
+				// region 3
+				s = 0;
+				t = (e>= 0 ? 0 : ( -e>=c ? 1 : -e/c) );
+			}
+		}
+		else if( t< 0)
+		{
+			// region 5
+			t = 0 ;
+			s = ( d >= 0 ? 0 : ( -d >= a ? 1 : -d/ a ) ) ;
+		}
+		else
+		{
+			// region 0
+			float invDet = 1/det;
+			s *= invDet;
+			t *= invDet;
+		}
+	}
+	else
+	{
+		if( s<0)
+		{
+			// region 2;
+			float tmp0 = b+d;
+			float tmp1 = c+e;
+			if( tmp1 > tmp0 )  // minimum on edge s+t = 1;
+			{
+				float numer = tmp1 - tmp0;
+				float denom = a-2*b+c;
+				s = ( numer >= denom ? 1: numer/denom );
+				t = 1-s;
+			}
+			else   // minimum on edge s = 0;
+			{
+				s =0;
+				t = (tmp1 <= 0 ? 1:( e>=0 ? 0: -e/c));
+			}
+		}
+		else if( t< 0 )
+		{
+			// region 6
+			float tmp0 = c+e;
+			float tmp1 = b+d ;
+			if ( tmp1 > tmp0 ) // minimum on edge s+t=1
+			{	
+				float numer = tmp1 - tmp0 ;
+				float denom = a-2*b+c;
+				t = ( numer >= denom ? 1 : numer/denom ) ;
+				s = 1 - t ;
+			}
+			else // minimum on edge t=0
+			{
+				t = 0 ;
+				s = ( tmp1 <= 0 ? 1 : ( d >= 0 ? 0 : -d/a ) ) ;
+			}
+		}
+		else
+		{
+			// region 1
+			float tmp0 = b+d;
+			float tmp1 = c+e;
+			float numer = tmp1 - tmp0;
+			if( numer <= 0)
+			{
+				s = 0;
+			}
+			else
+			{
+				float denom = a-2*b+c;
+				s = ( numer >= denom ? 1: numer/denom );				
+			}
+			t = 1-s;
+		}
+	}
+
+	proj_pos = B + E0*s + E1*t;
+
+	return (proj_pos-p).length2();
+
 }

@@ -360,6 +360,16 @@ bool MainWindow::collision_detection()
 		osg::ref_ptr<Petal> petal_template = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
 		flower->getPetals().push_back(*petal_template); // deep copy
 	}
+	Eigen::MatrixXi petal_relation(6,6);
+	// 0 means no relation between two petals; 
+	// 1 means petal i is occlused by petal j;
+	petal_relation << 0,0,0,-1,0,-1,
+		0, 0, 0, 0, -1, -1,
+		0, 0, 0, -1, -1, 0,
+		1, 0, 1, 0, 0 ,0,
+		0, 1, 1, 0, 0, 0,
+		1, 1, 0, 0, 0, 0;
+	flower->getPetalRelation() = petal_relation;
 
 	CollisionDetectionThread* cd_thread = new CollisionDetectionThread(flower);
 	flower->show();

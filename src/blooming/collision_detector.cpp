@@ -368,12 +368,14 @@ void CollisionDetector::checkCollision()
 	for( int i = 0; i != intersected_pairs_.size(); ++i )
 	{
 		FacetPair& p = intersected_pairs_[i];
-		sets[p.first.first].insert( p.first.second );
-		sets[p.second.first].insert( p.second.second);		
+		std::vector<int>& vertices_a = petals[p.first.first].getFaces()[p.first.second];
+		std::vector<int>& vertices_b = petals[p.second.first].getFaces()[p.second.second];
+		sets[p.first.first].insert( vertices_a.begin(), vertices_a.end() );
+		sets[p.second.first].insert( vertices_b.begin(), vertices_b.end() ) ;		
 	}
 	for( int i= 0 ;i != petal_num; ++i )
 	{
-		petals[i].getIntersectedTriangles() = std::vector<int>( sets[i].begin(), sets[i].end());
+		petals[i].getIntersectedVertices() = std::vector<int>( sets[i].begin(), sets[i].end());
 	}
 
 }
@@ -381,16 +383,86 @@ void CollisionDetector::checkCollision()
 void CollisionDetector::resolveCollision()
 {
 	PetalRelation& petal_relation = flower_->getPetalRelation();
-	// check for the colliding point 
-	std::map<VertexIndex, CollidingPoint> colliding_points;
-	for( int i = 0; i != intersected_pairs_.size(); ++i )
+	Petals& petals = flower_->getPetals();
+
+	std::map< VertexIndex, CollidingPoint > map_collidings;
+	for( int i = 0;i!= intersected_pairs_.size(); ++i )
 	{
-		FacetPair p = intersected_pairs_[i];
-		if( petal_relation(p.first.first, p.second.first) == -1)
+		FacetPair fp = intersected_pairs_[i];
+		if( petal_relation(fp.first.first, fp.second.first) == 0)
+			continue;
+
+		if( petal_relation(fp.first.first, fp.second.first) == -1)
 		{
-			p.swap(intersected_pairs_[i]);
+			fp.first = intersected_pairs_[i].second;
+			fp.second = intersected_pairs_[i].first;
+		}
+
+		std::vector<int>& vertices = petals[ fp.second.first].getFaces()[fp.second.second];
+		for( int j =0; j!= 3; ++j )
+		{
+			CollidingPoint collding_p;
+			collding_p.tri_id_ = fp.second.first;
+			collding_p.vertex_id_ = vertices[j];
+			collding_p.p_ = petals[fp.second.first].getVertices()->at(collding_p.vertex_id_);
+
+			bool isAHead = petals[fp.first.first].computeProjectionInsideTri(  fp.first.second , collding_p);
+
+			if( isAHead == true)
+			{
+				VertexIndex v_idx = std::make_pair( collding_p.tri_id_, collding_p.vertex_id_);
+				if( map_collidings.find(v_idx) != map_collidings.end() )
+				{
+					if( map_collidings[v_idx].dis2_ > collding_p.dis2_)
+					{
+						map_collidings[v_idx] = collding_p;
+					}
+				}
+				else
+				{
+					map_collidings[v_idx] = collding_p;
+				}
+			}
 		}
 	}
-	
+	colliding_points_.clear();
+	colliding_points_.resize( map_collidings.size() );
+	int cur_idx = 0;
+	for( std::map<VertexIndex, CollidingPoint>::iterator mit = map_collidings.begin(); 
+		mit != map_collidings.end(); ++mit )
+	{
+		colliding_points_[cur_idx] = mit->second;
+		++cur_idx;
+	}
+
+	for( int i = 0; i!= petals.size(); ++i )
+	{
+		petals[i].getIntersectedVertices().clear();
+	}
+	for( int i = 0; i!= colliding_points_.size(); ++i)
+	{
+		int tri_id = colliding_points_[i].tri_id_;
+		petals[tri_id].getIntersectedVertices().push_back( colliding_points_[i].vertex_id_ );
+	}
 }
+
+// 	std::vector<Petal>& petals = flower_->getPetals();
+// 
+// 	osg::Vec3 p1(1.5,1.5,1);  // region 1;
+// 	osg::Vec3 p2(0.2, 0.2, 1); // region 0;
+// 	osg::Vec3 p3(-0.2, 2.5, 1);  // region 2;
+// 	osg::Vec3 p4(-1, 1, 1); // region 3;
+// 	osg::Vec3 p5(-1, -1, 1);  // region 4;
+// 	osg::Vec3 p6(0.25, -0.2, 1);  // region 5;
+// 	osg::Vec3 p7( 3, -0.2, 1);  // region 6;
+// 
+// 	osg::Vec3 proj_pos;
+// 	petals[0].disancePoint3Tri3(p7, 0, proj_pos);
+// 	petals[0].disancePoint3Tri3(p1, 0, proj_pos);
+// 	petals[0].disancePoint3Tri3(p2, 0, proj_pos);
+// 	petals[0].disancePoint3Tri3(p3, 0, proj_pos);
+// 	petals[0].disancePoint3Tri3(p4, 0, proj_pos);
+// 	petals[0].disancePoint3Tri3(p5, 0, proj_pos);
+// 	petals[0].disancePoint3Tri3(p6, 0, proj_pos);
+// 	petals[0].disancePoint3Tri3(p7, 0, proj_pos);
 

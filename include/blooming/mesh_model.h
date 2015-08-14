@@ -9,6 +9,16 @@
 
 class PointCloud;
 
+struct CollidingPoint
+{
+	int             tri_id_;
+	int             vertex_id_;
+	osg::Vec3       p_;
+	osg::Vec3		closest_p_;  // the closest surface point
+	osg::Vec3		normal_;     // the normal of that surface
+	float			dis2_;       // the distance              
+};
+
 class MeshModel : public Renderable
 {
 public:
@@ -80,7 +90,7 @@ public:
     inline bool& getHasTexture() { return has_texture_; }
     inline bool& getShowSkeleton() { return show_skeleton_; }
     inline bool& getShowBoundary() { return show_boundary_; }
-	inline std::vector<int>& getIntersectedTriangles()  { return intersected_triangles_; } 
+	inline std::vector<int>& getIntersectedVertices()  { return intersected_vertices_; } 
 
     // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
     void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
@@ -109,6 +119,12 @@ public:
     void showSkeletonState(bool show_skeleton);
 
     void buildSelfKdTree();
+
+
+	bool computeProjectionInsideTri( int& tri_id, CollidingPoint& colliding_p );
+
+	// 计算点到某个三角形的最短距离,返回投影点
+	double disancePoint3Tri3( osg::Vec3& p, int tri_id, osg::Vec3& proj_pos); 
 
 
 protected:
@@ -157,7 +173,7 @@ protected:
     std::vector<double>                 weights_; // the same size of vertices
     std::vector<int>                    detected_boundary_;
     std::vector<int>                    detected_tips_;
-	std::vector<int>                    intersected_triangles_;
+	std::vector<int>                    intersected_vertices_;
 
 
     size_t                              color_id_; // for visualization

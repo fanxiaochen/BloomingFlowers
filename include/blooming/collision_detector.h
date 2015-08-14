@@ -9,19 +9,12 @@ class CollisionDetector
 	typedef std::pair<int,int> VertexIndex;
 	typedef std::pair<FacetIndex, FacetIndex>  FacetPair;
 
-	struct CollidingPoint
-	{
-		int             petal_id_;    
-		int             vertex_id_;  
-		Eigen::Vector3d pos_;        // the cloest surface point
-		Eigen::Vector3d normal_;     // the normal of that surface
-	};
-
 public:
 	CollisionDetector();
 	void setFlower(Flower* flower);
 	
 	void checkCollision();
+
 	void resolveCollision();
 
 private:
