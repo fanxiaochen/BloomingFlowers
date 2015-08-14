@@ -17,8 +17,8 @@ class Solver
 public:
     typedef Eigen::MatrixXd CorresMatrix;
     typedef Eigen::Matrix3Xd CloudMatrix;
-    typedef Eigen::Matrix3Xd BoundaryMatrix;
     typedef Eigen::Matrix3Xd PetalMatrix;
+    typedef std::vector<int> BoundaryList;
     typedef Eigen::Matrix3Xd CovMatrix;
     typedef std::vector<double> WeightList;
     typedef std::vector<std::vector<int> > AdjList;
@@ -32,16 +32,25 @@ public:
     typedef std::vector<std::vector<int>> BranchList;
     typedef std::vector<int> HardCtrsIdx;
     typedef std::vector<int> VisList;
+
 public:
     typedef struct 
     {
         PetalMatrix         _origin_petal;
         PetalMatrix         _petal_matrix;
         CloudMatrix         _cloud_matrix;
-        BoundaryMatrix      _boundary_matrix;
-        CorresMatrix        _corres_matrix;
+
+        CloudMatrix         _inner_matrix;
+        CloudMatrix         _boundary_cloud; // different from boundary petal
+        BoundaryList        _boundary_petal;
+        CorresMatrix        _inner_corres;
+        CorresMatrix        _boundary_corres;
+        VisList             _boundary_vis;
+        VisList             _inner_vis;
+        WeightList          _boundary_weights;
+        WeightList          _inner_weights;
+
         CovMatrix           _cov_matrix;
-        WeightList          _weight_list;
         AdjList             _adj_list;
         FaceList            _face_list;
         WeightMatrix        _weight_matrix;
@@ -52,7 +61,6 @@ public:
         HandleMatrix        _handle_matrix;
         BranchList          _branch_list;
         HardCtrsIdx         _hc_idx;
-        VisList             _vis_list;
 
         void findSharedVertex(int pi, int pj, std::vector<int>& share_vertex)
         {
@@ -130,7 +138,8 @@ public:
     static int iter_num_;
     static double eps_;
 
-    static double lambda_data_fitting_;
+    static double lambda_boundary_fitting_;
+    static double lambda_inner_fitting_;
     static double lambda_skel_smooth_;
     static double noise_p_;
 
@@ -142,13 +151,10 @@ public:
 
     void deform();
 
-    // first stage deform
-    void init_global_deform(); // boundary fitting
+    // in order to program more easily, inner part also have boundary part...
+    // not restrict as method described
+    void boundary_inner_setting();
 
-    // second stage deform
-    void init_local_deform(); // boundary+inner fitting
-
-    //void global_deform();
 
 protected:
     void deform(int petal_id);
@@ -171,27 +177,9 @@ protected:
     double gaussian(int petal_id, int m_id, int c_id);
 
 
-    /*void global_deforming();
-    void lbs();
-
-    void e_step();
-    double m_step();
-
-    void initbuild();
-    void left_sys();
-    void right_sys();
-
-    double solve();
-    double energy();
-
-    void projection();
-    void update();*/
-
-
 protected:
     void init();
-    void initGlobalFittingParas();
-    void initLocalFittingParas();
+    void initFittingParas();
     void initMeshParas();
     void initSkelParas();
     void initTerms();
@@ -201,7 +189,8 @@ private:
     Flower* flower_;
     PointCloud* point_cloud_;
 
-    std::vector<DataFittingTerm> data_term_;
+    std::vector<DataFittingTerm> boundary_term_;
+    std::vector<DataFittingTerm> inner_term_;
     std::vector<ARAPTerm> arap_term_;
     std::vector<SkelSmoothTerm> skel_term_;
 
