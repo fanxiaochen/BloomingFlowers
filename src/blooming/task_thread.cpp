@@ -295,6 +295,7 @@ void LATrackThread::run()
         flower->getPetals().push_back(*petal_template); // deep copy
         mesh_file_system->hideMeshModel(mesh_indexes.values().at(i));
     }
+    flower->reorder();
 
     TipDetector tip_detector;
 
@@ -316,7 +317,6 @@ void LATrackThread::run()
     std::cout << "Forward Tracking..." << std::endl;
     forward_flower->show();
 
-    
 
     // LBS + ARAP tracking 
     for (size_t i = key_frame, i_end = end_frame;
@@ -328,24 +328,20 @@ void LATrackThread::run()
 
         std::cout << "detect flower boundary" << std::endl;
         tip_detector.setFlower(forward_flower);
-        tip_detector.detectBoundary(12, 12);
+        tip_detector.detectBoundary(12, 13);
 
         std::cout << "detect point cloud boundary" << std::endl;
         tip_detector.setPointCloud(forward_cloud);
-        tip_detector.detectBoundary(12, 12);
+        tip_detector.detectBoundary(12, 13);
 
         std::cout << "flower segmentation" << std::endl;
         forward_cloud->flower_segmentation(forward_flower);
 
         std::cout << "determine weights and visibility" << std::endl;
         forward_flower->determineWeights(forward_cloud);  // weights of gmm based on aligned cloud
-        forward_flower->determineVisibility(true); // visible or not
+        forward_flower->determineVisibility(forward_cloud); // visible or not
 
 
-       // forward_cloud->region_matching(forward_flower);
-
-        //tip_detector.setPointCloud(forward_cloud);
-        //tip_detector.detectTips(12, 12);  // detect tips
         std::cout << "registration" << std::endl;
         tracking_system_->la_registration(*forward_cloud, *forward_flower);
         forward_flower->save(flowers_folder, i);
@@ -358,30 +354,40 @@ void LATrackThread::run()
     forward_flower->hide();
 
 
-    //Flower* backward_flower = new Flower(*flower);
-    //osg::ref_ptr<PointCloud> backward_cloud;
-    //aligned_cloud = points_file_system->getPointCloud(key_frame);
+    Flower* backward_flower = new Flower(*flower);
+    osg::ref_ptr<PointCloud> backward_cloud;
 
-    //std::cout << "Backward Tracking..." << std::endl;
-    //backward_flower->show();
-    //for (int i = key_frame - 1, i_end = start_frame;
-    //    i >= i_end; -- i)
-    //{
-    //    std::cout << "tracking [frame " << i << "]" << std::endl;
+    std::cout << "Backward Tracking..." << std::endl;
+    backward_flower->show();
+    for (int i = key_frame - 1, i_end = start_frame;
+        i >= i_end; -- i)
+    {
+        std::cout << "tracking [frame " << i << "]" << std::endl;
+        backward_cloud = points_file_system->getPointCloud(i);
 
-    //    backward_flower->determineWeights(aligned_cloud);  // weights of gmm based on aligned cloud
+        std::cout << "detect flower boundary" << std::endl;
+        tip_detector.setFlower(backward_flower);
+        tip_detector.detectBoundary(12, 13);
 
-    //    backward_cloud = points_file_system->getPointCloud(i);
-    //    backward_cloud->flower_segmentation(backward_flower);
+        std::cout << "detect point cloud boundary" << std::endl;
+        tip_detector.setPointCloud(backward_cloud);
+        tip_detector.detectBoundary(12, 13);
 
-    //    tracking_system_->la_registration(*backward_cloud, *backward_flower);
-    //    backward_flower->save(flowers_folder, i);
-    //    backward_flower->update();
+        std::cout << "flower segmentation" << std::endl;
+        backward_cloud->flower_segmentation(backward_flower);
 
-    //    points_file_system->hidePointCloud(i + 1);
-    //    points_file_system->showPointCloud(i);
-    //    aligned_cloud = backward_cloud;
-    //}
+        std::cout << "determine weights and visibility" << std::endl;
+        backward_flower->determineWeights(backward_cloud);  // weights of gmm based on aligned cloud
+        backward_flower->determineVisibility(backward_cloud); // visible or not
+
+        tracking_system_->la_registration(*backward_cloud, *backward_flower);
+        backward_flower->save(flowers_folder, i);
+        backward_flower->update();
+
+        points_file_system->hidePointCloud(i + 1);
+        points_file_system->showPointCloud(i);
+
+    }
 
     std::cout << "LBS + ARAP Tracking Finished!" << std::endl;
 }
@@ -437,10 +443,10 @@ void TipThread::run()
     tip_detector.detectBoundary(12, 12);
     flower->update();
 
-    osg::ref_ptr<PointCloud> cloud = points_file_system->getPointCloud(32);
+    /*osg::ref_ptr<PointCloud> cloud = points_file_system->getPointCloud(32);
     tip_detector.setPointCloud(cloud);
     tip_detector.detectBoundary(12, 12);
-    cloud->expire();
+    cloud->expire();*/
 
 
     std::cout << "Tips Detection Finished!" << std::endl;

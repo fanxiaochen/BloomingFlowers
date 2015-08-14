@@ -224,30 +224,30 @@ void MeshModel::visualizeMesh(void)
     
 
 
-    /*if (!visibility_.empty())
+    if (!visibility_.empty())
     {
-    osg::ref_ptr<osg::Geode> vis_geo(new osg::Geode);
-    osg::ref_ptr<osg::Geometry> vis_geometry = new osg::Geometry;
-    osg::ref_ptr<osg::Vec3Array> vis_vetices = new osg::Vec3Array;
-    osg::ref_ptr<osg::Vec4Array> vis_colors = new osg::Vec4Array;
-    vis_colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 0.0f));
+        osg::ref_ptr<osg::Geode> vis_geo(new osg::Geode);
+        osg::ref_ptr<osg::Geometry> vis_geometry = new osg::Geometry;
+        osg::ref_ptr<osg::Vec3Array> vis_vetices = new osg::Vec3Array;
+        osg::ref_ptr<osg::Vec4Array> vis_colors = new osg::Vec4Array;
+        vis_colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 0.0f));
 
-    for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
-    {
-    if (visibility_[i] == 1)
-    vis_vetices->push_back(vertices_->at(i));
+        for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
+        {
+            if (visibility_[i] == 1)
+                vis_vetices->push_back(vertices_->at(i));
+        }
+
+        vis_geometry->setUseDisplayList(true);
+        vis_geometry->setVertexArray(vis_vetices);
+        vis_geometry->setColorArray(vis_colors);
+        vis_colors->setBinding(osg::Array::BIND_OVERALL);
+        vis_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vis_vetices->size()));
+        vis_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
+
+        vis_geo->addDrawable(vis_geometry);
+        content_root_->addChild(vis_geo);
     }
-
-    vis_geometry->setUseDisplayList(true);
-    vis_geometry->setVertexArray(vis_vetices);
-    vis_geometry->setColorArray(vis_colors);
-    vis_colors->setBinding(osg::Array::BIND_OVERALL);
-    vis_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vis_vetices->size()));
-    vis_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
-
-    vis_geo->addDrawable(vis_geometry);
-    content_root_->addChild(vis_geo);
-    }*/
 
     if (!hard_index_.empty())
     {
@@ -785,7 +785,32 @@ void MeshModel::buildSelfKdTree()
     kdtree_.setInputCloud (cloud);
 }
 
+pcl::KdTreeFLANN<pcl::PointXYZ> MeshModel::buildKdTree()
+{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
+    for (size_t i = 0, i_end = this->getVertices()->size(); i < i_end; ++ i)
+    {
+        const osg::Vec3& point = this->getVertices()->at(i);
+
+        pcl::PointXYZ pcl_point(point.x(), point.y(), point.z());
+        cloud->push_back(pcl_point);
+    }
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    kdtree.setInputCloud (cloud);
+
+    return kdtree;
+}
+
+bool MeshModel::onDetectedBoundary(int index)
+{
+    for (int i : detected_boundary_)
+    {
+        if (i == index)
+            return true;
+    }
+    return false;
+}
 
 void MeshModel::initializeVisibility()
 {
@@ -949,14 +974,21 @@ double MeshModel::gaussian(int m_id, int c_id, PointCloud* segmented_cloud)
     return p;
 }
 
-void MeshModel::determineVisibility()
+
+// need to be considered
+// two ways to decide: high confident cloud and camera position
+void MeshModel::determineVisibility(PointCloud* aligned_cloud, int petal_id)
 {
+    /*osg::ref_ptr<PointCloud> segmented_cloud = aligned_cloud->getPetalCloud(petal_id);
+    int cloud_nums = segmented_cloud->size();*/
+
     visibility_.resize(vertices_->size());
     
     for (int i : detected_boundary_)
     {
         visibility_[i] = 1;
     }
+<<<<<<< HEAD
 }
 
 
@@ -1114,3 +1146,15 @@ double MeshModel::disancePoint3Tri3( osg::Vec3& p, int tri_id, osg::Vec3& proj_p
 	return (proj_pos-p).length2();
 
 }
+=======
+
+    /*std::vector<int> knn_idx;
+    std::vector<float> knn_dists;
+    segmented_cloud->searchNearestIdx(this, knn_idx, knn_dists);
+
+    for (int i : knn_idx)
+    {
+    visibility_[i] = 1;
+    }*/
+}
+>>>>>>> phenix

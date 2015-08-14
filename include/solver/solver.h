@@ -17,6 +17,7 @@ class Solver
 public:
     typedef Eigen::MatrixXd CorresMatrix;
     typedef Eigen::Matrix3Xd CloudMatrix;
+    typedef Eigen::Matrix3Xd BoundaryMatrix;
     typedef Eigen::Matrix3Xd PetalMatrix;
     typedef Eigen::Matrix3Xd CovMatrix;
     typedef std::vector<double> WeightList;
@@ -37,6 +38,7 @@ public:
         PetalMatrix         _origin_petal;
         PetalMatrix         _petal_matrix;
         CloudMatrix         _cloud_matrix;
+        BoundaryMatrix      _boundary_matrix;
         CorresMatrix        _corres_matrix;
         CovMatrix           _cov_matrix;
         WeightList          _weight_list;
@@ -140,7 +142,13 @@ public:
 
     void deform();
 
-    void global_deform();
+    // first stage deform
+    void init_global_deform(); // boundary fitting
+
+    // second stage deform
+    void init_local_deform(); // boundary+inner fitting
+
+    //void global_deform();
 
 protected:
     void deform(int petal_id);
@@ -182,7 +190,10 @@ protected:
 
 protected:
     void init();
-    void initParas();
+    void initGlobalFittingParas();
+    void initLocalFittingParas();
+    void initMeshParas();
+    void initSkelParas();
     void initTerms();
     double zero_correction(double value);
 

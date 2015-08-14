@@ -33,6 +33,8 @@ public:
     void save(const std::string& flower_folder, int frame);
     void load(const std::string& flower_path);
 
+    void reorder();
+
     void clear();
 
     void show();
@@ -45,7 +47,7 @@ public:
     void initVisibility();
     void determineVisibility();
     void determineWeights(PointCloud* aligned_cloud);
-    void determineVisibility(bool testfunc = true); // for test
+    void determineVisibility(PointCloud* aligned_cloud); // for test
 
     void setTextureState(bool is_shown);
     void setSkeletonState(bool is_shown);
