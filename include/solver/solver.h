@@ -5,6 +5,7 @@
 
 #include <Eigen/Sparse>
 
+#include "boundary_fitting_term.h"
 #include "data_fitting_term.h"
 #include "arap_term.h"
 #include "skel_smooth_term.h"
@@ -36,20 +37,23 @@ public:
 public:
     typedef struct 
     {
+        // original petal and cloud data
         PetalMatrix         _origin_petal;
         PetalMatrix         _petal_matrix;
         CloudMatrix         _cloud_matrix;
 
+        // boundary and inner parts' data
         CloudMatrix         _inner_matrix;
         CloudMatrix         _boundary_cloud; // different from boundary petal
-        BoundaryList        _boundary_petal;
+        BoundaryList        _boundary_petal; // indices of original petal
         CorresMatrix        _inner_corres;
         CorresMatrix        _boundary_corres;
-        VisList             _boundary_vis;
+        VisList             _boundary_vis;  // vislist's size = whole vertices' size
         VisList             _inner_vis;
-        WeightList          _boundary_weights;
+        WeightList          _boundary_weights;  // weightlist's size = actual vertices' size
         WeightList          _inner_weights;
 
+        // mesh and skeleton parts' data
         CovMatrix           _cov_matrix;
         AdjList             _adj_list;
         FaceList            _face_list;
@@ -174,7 +178,8 @@ protected:
     void projection(int petal_id);
     void update(int petal_id);
 
-    double gaussian(int petal_id, int m_id, int c_id);
+    double boundary_gaussian(int petal_id, int m_id, int c_id); // m_id bases on original petal, c_id is current cloud's index
+    double inner_gaussian(int petal_id, int m_id, int c_id);// m_id bases on original petal, c_id is current cloud's index
 
 
 protected:
@@ -189,7 +194,7 @@ private:
     Flower* flower_;
     PointCloud* point_cloud_;
 
-    std::vector<DataFittingTerm> boundary_term_;
+    std::vector<BoundaryFittingTerm> boundary_term_;
     std::vector<DataFittingTerm> inner_term_;
     std::vector<ARAPTerm> arap_term_;
     std::vector<SkelSmoothTerm> skel_term_;

@@ -136,11 +136,13 @@ set(filesystem_srcs	${filesystem_src}/file_system_model.cpp
                     )
 
 set(solver_incs 	${solver_inc}/data_fitting_term.h
+                    ${solver_inc}/boundary_fitting_term.h
 					${solver_inc}/arap_term.h
 					${solver_inc}/skel_smooth_term.h
 					${solver_inc}/solver.h)
 
 set(solver_srcs		${solver_src}/data_fitting_term.cpp
+                    ${solver_src}/boundary_fitting_term.cpp
 					${solver_src}/arap_term.cpp
 					${solver_src}/skel_smooth_term.cpp
 					${solver_src}/solver.cpp)

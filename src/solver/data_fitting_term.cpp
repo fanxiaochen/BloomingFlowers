@@ -1,3 +1,6 @@
+
+// inner data fitting term including boundary data for convenient programming
+
 #include "data_fitting_term.h"
 #include "solver.h"
 
@@ -27,7 +30,7 @@ void DataFittingTerm::buildA()
 {
     Solver::DeformPetal& deform_petal = Solver::deform_petals_[petal_id_];
     Solver::CovMatrix& cov_matrix = deform_petal._cov_matrix;
-    Solver::CorresMatrix& corres_matrix = deform_petal._corres_matrix;
+    Solver::CorresMatrix& corres_matrix = deform_petal._inner_corres;
     Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
     int ver_num = deform_petal._petal_matrix.cols();
 
@@ -41,9 +44,9 @@ void DataFittingTerm::buildA()
     {
         double wi_x = 0, wi_y = 0, wi_z = 0;
 
-        wi_x += zero_correction(Solver::lambda_data_fitting_*(2/cov_matrix.col(i)[0])*corres_matrix.row(i).sum());
-        wi_y += zero_correction(Solver::lambda_data_fitting_*(2/cov_matrix.col(i)[1])*corres_matrix.row(i).sum());
-        wi_z += zero_correction(Solver::lambda_data_fitting_*(2/cov_matrix.col(i)[2])*corres_matrix.row(i).sum());
+        wi_x += zero_correction(Solver::lambda_inner_fitting_*(2/cov_matrix.col(i)[0])*corres_matrix.row(i).sum());
+        wi_y += zero_correction(Solver::lambda_inner_fitting_*(2/cov_matrix.col(i)[1])*corres_matrix.row(i).sum());
+        wi_z += zero_correction(Solver::lambda_inner_fitting_*(2/cov_matrix.col(i)[2])*corres_matrix.row(i).sum());
 
         diag_terms[0].push_back(Eigen::Triplet<double>(i, i, wi_x));
         diag_terms[1].push_back(Eigen::Triplet<double>(i, i, wi_y));
@@ -72,8 +75,8 @@ void DataFittingTerm::buildb()
 {
     Solver::DeformPetal& deform_petal = Solver::deform_petals_[petal_id_];
     Solver::PetalMatrix& origin_petal = deform_petal._origin_petal;
-    Solver::CloudMatrix& cloud_matrix = deform_petal._cloud_matrix;
-    Solver::CorresMatrix& corres_matrix = deform_petal._corres_matrix;
+    Solver::CloudMatrix& cloud_matrix = deform_petal._inner_matrix;
+    Solver::CorresMatrix& corres_matrix = deform_petal._inner_corres;
     Solver::CovMatrix& cov_matrix = deform_petal._cov_matrix;
     Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
     int ver_num = origin_petal.cols();
@@ -89,7 +92,7 @@ void DataFittingTerm::buildb()
             weight_cloud += corres_matrix(i, n)*cloud_matrix.col(n);
         }
 
-        b_.col(i) = Solver::lambda_data_fitting_*2*cov_matrix.col(i).asDiagonal().inverse()*weight_cloud;
+        b_.col(i) = Solver::lambda_inner_fitting_*2*cov_matrix.col(i).asDiagonal().inverse()*weight_cloud;
     }
 
     // for Affine Transform Variables

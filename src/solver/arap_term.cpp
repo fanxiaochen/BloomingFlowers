@@ -31,7 +31,7 @@ void ARAPTerm::buildA()
 {
     Solver::DeformPetal& deform_petal = Solver::deform_petals_[petal_id_];
     Solver::CovMatrix& cov_matrix = deform_petal._cov_matrix;
-    Solver::CorresMatrix& corres_matrix = deform_petal._corres_matrix;
+    Solver::CorresMatrix& corres_matrix = deform_petal._inner_corres;
     Solver::WeightMatrix& weight_matrix = deform_petal._weight_matrix;
     Solver::AdjList& adj_list = deform_petal._adj_list;
     Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
