@@ -4,7 +4,7 @@
 
 int Solver::iter_num_ = 30;
 double Solver::eps_ = 1e-3;
-double Solver::lambda_boundary_fitting_ = 0.03;
+double Solver::lambda_boundary_fitting_ = 0.02;
 double Solver::lambda_inner_fitting_ = 0.01;
 double Solver::lambda_skel_smooth_ = 0;
 double Solver::noise_p_ = 0.0;
