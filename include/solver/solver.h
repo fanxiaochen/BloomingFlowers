@@ -44,8 +44,7 @@ public:
 
         // boundary and inner parts' data
         CloudMatrix         _inner_matrix;
-        CloudMatrix         _boundary_cloud; // different from boundary petal
-        BoundaryList        _boundary_petal; // indices of original petal
+        CloudMatrix         _boundary_cloud; // different from boundary 
         CorresMatrix        _inner_corres;
         CorresMatrix        _boundary_corres;
         VisList             _boundary_vis;  // vislist's size = whole vertices' size
