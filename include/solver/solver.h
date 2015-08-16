@@ -152,7 +152,11 @@ public:
     void setFlower(Flower* flower);
     void setPointCloud(PointCloud* point_cloud);
 
+    // deform one by one
     void deform();
+
+    // deform as a whole
+    void full_deform();
 
     // in order to program more easily, inner part also have boundary part...
     // not restrict as method described
@@ -167,7 +171,7 @@ protected:
     void e_step(int petal_id);
     double m_step(int petal_id);
 
-    void initbuild(int petal_id);
+    void initBuild(int petal_id);
     void left_sys(int petal_id);
     void right_sys(int petal_id);
 
@@ -180,6 +184,22 @@ protected:
     double boundary_gaussian(int petal_id, int m_id, int c_id); // m_id bases on original petal, c_id is current cloud's index
     double inner_gaussian(int petal_id, int m_id, int c_id);// m_id bases on original petal, c_id is current cloud's index
 
+
+    void deforming();
+    void lbs();
+
+    void e_step();
+    double m_step();
+
+    void initBuild();
+    void left_sys();
+    void right_sys();
+
+    double solve();
+    double energy();
+
+    void projection();
+    void update();
 
 protected:
     void init();
@@ -200,6 +220,9 @@ private:
 
     std::vector<std::vector<Eigen::MatrixXd>> A_; // x, y, z
     std::vector<Eigen::Matrix3Xd> b_;
+
+    std::vector<Eigen::MatrixXd> FA_; // x, y, z
+    Eigen::Matrix3Xd Fb_;
 
     Eigen::SparseLU<Eigen::SparseMatrix<double> > lu_solver_;
 

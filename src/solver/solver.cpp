@@ -38,6 +38,8 @@ void Solver::init()
     A_ = std::vector<std::vector<Eigen::MatrixXd>>(petal_num_, std::vector<Eigen::MatrixXd>(3));
     b_.resize(petal_num_);
 
+    FA_.resize(3);
+
     deform_petals_.resize(petal_num_);
 }
 
@@ -522,7 +524,7 @@ double Solver::m_step(int petal_id)
 
     double e = 0;
 
-    initbuild(petal_id);
+    initBuild(petal_id);
     left_sys(petal_id);
     right_sys(petal_id);
 
@@ -627,7 +629,7 @@ double Solver::zero_correction(double value)
     return value;
 }
 
-void Solver::initbuild(int petal_id)
+void Solver::initBuild(int petal_id)
 {
     boundary_term_[petal_id].build();
     inner_term_[petal_id].build();
@@ -694,4 +696,222 @@ double Solver::boundary_gaussian(int petal_id, int m_id, int c_id)
         exp((-1/2.0)*xu.transpose()*cov_mat.col(m_id).asDiagonal().inverse()*xu);
 
     return p;
+}
+
+
+void Solver::full_deform()
+{
+    std::cout << "Start Deforming..." << std::endl;
+    
+    int iter_num = 0;
+    double eps = 1;
+
+    double e = 0;
+
+    std::cout << "Start EM Iteration..." << std::endl;
+
+    do 
+    {
+        e_step();
+
+        double e_n = m_step();
+
+        eps = std::fabs((e_n - e) / e_n);
+        e = e_n;
+
+        std::cout << "In EM Iteration \t" << "iter: " << ++ iter_num << "\tdelta: " << eps << std::endl;
+
+    } while (iter_num < iter_num_ && eps > eps_ );
+
+    // flower deformed
+    deforming();
+}
+
+void Solver::e_step()
+{
+    for (size_t i = 0; i < petal_num_; ++ i)
+    {
+        e_step(i);
+    }
+}
+
+double Solver::m_step()
+{
+    std::cout << "M-Step:" << std::endl;
+
+    // update gmm's weights
+    for (size_t i = 0; i < petal_num_; ++ i)
+    {
+        {
+            CorresMatrix& corres_mat = deform_petals_[i]._boundary_corres;
+            WeightList& weight_list = deform_petals_[i]._boundary_weights;
+            for (size_t i = 0, i_end = weight_list.size(); i < i_end; ++ i)
+            {
+                weight_list[i] = corres_mat.row(i).sum() / corres_mat.cols();
+            }
+        }
+
+        {
+            CorresMatrix& corres_mat = deform_petals_[i]._inner_corres;
+            WeightList& weight_list = deform_petals_[i]._inner_weights;
+            for (size_t i = 0, i_end = weight_list.size(); i < i_end; ++ i)
+            {
+                weight_list[i] = corres_mat.row(i).sum() / corres_mat.cols();
+            }
+        }
+    }
+
+
+    // update expectation
+    int iter = 0;
+    double eps = 0;
+
+    double e = 0;
+
+    initBuild();
+    std::cout << "left?" << std::endl;
+    left_sys();
+    std::cout << "right?" << std::endl;
+    right_sys();
+
+    do {
+        double e_n = solve();
+        std::cout << "solve?" << std::endl;
+        eps = std::fabs((e_n - e) / e_n);
+        e = e_n;
+
+        projection();
+        update();
+        right_sys(); // the update only effects right side 
+
+        iter ++;
+
+    }while(eps > eps_ && iter < iter_num_);
+
+    return e;
+
+}
+
+void Solver::deforming()
+{
+    for (size_t i = 0; i < petal_num_; ++ i)
+    {
+        deforming(i);
+    }
+}
+
+void Solver::initBuild()
+{
+    for (size_t i = 0; i < petal_num_; ++ i)
+    {
+        boundary_term_[i].build();
+        inner_term_[i].build();
+        arap_term_[i].build();
+        skel_term_[i].build();
+    }
+}
+
+void Solver::left_sys()
+{
+    // generate and merge
+    for (int i = 0; i < 3; ++ i)
+    {
+        int row_idx = 0, col_idx = 0;
+        for (size_t j = 0; j < petal_num_; ++ j)
+        {
+            A_[j][i] = boundary_term_[j].A()[i] + inner_term_[j].A()[i] + 
+                arap_term_[j].A()[i] + skel_term_[j].A()[i];
+
+            FA_[i].conservativeResize(row_idx + A_[j][i].rows(), col_idx + A_[j][i].cols());
+            FA_[i].bottomRightCorner(A_[j][i].rows(), A_[j][i].cols()) = A_[j][i];
+
+            row_idx += A_[j][i].rows();
+            col_idx += A_[j][i].cols();
+        }
+    }
+
+}
+
+void Solver::right_sys()
+{
+    // generate and merge
+    int col_idx = 0;
+    for (size_t j = 0; j < petal_num_; ++ j)
+    {
+        b_[j] = boundary_term_[j].b() + inner_term_[j].b() + 
+            arap_term_[j].b() + skel_term_[j].b();
+        Fb_.conservativeResize(3, col_idx + b_[j].cols());
+        Fb_.bottomRightCorner(3, b_[j].cols()) = b_[j];
+
+        col_idx += b_[j].cols();
+    }
+}
+
+double Solver::solve()
+{
+    // solve T
+    for (size_t i = 0; i < 3; ++ i)
+    {
+        Eigen::MatrixXd A = FA_[i];
+        Eigen::VectorXd b = Fb_.row(i).transpose();
+
+        Eigen::VectorXd next_values = A.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
+
+        // new T
+        int start_idx = 0;
+        for (size_t j = 0; j < petal_num_; ++ j)
+        {
+            HandleMatrix& handle_matrix = deform_petals_[j]._handle_matrix;
+            int handle_num = handle_matrix.rows();
+            AffineMatrix& affine_matrix = deform_petals_[j]._affine_matrix;
+            affine_matrix.col(i) = next_values.segment(start_idx, 4*handle_num);
+            start_idx += 4*handle_num;
+        }
+    }
+
+    // update vertices
+    lbs();
+
+    return energy();
+}
+
+void Solver::lbs()
+{
+    for (size_t j = 0; j < petal_num_; ++ j)
+    {
+        lbs(j);
+    }
+}
+
+double Solver::energy()
+{
+    double e = 0;
+    for (size_t j = 0; j < petal_num_; ++ j)
+    {
+        e += energy(j);
+    }
+
+    return e;
+}
+
+void Solver::projection()
+{
+    for (size_t j = 0; j < petal_num_; ++ j)
+    {
+        boundary_term_[j].projection();
+        inner_term_[j].projection();
+        arap_term_[j].projection();
+        skel_term_[j].projection();
+    }
+}
+
+void Solver::update()
+{
+    for (size_t j = 0; j < petal_num_; ++ j)
+    {
+        boundary_term_[j].update();
+        inner_term_[j].update();
+        arap_term_[j].update();
+        skel_term_[j].update();
+    }
 }
