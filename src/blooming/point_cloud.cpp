@@ -141,7 +141,7 @@ void PointCloud::visualizePoints()
     // for boundary
     if (show_boundary_)
     {
-        /*osg::ref_ptr<osg::Vec3Array>  bvertices = new osg::Vec3Array;
+        osg::ref_ptr<osg::Vec3Array>  bvertices = new osg::Vec3Array;
         osg::ref_ptr<osg::Vec4Array>  bcolors = new osg::Vec4Array;
         for (size_t i = 0, i_end = boundary_indices_.size(); i < i_end; ++ i)
         {
@@ -156,9 +156,9 @@ void PointCloud::visualizePoints()
         bgeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
         bgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bvertices->size()));
         bgeometry->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f));
-        geode->addDrawable(bgeometry);*/
+        geode->addDrawable(bgeometry);
 
-        for (size_t i = 0; i < boundary_segments_.size(); i ++)
+        /*for (size_t i = 0; i < boundary_segments_.size(); i ++)
         {
             osg::ref_ptr<osg::Vec3Array>  bvertices = new osg::Vec3Array;
             osg::ref_ptr<osg::Vec4Array>  bcolors = new osg::Vec4Array;
@@ -176,7 +176,7 @@ void PointCloud::visualizePoints()
             bgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bvertices->size()));
             bgeometry->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f));
             geode->addDrawable(bgeometry);
-        }
+        }*/
     }
     
     content_root_->addChild(geode);
@@ -397,40 +397,40 @@ void PointCloud::boundary_segmentation(Flower* flower)
         }
     }
 
-    // filtering noise
-    std::vector<std::vector<int>> tmp_bs(boundary_segments_.size());
+    //// filtering noise
+    //std::vector<std::vector<int>> tmp_bs(boundary_segments_.size());
 
-    for (size_t i = 0, i_end = boundary_segments_.size(); i < i_end; ++ i)
-    {
-        Petal& petal = petals[i];
-        pcl::KdTreeFLANN<pcl::PointXYZ> kdtree = petal.buildKdTree();
-        int K = 3;
-        std::vector<int>& boundary_segment = boundary_segments_[i];
-        for (size_t j = 0, j_end = boundary_segment.size(); j < j_end; ++ j)
-        {
-            Point& point = this->at(boundary_segment[j]);
-            pcl::PointXYZ searchPoint;
-            std::vector<int> pointIdxNKNSearch(K);
-            std::vector<float> pointNKNSquaredDistance(K);
-            searchPoint.x = point.x;
-            searchPoint.y = point.y;
-            searchPoint.z = point.z;
-            if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
-            {
-                int t = 0;
-                for (; t < pointIdxNKNSearch.size(); ++ t)
-                {
-                    if (petal.onDetectedBoundary(pointIdxNKNSearch[t]))
-                        break;
-                }
+    //for (size_t i = 0, i_end = boundary_segments_.size(); i < i_end; ++ i)
+    //{
+    //    Petal& petal = petals[i];
+    //    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree = petal.buildKdTree();
+    //    int K = 3;
+    //    std::vector<int>& boundary_segment = boundary_segments_[i];
+    //    for (size_t j = 0, j_end = boundary_segment.size(); j < j_end; ++ j)
+    //    {
+    //        Point& point = this->at(boundary_segment[j]);
+    //        pcl::PointXYZ searchPoint;
+    //        std::vector<int> pointIdxNKNSearch(K);
+    //        std::vector<float> pointNKNSquaredDistance(K);
+    //        searchPoint.x = point.x;
+    //        searchPoint.y = point.y;
+    //        searchPoint.z = point.z;
+    //        if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+    //        {
+    //            int t = 0;
+    //            for (; t < pointIdxNKNSearch.size(); ++ t)
+    //            {
+    //                if (petal.onDetectedBoundary(pointIdxNKNSearch[t]))
+    //                    break;
+    //            }
 
-                if (t != pointIdxNKNSearch.size())
-                    tmp_bs[i].push_back(boundary_segment[j]);
-            }
-        }
-    }
+    //            if (t != pointIdxNKNSearch.size())
+    //                tmp_bs[i].push_back(boundary_segment[j]);
+    //        }
+    //    }
+    //}
 
-    boundary_segments_ = tmp_bs;
+    //boundary_segments_ = tmp_bs;
 }
 
 osg::ref_ptr<PointCloud> PointCloud::getBoundary(int id)

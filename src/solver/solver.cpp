@@ -4,8 +4,8 @@
 
 int Solver::iter_num_ = 30;
 double Solver::eps_ = 1e-3;
-double Solver::lambda_boundary_fitting_ = 0.02;
-double Solver::lambda_inner_fitting_ = 0.01;
+double Solver::lambda_boundary_fitting_ = 0.2;
+double Solver::lambda_inner_fitting_ = 0.1;
 double Solver::lambda_skel_smooth_ = 0;
 double Solver::noise_p_ = 0.0;
 std::vector<Solver::DeformPetal> Solver::deform_petals_;
@@ -769,14 +769,11 @@ double Solver::m_step()
     double e = 0;
 
     initBuild();
-    std::cout << "left?" << std::endl;
     left_sys();
-    std::cout << "right?" << std::endl;
     right_sys();
 
     do {
         double e_n = solve();
-        std::cout << "solve?" << std::endl;
         eps = std::fabs((e_n - e) / e_n);
         e = e_n;
 
@@ -813,6 +810,10 @@ void Solver::initBuild()
 
 void Solver::left_sys()
 {
+    FA_.clear();
+    FA_.resize(3);
+   /* std::cout << FA_[0].col(0) << std::endl;
+    std::cout << "SS" << std::endl;*/
     // generate and merge
     for (int i = 0; i < 3; ++ i)
     {
@@ -830,6 +831,7 @@ void Solver::left_sys()
         }
     }
 
+    /*std::cout << FA_[0].col(0) << std::endl;*/
 }
 
 void Solver::right_sys()
@@ -845,6 +847,8 @@ void Solver::right_sys()
 
         col_idx += b_[j].cols();
     }
+
+    //std::cout << Fb_.col(0) << std::endl;
 }
 
 double Solver::solve()
