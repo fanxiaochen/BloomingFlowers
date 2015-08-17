@@ -9,16 +9,6 @@
 
 class PointCloud;
 
-struct CollidingPoint
-{
-	int             petal_id_;
-	int             vertex_id_;
-	osg::Vec3       p_;
-	osg::Vec3		closest_p_;  // the closest surface point
-	osg::Vec3		normal_;     // the normal of that surface
-	float			dis2_;       // the distance              
-};
-
 class MeshModel : public Renderable
 {
 public:
@@ -61,6 +51,7 @@ public:
     inline const bool& getHasTexture() const { return has_texture_; }
     inline const bool& getShowSkeleton() const { return show_skeleton_; }
     inline const bool& getShowBoundary() const { return show_boundary_; }
+    inline const std::vector<int>& getIntersectedVertices() const { return intersected_vertices_; } 
 
     inline std::string& getObjName() { return obj_name_; }
     inline std::string& getObjFile() { return obj_file_; }

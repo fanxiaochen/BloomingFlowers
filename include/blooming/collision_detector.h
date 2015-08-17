@@ -3,6 +3,17 @@
 
 #include "flower.h"
 
+struct CollidingPoint
+{
+    CollidingPoint(int petal_id, int vertex_id){ petal_id_ = petal_id; vertex_id_ = vertex_id}
+    int             petal_id_;
+    int             vertex_id_;
+    osg::Vec3       p_;
+    osg::Vec3		closest_p_;  // the closest surface point
+    osg::Vec3		normal_;     // the normal of that surface
+    float			dis2_;       // the distance              
+};
+
 class CollisionDetector
 {
 	typedef std::pair<int,int> FacetIndex;
@@ -16,6 +27,8 @@ public:
 	void checkCollision();
 
 	void resolveCollision();
+
+    inline std::vector<CollidingPoint> getCollidingPoints() const { return colliding_points_; }
 
 private:
 	void checkCollision( int a_id, int b_id );

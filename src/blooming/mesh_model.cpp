@@ -71,6 +71,7 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     hard_index_ = mesh_model.hard_index_;
     detected_boundary_ = mesh_model.detected_boundary_;
     detected_tips_ = mesh_model.detected_tips_;
+    intersected_vertices_ = mesh_model.intersected_vertices_;
     color_id_ = mesh_model.color_id_;
     *skeleton_ = *mesh_model.skeleton_;
     biharmonic_weights_ = mesh_model.biharmonic_weights_;
@@ -107,6 +108,7 @@ MeshModel& MeshModel::operator =(const MeshModel& mesh_model) // deep copy
     hard_index_ = mesh_model.hard_index_;
     detected_boundary_ = mesh_model.detected_boundary_;
     detected_tips_ = mesh_model.detected_tips_;
+    intersected_vertices_ = mesh_model.intersected_vertices_;
     color_id_ = mesh_model.color_id_;
     *skeleton_ = *mesh_model.skeleton_;
     biharmonic_weights_ = mesh_model.biharmonic_weights_;

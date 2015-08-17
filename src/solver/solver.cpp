@@ -1,6 +1,7 @@
 #include "flower.h"
 #include "point_cloud.h"
 #include "solver.h"
+#include "collision_detector.h"
 
 int Solver::iter_num_ = 30;
 double Solver::eps_ = 1e-3;
@@ -777,9 +778,11 @@ double Solver::m_step()
         eps = std::fabs((e_n - e) / e_n);
         e = e_n;
 
+        collision_detection();
         projection();
         update();
-        right_sys(); // the update only effects right side 
+        left_sys();
+        right_sys(); 
 
         iter ++;
 
@@ -930,3 +933,61 @@ void Solver::update()
         skel_term_[j].update();
     }
 }
+
+void Solver::collision_detection()
+{
+    PetalMatrix_to_Flower();
+
+    CollisionDetector collision_detector;
+    collision_detector.setFlower(flower_);
+    collision_detector.checkCollision();
+    collision_detector.resolveCollision();
+    colliding_points_ = collision_detector.getCollidingPoints();
+
+    Flower_to_PetalMatrix();
+}
+
+// before collision detection
+// used in m step loop for collision detection
+void Solver::PetalMatrix_to_Flower()
+{
+    for (size_t i = 0; i < deform_petals_.size(); ++ i)
+    {
+        // vertices
+        Petals& petals = flower_->getPetals();
+        Petal& petal = petals.at(i);
+        PetalMatrix& pm = deform_petals_[i]._petal_matrix;
+
+        for (size_t j = 0, j_end = petal.getVertices()->size(); j < j_end; ++ j)
+        {
+            petal.getVertices()->at(j).x() = pm(0, j);
+            petal.getVertices()->at(j).y() = pm(1, j);
+            petal.getVertices()->at(j).z() = pm(2, j);
+        }
+    }
+}
+
+// after collision detection
+// used in m step loop for collision detection
+void Solver::Flower_to_PetalMatrix()
+{
+    Petals& petals = flower_->getPetals();
+    for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
+    {
+        IntersectList& intersect_list = deform_petals_[i]._intersect_list;
+        intersect_list = petals[i].getIntersectedVertices();
+    }
+}
+
+CollidingPoint Solver::getCollidingPoint(int petal_id, int ver_id)
+{
+    for (size_t i = 0, i_end = colliding_points_.size(); i < i_end; ++ i)
+    {
+        if (colliding_points_[i].petal_id_ == petal_id &&
+            colliding_points_[i].vertex_id_ == ver_id)
+            return colliding_points_[i];
+    }
+
+    return CollidingPoint(-1, -1);
+}
+

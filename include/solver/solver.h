@@ -10,6 +10,8 @@
 #include "arap_term.h"
 #include "skel_smooth_term.h"
 
+#include "collision_detector.h"
+
 class Flower;
 class PointCloud;
 
@@ -33,6 +35,7 @@ public:
     typedef std::vector<std::vector<int>> BranchList;
     typedef std::vector<int> HardCtrsIdx;
     typedef std::vector<int> VisList;
+    typedef std::vector<int> IntersectList;
 
 public:
     typedef struct 
@@ -64,6 +67,7 @@ public:
         HandleMatrix        _handle_matrix;
         BranchList          _branch_list;
         HardCtrsIdx         _hc_idx;
+        IntersectList       _intersect_list;
 
         void findSharedVertex(int pi, int pj, std::vector<int>& share_vertex)
         {
@@ -201,6 +205,11 @@ protected:
     void projection();
     void update();
 
+    void collision_detection();
+    void PetalMatrix_to_Flower();
+    void Flower_to_PetalMatrix();
+    CollidingPoint getCollidingPoint(int petal_id, int ver_id);
+
 protected:
     void init();
     void initFittingParas();
@@ -227,6 +236,9 @@ private:
     Eigen::SparseLU<Eigen::SparseMatrix<double> > lu_solver_;
 
     int petal_num_;
+
+
+    std::vector<CollidingPoint> colliding_points_;
 };
 
 #endif
