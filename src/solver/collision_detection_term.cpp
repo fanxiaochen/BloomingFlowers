@@ -1,4 +1,3 @@
-
 #include "collision_detection_term.h"
 #include "solver.h"
 
@@ -15,19 +14,48 @@ void CollisionDetectionTerm::build()
 
 void CollisionDetectionTerm::projection()
 {
+    collision_pair_.clear();
+    Solver::IntersectList& intersect_list = Solver::deform_petals_[petal_id_]._intersect_list;
+    for (int intersect_idx : intersect_list)
+    {
+        CollidingPoint cp = Solver::getCollidingPoint(petal_id_, intersect_idx);
+        collision_pair_.push_back(CollisionPair(cp.vertex_id_ ,computeProjection(cp)));
+        std::cout << cp.vertex_id_ << /*"  " << computeProjection(cp).x() << " " << computeProjection(cp).y() <<
+                                      " " << computeProjection(cp).z();*/ std::endl;
+    }
+
     return;
+}
+
+osg::Vec3 CollisionDetectionTerm::computeProjection(CollidingPoint cp)
+{
+    /*float a = cp.normal_.length2();
+    float b = 2 * (cp.normal_ * cp.closest_p_);
+    float c = cp.closest_p_.length2() - cp.dis2_;*/
+
+    float k = sqrt(cp.dis2_ / cp.normal_.length2());
+
+    osg::Vec3 projection;
+    projection.x() = cp.normal_.x() * k + cp.closest_p_.x();
+    projection.y() = cp.normal_.y() * k + cp.closest_p_.y();
+    projection.z() = cp.normal_.z() * k + cp.closest_p_.z();
+
+    /*std::cout << cp.normal_.x() << " " << cp.normal_.y() << " " << cp.normal_.z() << std::endl;
+    std::cout << "a " << a << " b " << b << " c " << c << " k " << k << std::endl;
+    std::cout << "x " << projection.x() << " y " << projection.y() << " z " << projection.z() << std::endl;*/
+    return projection;
 }
 
 void CollisionDetectionTerm::update()
 {
+    buildA();
+    buildb();
     return;
 }
 
 void CollisionDetectionTerm::buildA()
 {
     Solver::DeformPetal& deform_petal = Solver::deform_petals_[petal_id_];
-    Solver::CovMatrix& cov_matrix = deform_petal._cov_matrix;
-    Solver::CorresMatrix& corres_matrix = deform_petal._boundary_corres;
     Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
     int ver_num = deform_petal._petal_matrix.cols();
 
@@ -37,17 +65,11 @@ void CollisionDetectionTerm::buildA()
     L_.resize(3);
     A_.resize(3);
 
-    for (int i = 0; i < ver_num; ++i) 
+    for (auto& collision : collision_pair_)
     {
-        double wi_x = 0, wi_y = 0, wi_z = 0;
-
-        wi_x += zero_correction(Solver::lambda_boundary_fitting_*(2/cov_matrix.col(i)[0])*corres_matrix.row(i).sum());
-        wi_y += zero_correction(Solver::lambda_boundary_fitting_*(2/cov_matrix.col(i)[1])*corres_matrix.row(i).sum());
-        wi_z += zero_correction(Solver::lambda_boundary_fitting_*(2/cov_matrix.col(i)[2])*corres_matrix.row(i).sum());
-
-        diag_terms[0].push_back(Eigen::Triplet<double>(i, i, wi_x));
-        diag_terms[1].push_back(Eigen::Triplet<double>(i, i, wi_y));
-        diag_terms[2].push_back(Eigen::Triplet<double>(i, i, wi_z));
+        diag_terms[0].push_back(Eigen::Triplet<double>(collision.vertex_id_, collision.vertex_id_, Solver::lambda_collision_));
+        diag_terms[1].push_back(Eigen::Triplet<double>(collision.vertex_id_, collision.vertex_id_, Solver::lambda_collision_));
+        diag_terms[2].push_back(Eigen::Triplet<double>(collision.vertex_id_, collision.vertex_id_, Solver::lambda_collision_));
     }
 
     Eigen::SparseMatrix<double> diag_coeff_x(ver_num, ver_num);
@@ -73,25 +95,17 @@ void CollisionDetectionTerm::buildb()
 {
     Solver::DeformPetal& deform_petal = Solver::deform_petals_[petal_id_];
     Solver::PetalMatrix& origin_petal = deform_petal._origin_petal;
-    Solver::CloudMatrix& cloud_matrix = deform_petal._boundary_cloud;
-    Solver::CorresMatrix& corres_matrix = deform_petal._boundary_corres;
-    Solver::CovMatrix& cov_matrix = deform_petal._cov_matrix;
     Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
     int ver_num = origin_petal.cols();
 
     b_.resize(3, ver_num);
     b_.setZero();
 
-    for (size_t i = 0; i < ver_num; ++ i)
+    for (auto& collision : collision_pair_)
     {
-        Eigen::Vector3d weight_cloud;
-        weight_cloud.setZero();
-        for (size_t n = 0, n_end = corres_matrix.cols(); n < n_end; ++ n)
-        {
-            weight_cloud += corres_matrix(i, n)*cloud_matrix.col(n);
-        }
-
-        b_.col(i) = Solver::lambda_boundary_fitting_*2*cov_matrix.col(i).asDiagonal().inverse()*weight_cloud;
+        b_.col(collision.vertex_id_) << Solver::lambda_collision_ * collision.projection_.x(), 
+            Solver::lambda_collision_ * collision.projection_.y(), 
+            Solver::lambda_collision_ * collision.projection_.z();
     }
 
     // for Affine Transform Variables

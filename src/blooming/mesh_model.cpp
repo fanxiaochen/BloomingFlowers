@@ -16,6 +16,7 @@
 #include "obj_writer.h"
 #include "point_cloud.h"
 #include "mesh_model.h"
+#include "collision_detector.h"
 
 
 MeshModel::MeshModel()

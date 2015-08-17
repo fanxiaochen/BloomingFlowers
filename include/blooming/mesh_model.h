@@ -9,6 +9,8 @@
 
 class PointCloud;
 
+struct CollidingPoint;
+
 class MeshModel : public Renderable
 {
 public:

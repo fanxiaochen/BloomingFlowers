@@ -5,7 +5,6 @@
 
 struct CollidingPoint
 {
-    CollidingPoint(int petal_id, int vertex_id){ petal_id_ = petal_id; vertex_id_ = vertex_id}
     int             petal_id_;
     int             vertex_id_;
     osg::Vec3       p_;

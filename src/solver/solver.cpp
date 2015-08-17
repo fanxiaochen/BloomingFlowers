@@ -1,16 +1,16 @@
 #include "flower.h"
 #include "point_cloud.h"
 #include "solver.h"
-#include "collision_detector.h"
 
 int Solver::iter_num_ = 30;
 double Solver::eps_ = 1e-3;
 double Solver::lambda_boundary_fitting_ = 0.02;
 double Solver::lambda_inner_fitting_ = 0.01;
 double Solver::lambda_skel_smooth_ = 0;
+double Solver::lambda_collision_ = 1;
 double Solver::noise_p_ = 0.0;
 std::vector<Solver::DeformPetal> Solver::deform_petals_;
-
+std::vector<CollidingPoint> Solver::colliding_points_;
 
 
 Solver::Solver(PointCloud* point_cloud, Flower* flower)
@@ -42,6 +42,18 @@ void Solver::init()
     FA_.resize(3);
 
     deform_petals_.resize(petal_num_);
+
+
+    Eigen::MatrixXi petal_relation(6,6);
+    // 0 means no relation between two petals; 
+    // 1 means petal i is occlused by petal j;
+    petal_relation << 0,0,0,-1,0,-1,
+        0, 0, 0, 0, -1, -1,
+        0, 0, 0, -1, -1, 0,
+        1, 0, 1, 0, 0 ,0,
+        0, 1, 1, 0, 0, 0,
+        1, 1, 0, 0, 0, 0;
+    flower_->getPetalRelation() = petal_relation;
 }
 
 void Solver::boundary_inner_setting()
@@ -371,6 +383,11 @@ void Solver::initTerms()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         skel_term_.push_back(SkelSmoothTerm(i));
+    }
+
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        collision_term_.push_back(CollisionDetectionTerm(i));
     }
 }
 
@@ -808,6 +825,7 @@ void Solver::initBuild()
         inner_term_[i].build();
         arap_term_[i].build();
         skel_term_[i].build();
+        collision_term_[i].build();
     }
 }
 
@@ -833,7 +851,7 @@ void Solver::left_sys()
         for (size_t j = 0; j < petal_num_; ++ j)
         {
             A_[j][i] = boundary_term_[j].A()[i] + inner_term_[j].A()[i] + 
-                arap_term_[j].A()[i] + skel_term_[j].A()[i];
+                arap_term_[j].A()[i] + skel_term_[j].A()[i] + collision_term_[j].A()[i];
 
             FA_[i].block(row_idx, col_idx, A_[j][i].rows(), A_[j][i].cols()) = A_[j][i];
 
@@ -858,7 +876,7 @@ void Solver::right_sys()
     for (size_t j = 0; j < petal_num_; ++ j)
     {
         b_[j] = boundary_term_[j].b() + inner_term_[j].b() + 
-            arap_term_[j].b() + skel_term_[j].b();
+            arap_term_[j].b() + skel_term_[j].b() + collision_term_[j].b();
 
         Fb_.block(0, col_idx, b_[j].rows(), b_[j].cols()) = b_[j];
         col_idx += b_[j].cols();
@@ -920,6 +938,7 @@ void Solver::projection()
         inner_term_[j].projection();
         arap_term_[j].projection();
         skel_term_[j].projection();
+        collision_term_[j].projection();
     }
 }
 
@@ -931,6 +950,7 @@ void Solver::update()
         inner_term_[j].update();
         arap_term_[j].update();
         skel_term_[j].update();
+        collision_term_[j].update();
     }
 }
 
@@ -988,6 +1008,9 @@ CollidingPoint Solver::getCollidingPoint(int petal_id, int ver_id)
             return colliding_points_[i];
     }
 
-    return CollidingPoint(-1, -1);
+    CollidingPoint cp;
+    cp.petal_id_ = -1;
+    cp.vertex_id_ = -1;
+    return cp;
 }
 

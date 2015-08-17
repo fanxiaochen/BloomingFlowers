@@ -9,6 +9,7 @@
 #include "data_fitting_term.h"
 #include "arap_term.h"
 #include "skel_smooth_term.h"
+#include "collision_detection_term.h"
 
 #include "collision_detector.h"
 
@@ -148,6 +149,7 @@ public:
     static double lambda_boundary_fitting_;
     static double lambda_inner_fitting_;
     static double lambda_skel_smooth_;
+    static double lambda_collision_;
     static double noise_p_;
 
 public:
@@ -208,7 +210,9 @@ protected:
     void collision_detection();
     void PetalMatrix_to_Flower();
     void Flower_to_PetalMatrix();
-    CollidingPoint getCollidingPoint(int petal_id, int ver_id);
+
+public:
+    static CollidingPoint getCollidingPoint(int petal_id, int ver_id);
 
 protected:
     void init();
@@ -226,6 +230,7 @@ private:
     std::vector<DataFittingTerm> inner_term_;
     std::vector<ARAPTerm> arap_term_;
     std::vector<SkelSmoothTerm> skel_term_;
+    std::vector<CollisionDetectionTerm> collision_term_;
 
     std::vector<std::vector<Eigen::MatrixXd>> A_; // x, y, z
     std::vector<Eigen::Matrix3Xd> b_;
@@ -238,7 +243,7 @@ private:
     int petal_num_;
 
 
-    std::vector<CollidingPoint> colliding_points_;
+    static std::vector<CollidingPoint> colliding_points_;
 };
 
 #endif

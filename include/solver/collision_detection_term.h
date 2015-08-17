@@ -3,8 +3,17 @@
 
 #include <Eigen/Sparse>
 
+struct CollidingPoint;
+
 class Flower;
 class PointCloud;
+
+struct CollisionPair
+{
+    CollisionPair(int vertex_id, osg::Vec3 projection){ vertex_id_ = vertex_id; projection_ = projection; }
+    int vertex_id_;
+    osg::Vec3 projection_;
+};
 
 class CollisionDetectionTerm
 {
@@ -23,6 +32,8 @@ protected:
     void buildA();
     void buildb();
 
+    osg::Vec3 computeProjection(CollidingPoint cp);
+
     double zero_correction(double value);
 
 private:
@@ -30,5 +41,7 @@ private:
     std::vector<Eigen::SparseMatrix<double>> L_;
     std::vector<Eigen::MatrixXd> A_;
     Eigen::Matrix3Xd b_;
+
+    std::vector<CollisionPair>  collision_pair_;
 };
 #endif
