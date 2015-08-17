@@ -4,8 +4,8 @@
 
 int Solver::iter_num_ = 30;
 double Solver::eps_ = 1e-3;
-double Solver::lambda_boundary_fitting_ = 0.2;
-double Solver::lambda_inner_fitting_ = 0.1;
+double Solver::lambda_boundary_fitting_ = 0.02;
+double Solver::lambda_inner_fitting_ = 0.01;
 double Solver::lambda_skel_smooth_ = 0;
 double Solver::noise_p_ = 0.0;
 std::vector<Solver::DeformPetal> Solver::deform_petals_;
@@ -740,11 +740,11 @@ double Solver::m_step()
     std::cout << "M-Step:" << std::endl;
 
     // update gmm's weights
-    for (size_t i = 0; i < petal_num_; ++ i)
+    for (size_t j = 0; j < petal_num_; ++ j)
     {
         {
-            CorresMatrix& corres_mat = deform_petals_[i]._boundary_corres;
-            WeightList& weight_list = deform_petals_[i]._boundary_weights;
+            CorresMatrix& corres_mat = deform_petals_[j]._boundary_corres;
+            WeightList& weight_list = deform_petals_[j]._boundary_weights;
             for (size_t i = 0, i_end = weight_list.size(); i < i_end; ++ i)
             {
                 weight_list[i] = corres_mat.row(i).sum() / corres_mat.cols();
@@ -752,8 +752,8 @@ double Solver::m_step()
         }
 
         {
-            CorresMatrix& corres_mat = deform_petals_[i]._inner_corres;
-            WeightList& weight_list = deform_petals_[i]._inner_weights;
+            CorresMatrix& corres_mat = deform_petals_[j]._inner_corres;
+            WeightList& weight_list = deform_petals_[j]._inner_weights;
             for (size_t i = 0, i_end = weight_list.size(); i < i_end; ++ i)
             {
                 weight_list[i] = corres_mat.row(i).sum() / corres_mat.cols();
@@ -812,43 +812,54 @@ void Solver::left_sys()
 {
     FA_.clear();
     FA_.resize(3);
-   /* std::cout << FA_[0].col(0) << std::endl;
-    std::cout << "SS" << std::endl;*/
+
+    int num = 0;
+    for (size_t j = 0; j < petal_num_; ++ j)
+    {
+        HandleMatrix& hm = deform_petals_[j]._handle_matrix;
+        num += 4 * hm.rows();
+    }
+
     // generate and merge
     for (int i = 0; i < 3; ++ i)
     {
+        FA_[i].resize(num, num);
+        FA_[i].setZero();
+
         int row_idx = 0, col_idx = 0;
         for (size_t j = 0; j < petal_num_; ++ j)
         {
             A_[j][i] = boundary_term_[j].A()[i] + inner_term_[j].A()[i] + 
                 arap_term_[j].A()[i] + skel_term_[j].A()[i];
 
-            FA_[i].conservativeResize(row_idx + A_[j][i].rows(), col_idx + A_[j][i].cols());
-            FA_[i].bottomRightCorner(A_[j][i].rows(), A_[j][i].cols()) = A_[j][i];
+            FA_[i].block(row_idx, col_idx, A_[j][i].rows(), A_[j][i].cols()) = A_[j][i];
 
             row_idx += A_[j][i].rows();
             col_idx += A_[j][i].cols();
         }
     }
-
-    /*std::cout << FA_[0].col(0) << std::endl;*/
 }
 
 void Solver::right_sys()
 {
+    int num = 0;
+    for (size_t j = 0; j < petal_num_; ++ j)
+    {
+        HandleMatrix& hm = deform_petals_[j]._handle_matrix;
+        num += 4 * hm.rows();
+    }
+    Fb_.resize(3, num);
+
     // generate and merge
     int col_idx = 0;
     for (size_t j = 0; j < petal_num_; ++ j)
     {
         b_[j] = boundary_term_[j].b() + inner_term_[j].b() + 
             arap_term_[j].b() + skel_term_[j].b();
-        Fb_.conservativeResize(3, col_idx + b_[j].cols());
-        Fb_.bottomRightCorner(3, b_[j].cols()) = b_[j];
 
+        Fb_.block(0, col_idx, b_[j].rows(), b_[j].cols()) = b_[j];
         col_idx += b_[j].cols();
     }
-
-    //std::cout << Fb_.col(0) << std::endl;
 }
 
 double Solver::solve()
