@@ -20,8 +20,6 @@ void CollisionDetectionTerm::projection()
     {
         CollidingPoint cp = Solver::getCollidingPoint(petal_id_, intersect_idx);
         collision_pair_.push_back(CollisionPair(cp.vertex_id_ ,computeProjection(cp)));
-        std::cout << cp.vertex_id_ << /*"  " << computeProjection(cp).x() << " " << computeProjection(cp).y() <<
-                                      " " << computeProjection(cp).z();*/ std::endl;
     }
 
     return;
@@ -29,9 +27,6 @@ void CollisionDetectionTerm::projection()
 
 osg::Vec3 CollisionDetectionTerm::computeProjection(CollidingPoint cp)
 {
-    /*float a = cp.normal_.length2();
-    float b = 2 * (cp.normal_ * cp.closest_p_);
-    float c = cp.closest_p_.length2() - cp.dis2_;*/
 
     float k = sqrt(cp.dis2_ / cp.normal_.length2());
 
@@ -40,9 +35,6 @@ osg::Vec3 CollisionDetectionTerm::computeProjection(CollidingPoint cp)
     projection.y() = cp.normal_.y() * k + cp.closest_p_.y();
     projection.z() = cp.normal_.z() * k + cp.closest_p_.z();
 
-    /*std::cout << cp.normal_.x() << " " << cp.normal_.y() << " " << cp.normal_.z() << std::endl;
-    std::cout << "a " << a << " b " << b << " c " << c << " k " << k << std::endl;
-    std::cout << "x " << projection.x() << " y " << projection.y() << " z " << projection.z() << std::endl;*/
     return projection;
 }
 
