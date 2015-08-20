@@ -72,9 +72,9 @@ void TrajectoryModel::visualizeTrajectory()
             osg::ref_ptr<osg::Vec4Array>  colors = new osg::Vec4Array;
             for (int i = 0, i_end = t.size(); i < i_end; ++ i)
             {
-            ON_3dPoint p = fitting_curve.PointAt(t(i));
-            vertices->push_back(osg::Vec3(p.x, p.y, p.z));
-            colors->push_back(osg::Vec4(1.0, 0.0, 0.0, 1.0));
+                ON_3dPoint p = fitting_curve.PointAt(t(i));
+                vertices->push_back(osg::Vec3(p.x, p.y, p.z));
+                colors->push_back(osg::Vec4(1.0, 0.0, 0.0, 1.0));
             }
 
             /* for (int i = 0, i_end = 100; i <= i_end; ++ i)
