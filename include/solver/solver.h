@@ -244,6 +244,12 @@ private:
 
 
     static std::vector<CollidingPoint> colliding_points_;
+
+public:
+    // whether using or not
+    // arap, collsion, skel mush be used
+    // inner should be used in different situation
+    static bool    boundary_flag_;
 };
 
 #endif
