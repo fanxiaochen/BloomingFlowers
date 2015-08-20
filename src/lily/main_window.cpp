@@ -20,6 +20,7 @@
 #include "registrator.h"
 #include "flower.h"
 #include "task_thread.h"
+#include "trajectory_model.h"
 
 
 MainWindow::MainWindow(void)
@@ -32,7 +33,8 @@ MainWindow::MainWindow(void)
     tracking_system_(NULL),
     parameters_(NULL),
     registrator_(NULL),
-    flowers_viewer_(NULL)
+    flowers_viewer_(NULL),
+    trajectory_model_(NULL)
 {
     ui_.setupUi(this);
 
@@ -54,7 +56,7 @@ MainWindow::~MainWindow()
     delete parameters_;
     delete registrator_;
     delete flowers_viewer_;
-
+    delete trajectory_model_;
     return;
 }
 
@@ -190,6 +192,7 @@ void MainWindow::init(void)
     connect(ui_.actionBoundaryDetection, SIGNAL(triggered()), tracking_system_, SLOT(detectBoundary()));
     connect(ui_.actionRegionProbability, SIGNAL(triggered()), this, SLOT(region_probability()));
 	connect(ui_.actionCollision_Detection, SIGNAL(triggered()), this, SLOT(collision_detection()));
+    connect(ui_.actionTrajectoriesGeneration, SIGNAL(triggered()), this, SLOT(trajectories_generation()));
     // connect
 
     return;
@@ -379,6 +382,20 @@ bool MainWindow::collision_detection()
 	cd_thread->start();
 
 	return true;
+}
+
+bool MainWindow::trajectories_generation()
+{
+    if (trajectory_model_ != nullptr)
+        trajectory_model_->clear();
+
+    trajectory_model_ = new TrajectoryModel;
+    trajectory_model_->show();
+    trajectory_model_->recoverFromFlowerViewer(flowers_viewer_);
+    trajectory_model_->fittingAll();
+    trajectory_model_->update();
+
+    return true;
 }
 
 

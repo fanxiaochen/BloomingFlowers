@@ -434,3 +434,14 @@ void FlowersViewer::extractStartEndFrame(const QStringList& entries, int& start_
 
     return;
 }
+
+osg::ref_ptr<Flower> FlowersViewer::flower(int frame)
+{
+    std::string frame_file = QString("frame_%1").arg(frame, 5, 10, QChar('0')).toStdString();
+    std::string flower_path = flowers_folder_ + "/" + frame_file;
+
+    osg::ref_ptr<Flower> flr = new Flower;
+    flr->load(flower_path);
+    
+    return flr;
+}

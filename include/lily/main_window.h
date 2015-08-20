@@ -18,6 +18,7 @@ class Parameters;
 class Registrator;
 class FlowersViewer;
 class QCheckBox;
+class TrajectoryModel;
 
 class MainWindow : public QMainWindow
 {
@@ -71,6 +72,7 @@ private slots:
 
     bool region_probability();
 	bool collision_detection();
+    bool trajectories_generation();
 
 private:
     void loadSettings();
@@ -98,6 +100,8 @@ private:
     FlowersViewer*                  flowers_viewer_;
 
     std::vector<QCheckBox*>         Check_list_;
+
+    TrajectoryModel*                trajectory_model_;
 };
 
 class MainWindowInstancer

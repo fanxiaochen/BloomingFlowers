@@ -67,7 +67,10 @@
     <addaction name="actionBoundaryDetection"/>
     <addaction name="separator"/>
     <addaction name="actionRegionProbability"/>
+    <addaction name="separator"/>
     <addaction name="actionCollision_Detection"/>
+    <addaction name="separator"/>
+    <addaction name="actionTrajectoriesGeneration"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTracking"/>
@@ -213,6 +216,11 @@
   <action name="actionCollision_Detection">
    <property name="text">
     <string>Collision Detection</string>
+   </property>
+  </action>
+  <action name="actionTrajectoriesGeneration">
+   <property name="text">
+    <string>Trajectories Generation</string>
    </property>
   </action>
  </widget>

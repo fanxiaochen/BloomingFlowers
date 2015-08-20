@@ -90,6 +90,11 @@ public:
 
     void computeFrameRange();
 
+    inline int getStartFrame() const { return start_frame_; }
+    inline int getEndFrame() const { return end_frame_; }
+    inline int getCurrentFrame() const { return current_frame_; }
+    osg::ref_ptr<Flower> flower(int frame);
+
 private:
     void extractStartEndFrame(const QStringList& entries, int& start_frame, int& end_frame);
 

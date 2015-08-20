@@ -1,4 +1,5 @@
 #include <osg/ShapeDrawable>
+#include <osg/Point>
 
 #include "main_window.h"
 #include "flower.h"
@@ -41,6 +42,8 @@ void TrajectoryModel::visualizeTrajectory()
         for (int j = 0, j_end = trajs.size(); j < j_end; ++ j)
         {
             Trajectory& traj = trajs[j];
+
+            // for trajectory
             for (int k = 0, k_end = traj.size()-1; k < k_end; ++ k)
             {
                 osg::Vec3 start(traj[k].x, traj[k].y, traj[k].z);
@@ -60,6 +63,43 @@ void TrajectoryModel::visualizeTrajectory()
                 drawable->setColor(ColorMap::getInstance().getDiscreteColor(20));
                 geode->addDrawable(drawable);
             }
+
+            ON_NurbsCurve& fitting_curve = traj.getFittingCurve();
+            Eigen::VectorXd& t = traj.getParas();
+
+            // for fitting curve
+            osg::ref_ptr<osg::Vec3Array>  vertices = new osg::Vec3Array;
+            osg::ref_ptr<osg::Vec4Array>  colors = new osg::Vec4Array;
+            for (int i = 0, i_end = t.size(); i < i_end; ++ i)
+            {
+            ON_3dPoint p = fitting_curve.PointAt(t(i));
+            vertices->push_back(osg::Vec3(p.x, p.y, p.z));
+            colors->push_back(osg::Vec4(1.0, 0.0, 0.0, 1.0));
+            }
+
+            /* for (int i = 0, i_end = 100; i <= i_end; ++ i)
+            {
+            ON_3dPoint p = fitting_curve.PointAt(i*0.01);
+            vertices->push_back(osg::Vec3(p.x, p.y, p.z));
+            colors->push_back(osg::Vec4(1.0, 0.0, 0.0, 1.0));
+            }*/
+
+            //// test
+            //for (int i = 0; i < 3; ++ i)
+            //{
+            //    double t = 1 + i * 0.05;
+            //    ON_3dPoint p = fitting_curve.PointAt(t);
+            //    vertices->push_back(osg::Vec3(p.x, p.y, p.z));
+            //    colors->push_back(osg::Vec4(1.0, 0.0, 0.0, 1.0));
+            //}
+
+            osg::Geometry* geometry = new osg::Geometry;
+            geometry->setVertexArray(vertices);
+            geometry->setColorArray(colors);
+            geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+            geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices->size()));
+            geometry->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f));
+            geode->addDrawable(geometry);
         }
     }
 
@@ -118,5 +158,31 @@ void TrajectoryModel::reverseAll()
         {
             trajs[j].reverse();
         }
+    }
+}
+
+void TrajectoryModel::fittingAll()
+{
+    for (int i = 0, i_end = trajs_set_.size(); i < i_end; ++ i)
+    {
+        Trajectories& trajs = trajs_set_[i];
+        for (int j = 0, j_end = trajs.size(); j < j_end; ++ j)
+        {
+            trajs[j].curve_fitting();
+        }
+    }
+
+    std::cout << "fiting all" << std::endl;
+}
+
+void TrajectoryModel::recoverFromFlowerViewer(FlowersViewer* flower_viewer)
+{
+    int start_frame = flower_viewer->getStartFrame();
+    int current_frame = flower_viewer->getCurrentFrame();
+
+    this->init(flower_viewer->flower(start_frame));
+    for (int i = start_frame; i <= current_frame; ++ i)
+    {
+        this->addFlowerPosition(flower_viewer->flower(i));
     }
 }
