@@ -5,11 +5,15 @@
 #include "point_cloud.h"
 #include "renderable.h"
 
+#include "open_curve.h"
 
 typedef struct  
 {
     int hdl_idx_;
     std::vector<Point> pos_; 
+
+    ON_NurbsCurve fitting_curve_;
+    Eigen::VectorXd t_;
 
     void resize(int num)
     {
@@ -42,6 +46,42 @@ typedef struct
             right --;
         }
     }
+
+    void curve_fitting()
+    {
+        int dims = 3;         // dimension of points & B-spline curve
+        int cps = 15;         // number of control points
+        int order = 4;        // polynomial order of B-spline curve
+        bool clamp = false;   // clamp curve at ends, or leave them open
+
+        nurbsfit::FitOpenCurve::Domain range(0,1);
+
+        Eigen::VectorXd params; // parameter values in B-spline domain, corresponding to points
+        Eigen::VectorXd points; // data points B-spline is fitted to (params.size * dims == points.size)
+
+        // create parameters and data points
+        params.resize(size());
+        points.resize(3*size());
+        for (int i = 0, i_end = size(); i < i_end; ++i)
+        {
+            params(i) = range.width() * (double(i)/(size()-1));
+            Point& p = pos_.at(i);
+            points(3*i) = p.x;
+            points(3*i+1) = p.y;
+            points(3*i+2) = p.z;
+        }
+
+        nurbsfit::FitOpenCurve fit;
+        fit.initCurve(dims, order, cps, range, clamp);
+        fit.initSolver(params);
+        fit.solve(points);
+
+        fitting_curve_ = fit.getCurve();
+        t_ = params;
+    }
+
+    ON_NurbsCurve& getFittingCurve() { return fitting_curve_; }
+    Eigen::VectorXd& getParas() { return t_; }
 
 }Trajectory;
 
@@ -96,6 +136,7 @@ private:
     std::vector<Trajectories>    trajs_set_;  // the size should be the same as petal number
 
     bool show_traj_;
+
 };
 
 #endif
