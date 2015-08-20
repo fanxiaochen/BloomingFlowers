@@ -12,7 +12,7 @@ double Solver::noise_p_ = 0.0;
 std::vector<Solver::DeformPetal> Solver::deform_petals_;
 std::vector<CollidingPoint> Solver::colliding_points_;
 
-bool Solver::boundary_flag_ = false;
+bool Solver::boundary_flag_ = true;
 
 Solver::Solver(PointCloud* point_cloud, Flower* flower)
 {
