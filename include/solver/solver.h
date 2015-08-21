@@ -53,7 +53,7 @@ public:
         CorresMatrix        _boundary_corres;
         VisList             _boundary_vis;  // vislist's size = whole vertices' size
         VisList             _inner_vis;
-        WeightList          _boundary_weights;  // weightlist's size = actual vertices' size
+        WeightList          _boundary_weights;  // weightlist's size = whole vertices' size
         WeightList          _inner_weights;
 
         // mesh and skeleton parts' data

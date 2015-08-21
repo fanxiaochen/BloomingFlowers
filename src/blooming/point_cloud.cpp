@@ -17,6 +17,7 @@
 #include "color_map.h"
 #include "point_cloud.h"
 #include "flower.h"
+#include "solver.h"
 
 PointCloud::PointCloud(void)
     :segmented_(false),
@@ -351,9 +352,31 @@ osg::ref_ptr<PointCloud> PointCloud::getSamplingPetalCloud(int id, int radio)
 //}
 
 
+void PointCloud::fitting_region(Flower* flower, TrajectoryModel* traj_model)
+{
+    // first mode
+    if (flower_segmentation(flower))
+    {
+        flower->determineWeights(this); // init gmm weights
+        Solver::has_point_cloud_ = true; // global switch for solver
+        return;
+    }
+
+    // second mode
+    Solver::has_point_cloud_ = false; // global switch for solver
+    trajectory_prediction(traj_model);
+}
+
+
+void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
+{
+
+}
+
+
 // segment high confident cloud for each petal, remove the low confident parts
 // segment boundary
-void PointCloud::flower_segmentation(Flower* flower)
+bool PointCloud::flower_segmentation(Flower* flower)
 {
     // compute cloud confidence by template flower and extract valid regions
     region_matching(flower);
@@ -362,7 +385,9 @@ void PointCloud::flower_segmentation(Flower* flower)
     indicateSegmentFlags();
     
     // segment boundary if detected with filtering noise
-    boundary_segmentation(flower);
+    bool flag = boundary_segmentation(flower);
+    
+    return flag;
 }
 
 void PointCloud::indicateSegmentFlags()
@@ -382,7 +407,7 @@ void PointCloud::indicateSegmentFlags()
     segmented_ = true;
 }
 
-void PointCloud::boundary_segmentation(Flower* flower)
+bool PointCloud::boundary_segmentation(Flower* flower)
 {
     Petals& petals = flower->getPetals();
 
@@ -431,6 +456,15 @@ void PointCloud::boundary_segmentation(Flower* flower)
     }
 
     boundary_segments_ = tmp_bs;
+
+    // whether there's no enough boundary segments
+    for (size_t i = 0; i < boundary_segments_.size(); i ++)
+    {
+        if (boundary_segments_.size() < 5)
+            return false;
+    }
+
+    return true;
 }
 
 osg::ref_ptr<PointCloud> PointCloud::getBoundary(int id)
@@ -500,7 +534,7 @@ void PointCloud::region_matching(Flower* flower)
     // each point's belongs
     // better way to determine belong lists??
     std::vector<std::vector<int>> belong_list(this->size());
-    double delta = 0.001;
+    double delta = 0.1;
     for (size_t i = 0; i < P.rows(); ++ i)
     {
         std::vector<int> belongs;

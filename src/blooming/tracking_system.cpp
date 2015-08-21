@@ -121,6 +121,6 @@ void TrackingSystem::la_registration( PointCloud& tracked_frame, Flower& trackin
     solver.deform();
     tracking_template.update();*/
 
-    solver.boundary_inner_setting();
+    solver.init_setting();
     solver.full_deform();
 }

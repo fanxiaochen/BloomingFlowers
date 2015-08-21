@@ -85,6 +85,7 @@ static bool operator != (const Point& p1, const Point& p2)
 
 class Flower;
 class MeshModel;
+class TrajectoryModel;
 
 class PointCloud : public QObject, public Renderable, public PclPointCloud
 {
@@ -107,7 +108,16 @@ public:
   bool isShown(void) const;
   
   // template segmentation for em tracking framework
-  void flower_segmentation(Flower* flower);
+  bool flower_segmentation(Flower* flower);
+
+  // for data-driven solver
+  // if couldn't be segmented, use trajectory model to predict
+  // or use the segmentation result
+  void fitting_region(Flower* flower, TrajectoryModel* traj_model);
+
+  // trajectory prediction
+  void trajectory_prediction(TrajectoryModel* traj_model);
+
 
   osg::ref_ptr<PointCloud> getPetalCloud(int id);
 
@@ -130,7 +140,7 @@ public:
 
   void region_segmentation(Flower* flower);
 
-  void boundary_segmentation(Flower* flower);
+  bool boundary_segmentation(Flower* flower);
 
   void indicateSegmentFlags();
 

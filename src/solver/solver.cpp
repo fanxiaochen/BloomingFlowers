@@ -90,7 +90,7 @@ void Solver::initFittingParas_early_stage()
     // init inner matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
-        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->/*getSamplingPetalCloud(i, 10);*/
+        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getSamplingPetalCloud(i, 10);
         CloudMatrix cm(3, petal_cloud->size());
         if (petal_cloud != NULL)
         {
