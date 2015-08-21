@@ -171,8 +171,6 @@ void TrajectoryModel::fittingAll()
             trajs[j].curve_fitting();
         }
     }
-
-    std::cout << "fiting all" << std::endl;
 }
 
 void TrajectoryModel::recoverFromFlowerViewer(FlowersViewer* flower_viewer)

@@ -318,7 +318,7 @@ void LATrackThread::run()
     traj_model->show();
 
     // LBS + ARAP tracking 
-    for (size_t i = key_frame, i_end = key_frame + 10;
+    for (size_t i = key_frame, i_end = end_frame;
         i <= i_end; ++ i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
