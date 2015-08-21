@@ -18,6 +18,7 @@
 #include "point_cloud.h"
 #include "flower.h"
 #include "solver.h"
+#include "trajectory_model.h"
 
 PointCloud::PointCloud(void)
     :segmented_(false),
@@ -370,6 +371,16 @@ void PointCloud::fitting_region(Flower* flower, TrajectoryModel* traj_model)
 
 void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
 {
+    std::vector<Trajectories> trajs_set = traj_model->getTrajsSet(); // same number as petals
+    for (int i = 0, i_end = trajs_set.size(); i < i_end; ++ i)
+    {
+        Trajectories& trajs = trajs_set[i];
+        for (int j = 0, j_end = trajs.size(); j < j_end; ++ j)
+        {
+            Trajectory& traj = trajs[j];
+
+        }
+    }
 
 }
 
@@ -534,7 +545,7 @@ void PointCloud::region_matching(Flower* flower)
     // each point's belongs
     // better way to determine belong lists??
     std::vector<std::vector<int>> belong_list(this->size());
-    double delta = 0.1;
+    double delta = 0.001;
     for (size_t i = 0; i < P.rows(); ++ i)
     {
         std::vector<int> belongs;

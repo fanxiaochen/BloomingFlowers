@@ -50,7 +50,7 @@ typedef struct
     void curve_fitting()
     {
         int dims = 3;         // dimension of points & B-spline curve
-        int cps = 5;         // number of control points
+        int cps = 8;         // number of control points
         int order = 4;        // polynomial order of B-spline curve
         bool clamp = false;   // clamp curve at ends, or leave them open
 
@@ -131,6 +131,8 @@ public:
     void fittingAll();
 
     void recoverFromFlowerViewer(FlowersViewer* flower_viewer);
+
+    inline std::vector<Trajectories>& getTrajsSet() { return trajs_set_; }
 
 protected:
     virtual void updateImpl(void);
