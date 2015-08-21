@@ -12,7 +12,7 @@ double Solver::noise_p_ = 0.0;
 std::vector<Solver::DeformPetal> Solver::deform_petals_;
 std::vector<CollidingPoint> Solver::colliding_points_;
 
-bool Solver::boundary_flag_ = true;
+bool Solver::has_point_cloud_ = true;
 
 Solver::Solver(PointCloud* point_cloud, Flower* flower)
 {
@@ -61,12 +61,82 @@ void Solver::boundary_inner_setting()
 {
     initMeshParas();
     initSkelParas();
-    initFittingParas();
+    initFittingParas_later_stage();
 
     initTerms();
 }
 
-void Solver::initFittingParas()
+void Solver::trajectory_guided_setting()
+{
+    initMeshParas();
+    initSkelParas();
+    initFittingParas_early_stage();
+
+    initTerms();
+}
+
+void Solver::init_setting()
+{
+    if (has_point_cloud_)
+        boundary_inner_setting();
+    else
+        trajectory_guided_setting();
+}
+
+void Solver::initFittingParas_early_stage()
+{
+    Petals& petals = flower_->getPetals();
+
+    // init inner matrix
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->/*getSamplingPetalCloud(i, 10);*/
+        CloudMatrix cm(3, petal_cloud->size());
+        if (petal_cloud != NULL)
+        {
+            for (size_t j = 0, j_end = petal_cloud->size(); j < j_end; ++ j)
+            {
+                cm.col(j) << petal_cloud->at(j).x, petal_cloud->at(j).y, petal_cloud->at(j).z;
+            }
+        }
+
+        deform_petals_[i]._inner_matrix = cm;
+    }
+
+    // init petal matrix
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        deform_petals_[i]._petal_matrix = deform_petals_[i]._origin_petal;
+    }
+
+    // init inner correspondence matrix
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        CloudMatrix& cloud_mat = deform_petals_[i]._inner_matrix;
+        PetalMatrix& petal_mat = deform_petals_[i]._petal_matrix;
+        CorresMatrix corres_mat = CorresMatrix::Zero(petal_mat.cols(), cloud_mat.cols());
+        deform_petals_[i]._inner_corres = corres_mat;
+    }
+
+    // init inner visible parts
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals[i];
+        PetalMatrix& petal_mat = deform_petals_[i]._origin_petal;
+        VisList& vis_list = deform_petals_[i]._inner_vis;
+        vis_list = std::vector<int>(petal_mat.cols(), 1);
+    }
+
+    // init inner weight list
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals.at(i);
+        PetalMatrix& petal_mat = deform_petals_[i]._origin_petal;
+        deform_petals_[i]._inner_weights = std::vector<double>(petal_mat.cols(), 1.0 / petal_mat.cols());
+    }
+}
+
+void Solver::initFittingParas_later_stage()
 {
     Petals& petals = flower_->getPetals();
 
@@ -133,53 +203,52 @@ void Solver::initFittingParas()
         deform_petals_[i]._inner_weights = petal.getWeights();
     }
 
-    if (boundary_flag_)
+   
+    // init boundary cloud
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
-        // init boundary cloud
-        for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+        osg::ref_ptr<PointCloud> boundary_cloud = point_cloud_->getBoundary(i);
+        CloudMatrix cm(3, boundary_cloud->size());
+        if (boundary_cloud != NULL)
         {
-            osg::ref_ptr<PointCloud> boundary_cloud = point_cloud_->getBoundary(i);
-            CloudMatrix cm(3, boundary_cloud->size());
-            if (boundary_cloud != NULL)
+            for (size_t j = 0, j_end = boundary_cloud->size(); j < j_end; ++ j)
             {
-                for (size_t j = 0, j_end = boundary_cloud->size(); j < j_end; ++ j)
-                {
-                    cm.col(j) << boundary_cloud->at(j).x, boundary_cloud->at(j).y, boundary_cloud->at(j).z;
-                }
+                cm.col(j) << boundary_cloud->at(j).x, boundary_cloud->at(j).y, boundary_cloud->at(j).z;
             }
-
-            deform_petals_[i]._boundary_cloud = cm;
         }
 
-        // init boundary correspondence matrix
-        for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
-        {
-            CloudMatrix& boundary_cloud = deform_petals_[i]._boundary_cloud;
-            PetalMatrix& petal_mat = deform_petals_[i]._petal_matrix;
-
-            CorresMatrix corres_mat = CorresMatrix::Zero(petal_mat.cols(), boundary_cloud.cols());
-            deform_petals_[i]._boundary_corres = corres_mat;
-        }
-
-        // init boundary visible parts
-        for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
-        {
-            Petal& petal = petals[i];
-            PetalMatrix& petal_mat = deform_petals_[i]._origin_petal;
-            VisList& vis_list = deform_petals_[i]._boundary_vis;
-            std::vector<int> detected_boundary = petal.getDetectedBoundary();
-            vis_list = std::vector<int>(petal_mat.cols(), 0);
-            for (int index : detected_boundary)
-                vis_list[index] = 1;
-        }
-
-        // init boundary weight list
-        for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
-        {
-            Petal& petal = petals.at(i);
-            deform_petals_[i]._boundary_weights = petal.getWeights();
-        }
+        deform_petals_[i]._boundary_cloud = cm;
     }
+
+    // init boundary correspondence matrix
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        CloudMatrix& boundary_cloud = deform_petals_[i]._boundary_cloud;
+        PetalMatrix& petal_mat = deform_petals_[i]._petal_matrix;
+
+        CorresMatrix corres_mat = CorresMatrix::Zero(petal_mat.cols(), boundary_cloud.cols());
+        deform_petals_[i]._boundary_corres = corres_mat;
+    }
+
+    // init boundary visible parts
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals[i];
+        PetalMatrix& petal_mat = deform_petals_[i]._origin_petal;
+        VisList& vis_list = deform_petals_[i]._boundary_vis;
+        std::vector<int> detected_boundary = petal.getDetectedBoundary();
+        vis_list = std::vector<int>(petal_mat.cols(), 0);
+        for (int index : detected_boundary)
+            vis_list[index] = 1;
+    }
+
+    // init boundary weight list
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals.at(i);
+        deform_petals_[i]._boundary_weights = petal.getWeights();
+    }
+    
 }
 
 void Solver::initMeshParas()
@@ -356,9 +425,12 @@ void Solver::initSkelParas()
 
 void Solver::initTerms()
 {
-    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    if (has_point_cloud_)
     {
-        boundary_term_.push_back(BoundaryFittingTerm(i));
+        for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+        {
+            boundary_term_.push_back(BoundaryFittingTerm(i));
+        }
     }
 
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
@@ -422,7 +494,7 @@ double Solver::energy(int petal_id)
 
     for (size_t k = 0, k_end = petal_matrix.cols(); k < k_end; ++ k)
     {
-        if (boundary_flag_)
+        if (has_point_cloud_)
         {
             for (size_t n = 0, n_end = boundary_corres.cols(); n < n_end; ++ n)
             {
@@ -453,7 +525,7 @@ void Solver::e_step(int petal_id)
 {
     std::cout << "E-Step:" << std::endl;
 
-    if (boundary_flag_)
+    if (has_point_cloud_)
     // boundary corres
     {
         CorresMatrix& corres_mat = deform_petals_[petal_id]._boundary_corres;
@@ -511,7 +583,7 @@ double Solver::m_step(int petal_id)
 {
     std::cout << "M-Step:" << std::endl;
 
-    if (boundary_flag_)
+    if (has_point_cloud_)
     // update gmm's weights
     {
         CorresMatrix& corres_mat = deform_petals_[petal_id]._boundary_corres;
@@ -645,7 +717,7 @@ double Solver::zero_correction(double value)
 
 void Solver::initBuild(int petal_id)
 {
-    if (boundary_flag_)
+    if (has_point_cloud_)
         boundary_term_[petal_id].build();
 
     inner_term_[petal_id].build();
@@ -660,7 +732,7 @@ void Solver::left_sys(int petal_id)
         A_[petal_id][i] = inner_term_[petal_id].A()[i] + 
             arap_term_[petal_id].A()[i] + skel_term_[petal_id].A()[i];
 
-        if (boundary_flag_)
+        if (has_point_cloud_)
             A_[petal_id][i] += boundary_term_[petal_id].A()[i];
     }
 }
@@ -670,13 +742,13 @@ void Solver::right_sys(int petal_id)
     b_[petal_id] = inner_term_[petal_id].b() + 
         arap_term_[petal_id].b() + skel_term_[petal_id].b();
 
-    if (boundary_flag_)
+    if (has_point_cloud_)
         b_[petal_id] += boundary_term_[petal_id].b();
 }
 
 void Solver::projection(int petal_id)
 {
-    if (boundary_flag_)
+    if (has_point_cloud_)
         boundary_term_[petal_id].projection();
 
     inner_term_[petal_id].projection();
@@ -686,7 +758,7 @@ void Solver::projection(int petal_id)
 
 void Solver::update(int petal_id)
 {
-    if (boundary_flag_)
+    if (has_point_cloud_)
         boundary_term_[petal_id].update();
 
     inner_term_[petal_id].update();
@@ -768,7 +840,7 @@ double Solver::m_step()
     // update gmm's weights
     for (size_t j = 0; j < petal_num_; ++ j)
     {
-        if (boundary_flag_)
+        if (has_point_cloud_)
         {
             CorresMatrix& corres_mat = deform_petals_[j]._boundary_corres;
             WeightList& weight_list = deform_petals_[j]._boundary_weights;
@@ -830,7 +902,7 @@ void Solver::initBuild()
 {
     for (size_t i = 0; i < petal_num_; ++ i)
     {
-        if(boundary_flag_)
+        if(has_point_cloud_)
             boundary_term_[i].build();
 
         inner_term_[i].build();
@@ -863,7 +935,7 @@ void Solver::left_sys()
         {
             A_[j][i] = inner_term_[j].A()[i] + arap_term_[j].A()[i] + skel_term_[j].A()[i] + collision_term_[j].A()[i];
 
-            if (boundary_flag_)
+            if (has_point_cloud_)
                 A_[j][i] += boundary_term_[j].A()[i];
 
             FA_[i].block(row_idx, col_idx, A_[j][i].rows(), A_[j][i].cols()) = A_[j][i];
@@ -890,7 +962,7 @@ void Solver::right_sys()
     {
         b_[j] = inner_term_[j].b() + arap_term_[j].b() + skel_term_[j].b() + collision_term_[j].b();
 
-        if (boundary_flag_)
+        if (has_point_cloud_)
             b_[j] += boundary_term_[j].b();
 
         Fb_.block(0, col_idx, b_[j].rows(), b_[j].cols()) = b_[j];
@@ -949,7 +1021,7 @@ void Solver::projection()
 {
     for (size_t j = 0; j < petal_num_; ++ j)
     {
-        if (boundary_flag_)
+        if (has_point_cloud_)
             boundary_term_[j].projection();
 
         inner_term_[j].projection();
@@ -963,7 +1035,7 @@ void Solver::update()
 {
     for (size_t j = 0; j < petal_num_; ++ j)
     {
-        if(boundary_flag_)
+        if(has_point_cloud_)
             boundary_term_[j].update();
 
         inner_term_[j].update();

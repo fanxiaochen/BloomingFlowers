@@ -168,6 +168,12 @@ public:
     // not restrict as method described
     void boundary_inner_setting();
 
+    // early blooming setting
+    void trajectory_guided_setting();
+
+    // init setting: two cases
+    void init_setting();
+
 
 protected:
     void deform(int petal_id);
@@ -216,7 +222,8 @@ public:
 
 protected:
     void init();
-    void initFittingParas();
+    void initFittingParas_later_stage();
+    void initFittingParas_early_stage();
     void initMeshParas();
     void initSkelParas();
     void initTerms();
@@ -246,10 +253,9 @@ private:
     static std::vector<CollidingPoint> colliding_points_;
 
 public:
-    // whether using or not
-    // arap, collsion, skel mush be used
-    // inner should be used in different situation
-    static bool    boundary_flag_;
+    
+    // two stage, whether there exists clear point cloud
+    static bool    has_point_cloud_;
 };
 
 #endif
