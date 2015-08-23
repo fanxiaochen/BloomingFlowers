@@ -63,6 +63,7 @@ void Solver::boundary_inner_setting()
     initSkelParas();
     initFittingParas_later_stage();
 
+
     initTerms();
 }
 
@@ -78,7 +79,9 @@ void Solver::trajectory_guided_setting()
 void Solver::init_setting()
 {
     if (has_point_cloud_)
+    {
         boundary_inner_setting();
+    }
     else
         trajectory_guided_setting();
 }
@@ -156,6 +159,7 @@ void Solver::initFittingParas_later_stage()
         deform_petals_[i]._cloud_matrix = cm;
     }
 
+
     // init inner matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
@@ -208,6 +212,7 @@ void Solver::initFittingParas_later_stage()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         osg::ref_ptr<PointCloud> boundary_cloud = point_cloud_->getBoundary(i);
+        std::cout << boundary_cloud->size() << std::endl;
         CloudMatrix cm(3, boundary_cloud->size());
         if (boundary_cloud != NULL)
         {

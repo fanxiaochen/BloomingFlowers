@@ -358,12 +358,14 @@ void PointCloud::fitting_region(Flower* flower, TrajectoryModel* traj_model)
     // first mode
     if (flower_segmentation(flower))
     {
+        std::cout << "data driven mode" << std::endl;
         flower->determineWeights(this); // init gmm weights
         Solver::has_point_cloud_ = true; // global switch for solver
         return;
     }
 
     // second mode
+    std::cout << "trajectory guided mode" << std::endl;
     Solver::has_point_cloud_ = false; // global switch for solver
     trajectory_prediction(traj_model);
 }
@@ -394,9 +396,17 @@ void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
             ON_3dVector tangent_vector = nurbs.TangentAt(1.0); // default t = 1.0, which is end point
             ON_3dPoint origin_point = nurbs.PointAt(1.0);
 
+            int dist_num = 5;
+            assert(traj.size() > dist_num);
+
             int num = traj.size();
-            Point delta = (traj[num-1] - traj[num-2]);
-            double dist = sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
+            double dist = 0;
+            for (int k = 0; k < dist_num; ++ i)
+            {
+                Point delta = (traj[num-1-k] - traj[num-2-k]);
+                dist += sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
+            }
+            
 
             ON_3dPoint new_point = dist * tangent_vector + origin_point;
             Point predict_point;
@@ -497,7 +507,7 @@ bool PointCloud::boundary_segmentation(Flower* flower)
     // whether there's no enough boundary segments
     for (size_t i = 0; i < boundary_segments_.size(); i ++)
     {
-        if (boundary_segments_.size() < 5)
+        if (boundary_segments_[i].size() < 20)
             return false;
     }
 
