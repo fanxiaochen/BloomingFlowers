@@ -372,6 +372,16 @@ void PointCloud::fitting_region(Flower* flower, TrajectoryModel* traj_model)
 void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
 {
     std::vector<Trajectories> trajs_set = traj_model->getTrajsSet(); // same number as petals
+
+    // build initial match regions
+    match_regions_.resize(trajs_set.size());
+    for (size_t i = 0; i < match_regions_.size(); i ++)
+    {
+        MatchRegion mr;
+        mr.second = new PointCloud;
+        match_regions_[i] = mr;
+    }
+
     for (int i = 0, i_end = trajs_set.size(); i < i_end; ++ i)
     {
         Trajectories& trajs = trajs_set[i];
@@ -379,6 +389,22 @@ void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
         {
             Trajectory& traj = trajs[j];
 
+            traj.curve_fitting();
+            ON_NurbsCurve& nurbs = traj.getFittingCurve();
+            ON_3dVector tangent_vector = nurbs.TangentAt(1.0); // default t = 1.0, which is end point
+            ON_3dPoint origin_point = nurbs.PointAt(1.0);
+
+            int num = traj.size();
+            Point delta = (traj[num-1] - traj[num-2]);
+            double dist = sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
+
+            ON_3dPoint new_point = dist * tangent_vector + origin_point;
+            Point predict_point;
+            predict_point.x = new_point.x;
+            predict_point.y = new_point.y;
+            predict_point.z = new_point.z;
+
+            match_regions_[i].second->push_back(predict_point);
         }
     }
 

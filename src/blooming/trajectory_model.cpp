@@ -5,6 +5,7 @@
 #include "flower.h"
 #include "trajectory_model.h"
 
+
 TrajectoryModel::TrajectoryModel()
     :show_traj_(false)
 {
