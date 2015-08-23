@@ -396,12 +396,12 @@ void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
             ON_3dVector tangent_vector = nurbs.TangentAt(1.0); // default t = 1.0, which is end point
             ON_3dPoint origin_point = nurbs.PointAt(1.0);
 
-            int dist_num = 5;
+            int dist_num = 3;
             assert(traj.size() > dist_num);
 
             int num = traj.size();
             double dist = 0;
-            for (int k = 0; k < dist_num; ++ i)
+            for (int k = 0; k < dist_num; ++ k)
             {
                 Point delta = (traj[num-1-k] - traj[num-2-k]);
                 dist += sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
@@ -507,7 +507,7 @@ bool PointCloud::boundary_segmentation(Flower* flower)
     // whether there's no enough boundary segments
     for (size_t i = 0; i < boundary_segments_.size(); i ++)
     {
-        if (boundary_segments_[i].size() < 20)
+        if (boundary_segments_[i].size() < 50)
             return false;
     }
 

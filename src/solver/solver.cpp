@@ -212,7 +212,6 @@ void Solver::initFittingParas_later_stage()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         osg::ref_ptr<PointCloud> boundary_cloud = point_cloud_->getBoundary(i);
-        std::cout << boundary_cloud->size() << std::endl;
         CloudMatrix cm(3, boundary_cloud->size());
         if (boundary_cloud != NULL)
         {
