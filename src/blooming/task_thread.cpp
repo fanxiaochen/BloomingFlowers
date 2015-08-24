@@ -377,30 +377,8 @@ void LATrackThread::run()
         tip_detector.setPointCloud(backward_cloud);
         tip_detector.detectBoundary(12, 13);
 
-        if (i < 28)
-        {
-            std::cout << "trajectory guided mode" << std::endl;
-            Solver::has_point_cloud_ = false; // global switch for solver
-            backward_cloud->trajectory_prediction(traj_model);
-            int test;
-            std::cin >> test;
-            traj_model->update();
-            break;
-        }
-
-        else
-        {
-            std::cout << "flower segmentation" << std::endl;
-            backward_cloud->fitting_region(backward_flower, traj_model);
-        }
-        
-
-        /*std::cout << "boundary num: " << backward_cloud->getBoundary(0)->size() << std::endl;
-        std::cout << "boundary num: " << backward_cloud->getBoundary(1)->size() << std::endl;
-        std::cout << "boundary num: " << backward_cloud->getBoundary(2)->size() << std::endl;
-        std::cout << "boundary num: " << backward_cloud->getBoundary(3)->size() << std::endl;
-        std::cout << "boundary num: " << backward_cloud->getBoundary(4)->size() << std::endl;
-        std::cout << "boundary num: " << backward_cloud->getBoundary(5)->size() << std::endl;*/
+        std::cout << "flower segmentation" << std::endl;
+        backward_cloud->fitting_region(backward_flower, traj_model);
 
         tracking_system_->la_registration(*backward_cloud, *backward_flower);
         backward_flower->save(flowers_folder, i);

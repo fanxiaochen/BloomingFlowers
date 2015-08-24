@@ -417,16 +417,10 @@ void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
             predict_point.y = new_point.y;
             predict_point.z = new_point.z;
 
-            std::cout << new_point.x << " " << new_point.y << " " << new_point.z << std::endl;
-
             match_regions_[i].second->push_back(predict_point);
         }
-
-        /*traj_model->update();*/
-         MainWindow::getInstance()->getSceneWidget()->addSceneChild(match_regions_[i].second);
+         /*MainWindow::getInstance()->getSceneWidget()->addSceneChild(match_regions_[i].second);*/
     }
-
-    //traj_model->fittingAll();
 
 }
 
