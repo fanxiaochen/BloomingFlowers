@@ -15,6 +15,7 @@
 #include "tip_detector.h"
 #include "collision_detector.h"
 #include "trajectory_model.h"
+#include "solver.h"
 
 
 
@@ -376,8 +377,23 @@ void LATrackThread::run()
         tip_detector.setPointCloud(backward_cloud);
         tip_detector.detectBoundary(12, 13);
 
-        std::cout << "flower segmentation" << std::endl;
-        backward_cloud->fitting_region(backward_flower, traj_model);
+        if (i < 28)
+        {
+            std::cout << "trajectory guided mode" << std::endl;
+            Solver::has_point_cloud_ = false; // global switch for solver
+            backward_cloud->trajectory_prediction(traj_model);
+            int test;
+            std::cin >> test;
+            traj_model->update();
+            break;
+        }
+
+        else
+        {
+            std::cout << "flower segmentation" << std::endl;
+            backward_cloud->fitting_region(backward_flower, traj_model);
+        }
+        
 
         /*std::cout << "boundary num: " << backward_cloud->getBoundary(0)->size() << std::endl;
         std::cout << "boundary num: " << backward_cloud->getBoundary(1)->size() << std::endl;

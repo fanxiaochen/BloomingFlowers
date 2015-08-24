@@ -373,7 +373,7 @@ void PointCloud::fitting_region(Flower* flower, TrajectoryModel* traj_model)
 
 void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
 {
-    std::vector<Trajectories> trajs_set = traj_model->getTrajsSet(); // same number as petals
+    std::vector<Trajectories>& trajs_set = traj_model->getTrajsSet(); // same number as petals
 
     // build initial match regions
     match_regions_.resize(trajs_set.size());
@@ -393,30 +393,40 @@ void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
 
             traj.curve_fitting();
             ON_NurbsCurve& nurbs = traj.getFittingCurve();
-            ON_3dVector tangent_vector = nurbs.TangentAt(1.0); // default t = 1.0, which is end point
-            ON_3dPoint origin_point = nurbs.PointAt(1.0);
+            Eigen::VectorXd& t = traj.getParas();
 
-            int dist_num = 3;
-            assert(traj.size() > dist_num);
+            ON_3dVector tangent_vector = nurbs.TangentAt(1.0); // default t = 1.0, which is end point
+            ON_3dPoint origin_point = nurbs.PointAtEnd();
+
+            const int traj_fragment = 3;
+            assert(traj.size() > traj_fragment);
 
             int num = traj.size();
             double dist = 0;
-            for (int k = 0; k < dist_num; ++ k)
+            for (int k = 0; k < traj_fragment; ++ k)
             {
                 Point delta = (traj[num-1-k] - traj[num-2-k]);
                 dist += sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
             }
-            
+            dist /= traj_fragment;
 
-            ON_3dPoint new_point = dist * tangent_vector + origin_point;
+            ON_3dPoint new_point = origin_point + dist * tangent_vector;
+
             Point predict_point;
             predict_point.x = new_point.x;
             predict_point.y = new_point.y;
             predict_point.z = new_point.z;
 
+            std::cout << new_point.x << " " << new_point.y << " " << new_point.z << std::endl;
+
             match_regions_[i].second->push_back(predict_point);
         }
+
+        /*traj_model->update();*/
+         MainWindow::getInstance()->getSceneWidget()->addSceneChild(match_regions_[i].second);
     }
+
+    //traj_model->fittingAll();
 
 }
 
