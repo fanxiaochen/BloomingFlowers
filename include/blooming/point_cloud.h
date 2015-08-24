@@ -138,6 +138,7 @@ public:
   bool& getShowTips() { return show_tips_; }
 
   void region_matching(Flower* flower);
+  void region_completion(Flower* flower);
   osg::ref_ptr<PointCloud> getFittingCloud(int id);
   std::vector<int> getFittingMesh(int id);
 
@@ -145,10 +146,13 @@ public:
 
   bool boundary_segmentation(Flower* flower);
 
-  void indicateSegmentFlags();
+  void indicateSegmentFlags(Flower* flower);
 
   // source is this point cloud, target is mesh_model, knn_idx is based on mesh_model
   void searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_idx, std::vector<float>& knn_dists);
+
+  // source is mesh model target is this point cloud, knn_idx is based on point cloud
+  void searchNearestIdx(MeshModel* mesh_model, std::vector<std::vector<int>>& knn_idx, int K);
 
   void buildSelfKdtree();
 
@@ -165,6 +169,8 @@ protected:
 
   // gaussian distribution
   double gaussian(int m_id, int c_id, MeshModel* petal);
+
+  bool isInRegion(int knn_idx, int region_id);
 
 
 protected:

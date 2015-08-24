@@ -263,6 +263,30 @@ void PointCloud::searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_i
     }
 }
 
+void PointCloud::searchNearestIdx(MeshModel* mesh_model, std::vector<std::vector<int>>& knn_idx, int K)
+{
+
+    // K nearest neighbor search
+
+    for (size_t i = 0, i_end = mesh_model->getVertices()->size(); i < i_end; ++ i)
+    {
+        pcl::PointXYZ searchPoint;
+        std::vector<int> pointIdxNKNSearch(K);
+        std::vector<float> pointNKNSquaredDistance(K);
+
+        osg::Vec3& point = mesh_model->getVertices()->at(i);
+
+        searchPoint.x = point.x();
+        searchPoint.y = point.y();
+        searchPoint.z = point.z();
+
+        if ( kdtree_.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+        {
+            knn_idx.push_back(pointIdxNKNSearch);
+        }
+    }
+}
+
 osg::ref_ptr<PointCloud> PointCloud::getPetalCloud(int id)
 {
     osg::ref_ptr<PointCloud> petal_cloud = new PointCloud;
@@ -474,14 +498,20 @@ void PointCloud::buildSelfKdtree()
 // segment boundary
 bool PointCloud::flower_segmentation(Flower* flower)
 {
+    // build self kdtree
+    buildSelfKdtree();
+
     // flower visibility
     flower->determineVisibility();
 
     // compute cloud confidence by template flower and extract valid regions
     region_matching(flower);
 
+    // points completion for outside petals
+    region_completion(flower);
+
     // indicate segment flags for each point
-    indicateSegmentFlags();
+    indicateSegmentFlags(flower);
     
     // segment boundary if detected with filtering noise
     bool flag = boundary_segmentation(flower);
@@ -489,16 +519,33 @@ bool PointCloud::flower_segmentation(Flower* flower)
     return flag;
 }
 
-void PointCloud::indicateSegmentFlags()
+void PointCloud::indicateSegmentFlags(Flower* flower)
 {
     segment_flags_ = std::vector<int>(this->size(), -1);
 
+    PetalOrder& petal_order = flower->getPetalOrder();
+
     for (size_t i = 0; i < match_regions_.size(); i ++)
     {
-        std::vector<int>& indices = match_regions_[i].first;
-        for (size_t j = 0; j < indices.size(); j ++)
+        if (petal_order[i] == 0)
         {
-            segment_flags_[indices[j]] = i;
+            std::vector<int>& indices = match_regions_[i].first;
+            for (size_t j = 0; j < indices.size(); j ++)
+            {
+                segment_flags_[indices[j]] = i;
+            }
+        }
+    }
+
+    for (size_t i = 0; i < match_regions_.size(); i ++)
+    {
+        if (petal_order[i] == 1)
+        {
+            std::vector<int>& indices = match_regions_[i].first;
+            for (size_t j = 0; j < indices.size(); j ++)
+            {
+                segment_flags_[indices[j]] = i;
+            }
         }
     }
 
@@ -680,6 +727,49 @@ void PointCloud::region_matching(Flower* flower)
 */
 
     std::cout << "finish region matching!" << std::endl;
+}
+
+void PointCloud::region_completion(Flower* flower)
+{
+    Petals& petals = flower->getPetals();
+    PetalOrder& petal_order = flower->getPetalOrder();
+
+    int K = 5;
+
+    for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
+    {
+        if (petal_order[i] == 1)
+        {
+            Petal& petal = petals[i];
+            std::vector<std::vector<int>> knn_idx;
+            searchNearestIdx(&petal, knn_idx, K);
+
+            for (size_t t = 0; t < petal.getVertices()->size(); ++ t)
+            {
+                for (int idx : knn_idx[t])
+                {
+                    if (!isInRegion(idx, i))
+                    {
+                        match_regions_[i].first.push_back(idx);
+                        match_regions_[i].second->push_back(this->at(idx));
+                    }
+                }
+            }
+
+        }
+    }
+}
+
+bool PointCloud::isInRegion(int knn_idx, int region_id)
+{
+    MatchRegion& mr = match_regions_[region_id];
+    osg::ref_ptr<PointCloud> point_cloud = mr.second;
+    for (int i = 0; i < point_cloud->size(); i ++)
+    {
+        if (point_cloud->at(i) == this->at(knn_idx))
+            return true;
+    }
+    return false;
 }
 
 double PointCloud::gaussian(int m_id, int c_id, Petal* petal)

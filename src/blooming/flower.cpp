@@ -13,7 +13,7 @@ Flower::Flower(const Flower& flower)
 {
     for (size_t i = 0, i_end = flower.getPetals().size(); i < i_end; ++ i){
         petals_.push_back(flower.getPetals()[i]);
-        petal_order_[i] = i;
+        petal_order_.push_back(flower.getPetalOrder()[i]);
     }
 }
 
@@ -30,6 +30,17 @@ void Flower::reorder()
             return true;
         else return false;
     });
+
+    // manually
+    petal_order_.resize(petals_.size());
+
+    petal_order_[0] = 0;
+    petal_order_[1] = 0;
+    petal_order_[2] = 0;
+    petal_order_[3] = 1;
+    petal_order_[4] = 1;
+    petal_order_[5] = 1;
+
 }
 
 void Flower::save(const std::string& flower_path)

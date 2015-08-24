@@ -9,7 +9,7 @@
 typedef MeshModel   Petal;
 typedef std::vector<Petal>  Petals;
 
-typedef std::unordered_map<int, int> PetalOrder;
+typedef std::vector<int>             PetalOrder;
 typedef Eigen::MatrixXi              PetalRelation;
 
 // Flower could not be template of osg::ref_ptr unless inherited from osg::Referenced

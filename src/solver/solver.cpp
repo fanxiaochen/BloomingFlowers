@@ -2,7 +2,7 @@
 #include "point_cloud.h"
 #include "solver.h"
 
-int Solver::iter_num_ = 30;
+int Solver::iter_num_ = 50;
 double Solver::eps_ = 1e-3;
 double Solver::lambda_boundary_fitting_ = 0.02;
 double Solver::lambda_inner_fitting_ = 0.01;
