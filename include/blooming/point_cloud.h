@@ -9,6 +9,7 @@
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <pcl/kdtree/kdtree_flann.h>
 
 #include "renderable.h"
    
@@ -118,6 +119,8 @@ public:
   // trajectory prediction
   void trajectory_prediction(TrajectoryModel* traj_model);
 
+  // radius search from predict point
+  void prediction_search(const Point& predict_point, double radius, int region_id);
 
   osg::ref_ptr<PointCloud> getPetalCloud(int id);
 
@@ -146,6 +149,8 @@ public:
 
   // source is this point cloud, target is mesh_model, knn_idx is based on mesh_model
   void searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_idx, std::vector<float>& knn_dists);
+
+  void buildSelfKdtree();
 
 protected:
   virtual void clearData();
@@ -183,6 +188,8 @@ protected:
   bool                          show_boundary_;
   bool                          show_tips_;
   bool                          show_probs_;;
+
+  pcl::KdTreeFLANN<pcl::PointXYZ>     kdtree_;
 
 };
 
