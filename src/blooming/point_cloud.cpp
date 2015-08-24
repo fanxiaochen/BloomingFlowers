@@ -400,7 +400,7 @@ void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
             ON_3dVector tangent_vector = nurbs.TangentAt(1.0); // default t = 1.0, which is end point
             ON_3dPoint origin_point = nurbs.PointAtEnd();
 
-            const int traj_fragment = 3;
+            const int traj_fragment = 1;
             assert(traj.size() > traj_fragment);
 
             int num = traj.size();
@@ -434,24 +434,24 @@ void PointCloud::prediction_search(const Point& predict_point, double radius, in
     match_regions_[region_id].second->push_back(predict_point);
 
 
-    int K = 4;
-    // Neighbors within radius search
+    //int K = 4;
+    //// Neighbors within radius search
 
-    std::vector<int> pointIdxNKNSearch(K);
-    std::vector<float> pointNKNSquaredDistance(K);
+    //std::vector<int> pointIdxNKNSearch(K);
+    //std::vector<float> pointNKNSquaredDistance(K);
 
-    pcl::PointXYZ searchPoint;
-    searchPoint.x = predict_point.x;
-    searchPoint.y = predict_point.y;
-    searchPoint.z = predict_point.z;
+    //pcl::PointXYZ searchPoint;
+    //searchPoint.x = predict_point.x;
+    //searchPoint.y = predict_point.y;
+    //searchPoint.z = predict_point.z;
 
-    if ( kdtree_.nearestKSearch(searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
-    {
-        for (size_t i = 0; i < pointIdxNKNSearch.size (); ++i)
-        {
-            match_regions_[region_id].second->push_back(this->at(pointIdxNKNSearch[i]));
-        }
-    }
+    //if ( kdtree_.nearestKSearch(searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+    //{
+    //    for (size_t i = 0; i < pointIdxNKNSearch.size (); ++i)
+    //    {
+    //        match_regions_[region_id].second->push_back(this->at(pointIdxNKNSearch[i]));
+    //    }
+    //}
 }
 
 void PointCloud::buildSelfKdtree()
@@ -474,6 +474,9 @@ void PointCloud::buildSelfKdtree()
 // segment boundary
 bool PointCloud::flower_segmentation(Flower* flower)
 {
+    // flower visibility
+    flower->determineVisibility();
+
     // compute cloud confidence by template flower and extract valid regions
     region_matching(flower);
 
@@ -556,7 +559,7 @@ bool PointCloud::boundary_segmentation(Flower* flower)
     // whether there's no enough boundary segments
     for (size_t i = 0; i < boundary_segments_.size(); i ++)
     {
-        if (boundary_segments_[i].size() < 50)
+        if (boundary_segments_[i].size() < 10)
             return false;
     }
 
@@ -612,10 +615,12 @@ void PointCloud::region_matching(Flower* flower)
         for (size_t j = 0, j_end = petals.size(); j < j_end; ++ j)
         {
             Petal& petal = petals.at(j);
-            osg::ref_ptr<osg::Vec3Array> vertices = petal.getVertices();
-            for (size_t t = 0, t_end = vertices->size(); t < t_end; ++ t)
+            std::vector<int>& visibility = petal.getVisibility();
+            for (size_t t = 0, t_end = visibility.size(); t < t_end; ++ t)
             {
-                m[j] += gaussian(t, i, &petal);
+                if (visibility[t] == 1)
+                    m[j] += gaussian(t, i, &petal);
+                else  m[j] += 0;
             }
         }
 
@@ -630,7 +635,7 @@ void PointCloud::region_matching(Flower* flower)
     // each point's belongs
     // better way to determine belong lists??
     std::vector<std::vector<int>> belong_list(this->size());
-    double delta = 0.001;
+    double delta = 0.1;
     for (size_t i = 0; i < P.rows(); ++ i)
     {
         std::vector<int> belongs;

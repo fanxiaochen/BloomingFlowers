@@ -363,7 +363,7 @@ void LATrackThread::run()
 
     std::cout << "Backward Tracking..." << std::endl;
     backward_flower->show();
-    for (int i = key_frame, i_end = start_frame;
+    for (int i = key_frame, i_end = 10;
         i >= i_end; -- i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
@@ -377,8 +377,19 @@ void LATrackThread::run()
         tip_detector.setPointCloud(backward_cloud);
         tip_detector.detectBoundary(12, 13);
 
-        std::cout << "flower segmentation" << std::endl;
-        backward_cloud->fitting_region(backward_flower, traj_model);
+        //if (i < 29)
+        //{
+        //    std::cout << "trajectory guided mode" << std::endl;
+        //    Solver::has_point_cloud_ = false; // global switch for solver
+        //    Solver::lambda_inner_fitting_ = 1;
+        //    backward_cloud->trajectory_prediction(traj_model);
+        //}
+        /* else
+        {*/
+            std::cout << "flower segmentation" << std::endl;
+            backward_cloud->fitting_region(backward_flower, traj_model);
+        //}
+        
 
         tracking_system_->la_registration(*backward_cloud, *backward_flower);
         backward_flower->save(flowers_folder, i);
