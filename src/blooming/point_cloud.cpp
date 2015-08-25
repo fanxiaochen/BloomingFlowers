@@ -424,7 +424,7 @@ void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
             ON_3dVector tangent_vector = nurbs.TangentAt(1.0); // default t = 1.0, which is end point
             ON_3dPoint origin_point = nurbs.PointAtEnd();
 
-            const int traj_fragment = 1;
+            const int traj_fragment = 3;
             assert(traj.size() > traj_fragment);
 
             int num = traj.size();
@@ -433,8 +433,16 @@ void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
             {
                 Point delta = (traj[num-1-k] - traj[num-2-k]);
                 dist += sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
+
+                ON_3dVector tan_vec;
+                tan_vec.x = delta.x;
+                tan_vec.y = delta.y;
+                tan_vec.z = delta.z;
+                tan_vec.LengthAndUnitize();
+                tangent_vector += tan_vec;
             }
             dist /= traj_fragment;
+            tangent_vector /= (traj_fragment + 1);
 
             ON_3dPoint new_point = origin_point + dist * tangent_vector;
 

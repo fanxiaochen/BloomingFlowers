@@ -89,7 +89,7 @@ void Solver::init_setting()
 void Solver::initFittingParas_early_stage()
 {
     Petals& petals = flower_->getPetals();
-
+    std::cout <<"start early stage" << std::endl;
     // init inner matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
@@ -102,7 +102,7 @@ void Solver::initFittingParas_early_stage()
                 cm.col(j) << petal_cloud->at(j).x, petal_cloud->at(j).y, petal_cloud->at(j).z;
             }
         }
-
+        std::cout << cm.transpose() << std::endl;
         deform_petals_[i]._inner_matrix = cm;
     }
 

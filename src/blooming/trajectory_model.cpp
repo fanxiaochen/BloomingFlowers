@@ -18,7 +18,7 @@ void TrajectoryModel::init(Flower* flower)
     Petals& petals = flower->getPetals();
     trajs_set_.resize(petals.size());
 
-    int sample_ratio = 4;
+    int sample_ratio = 1;
 
     for (int i = 0; i < petals.size(); i ++)
     {
@@ -32,7 +32,7 @@ void TrajectoryModel::init(Flower* flower)
 
 void TrajectoryModel::updateImpl()
 {
-    visualizeTrajectory();
+   // visualizeTrajectory();
     return;
 }
 

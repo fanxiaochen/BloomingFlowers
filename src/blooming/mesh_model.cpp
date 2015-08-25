@@ -1022,6 +1022,9 @@ void MeshModel::sampleTrajsVertices(int ratio)
         trajs_index_.push_back(indices[i]);
     }
 
+    // only edge itself
+    trajs_index_ = edge_index_;
+
     /*std::unordered_set<int> tmp_set(edge_index_.begin(),edge_index_.end());
     tmp_set.insert(trajs_index_.begin(), trajs_index_.end());
     trajs_index_.clear();
