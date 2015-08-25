@@ -122,6 +122,9 @@ public:
   // radius search from predict point
   void prediction_search(const Point& predict_point, double radius, int region_id);
 
+  // predict new positions for trajectories
+  void prediction_search(const Point& origin_point, const Point& direction, double radius, int region_id);
+
   osg::ref_ptr<PointCloud> getPetalCloud(int id);
 
   osg::ref_ptr<PointCloud> getSamplingPetalCloud(int id, int radio);

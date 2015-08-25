@@ -442,22 +442,70 @@ void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
                 tangent_vector += tan_vec;
             }
             dist /= traj_fragment;
-            tangent_vector /= (traj_fragment + 1);
+            tangent_vector /= float(traj_fragment + 1);
+            tangent_vector.LengthAndUnitize();
 
-            ON_3dPoint new_point = origin_point + dist * tangent_vector;
+            Point origin;
+            origin.x = origin_point.x;
+            origin.y = origin_point.y;
+            origin.z = origin_point.z;
+
+            Point direction;
+            direction.x = tangent_vector.x;
+            direction.y = tangent_vector.y;
+            direction.z = tangent_vector.z;
+
+            prediction_search(origin, direction, dist, i);
+
+            /*ON_3dPoint new_point = origin_point + dist * tangent_vector;
 
             Point predict_point;
             predict_point.x = new_point.x;
             predict_point.y = new_point.y;
             predict_point.z = new_point.z;
 
-            prediction_search(predict_point, dist, i);
+            prediction_search(predict_point, dist, i);*/
 
             //match_regions_[i].second->push_back(predict_point);
         }
          /*MainWindow::getInstance()->getSceneWidget()->addSceneChild(match_regions_[i].second);*/
     }
 
+}
+
+
+void PointCloud::prediction_search(const Point& origin_point, const Point& direction, double radius, int region_id)
+{
+    int K = 4;
+    int r = 2;
+    // Neighbors within radius search
+
+    std::vector<int> pointIdxNKNSearch(K);
+    std::vector<float> pointNKNSquaredDistance(K);
+
+    pcl::PointXYZ searchPoint;
+    searchPoint.x = origin_point.x;
+    searchPoint.y = origin_point.y;
+    searchPoint.z = origin_point.z;
+
+    if ( kdtree_.nearestKSearch(searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+    {
+        Point predict_point;
+        int ct = 0;
+        for (size_t i = 0; i < pointIdxNKNSearch.size (); ++i)
+        {
+            Point& new_point = this->at(pointIdxNKNSearch[i]);
+            Point no = new_point - origin_point;
+            float projection = no.x * direction.x + no.y * direction.y + no.z * direction.z;
+            if (projection > 0 && projection < r * radius)
+            {
+                predict_point = predict_point + (origin_point + direction * projection);
+                ct ++;
+            }
+        }
+        if (ct > 0)
+            match_regions_[region_id].second->push_back(predict_point/float(ct));
+    }
 }
 
 
