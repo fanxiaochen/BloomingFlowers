@@ -734,7 +734,7 @@ void PointCloud::region_completion(Flower* flower)
     Petals& petals = flower->getPetals();
     PetalOrder& petal_order = flower->getPetalOrder();
 
-    int K = 5;
+    int K = 20;
 
     for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
     {
