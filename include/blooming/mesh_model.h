@@ -54,6 +54,7 @@ public:
     inline const bool& getShowSkeleton() const { return show_skeleton_; }
     inline const bool& getShowBoundary() const { return show_boundary_; }
     inline const std::vector<int>& getIntersectedVertices() const { return intersected_vertices_; } 
+    inline const std::vector<int>& getTrajsVertices() const { return trajs_index_; } 
 
     inline std::string& getObjName() { return obj_name_; }
     inline std::string& getObjFile() { return obj_file_; }
@@ -84,6 +85,7 @@ public:
     inline bool& getShowSkeleton() { return show_skeleton_; }
     inline bool& getShowBoundary() { return show_boundary_; }
 	inline std::vector<int>& getIntersectedVertices()  { return intersected_vertices_; } 
+    inline std::vector<int>& getTrajsVertices()  { return trajs_index_; } 
 
     // source is this mesh, target is the point_cloud, knn_idx is based on point_cloud
     void searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx);
@@ -121,6 +123,9 @@ public:
     pcl::KdTreeFLANN<pcl::PointXYZ> buildKdTree();
 
     bool onDetectedBoundary(int index);
+
+    // including edges
+    void sampleTrajsVertices(int ratio);
 
 protected:
     virtual void updateImpl(void);
@@ -169,6 +174,7 @@ protected:
     std::vector<int>                    detected_boundary_;
     std::vector<int>                    detected_tips_;
 	std::vector<int>                    intersected_vertices_;
+    std::vector<int>                    trajs_index_; // for trajectory guided tracking
 
 
     size_t                              color_id_; // for visualization

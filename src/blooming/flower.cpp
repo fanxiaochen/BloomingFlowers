@@ -321,7 +321,14 @@ bool Flower::getSkeletonState()
     return petals_[0].getShowSkeleton();
 }
 
-
+void Flower::setTrajsIndices(Flower* ref_flower)
+{
+    Petals& ref_petals = ref_flower->getPetals();
+    for (size_t i = 0, i_end = ref_petals.size(); i < i_end; ++ i)
+    {
+        petals_[i].getTrajsVertices() = ref_petals[i].getTrajsVertices();
+    }
+}
 
 
 

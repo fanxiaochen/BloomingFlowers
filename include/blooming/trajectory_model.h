@@ -143,6 +143,8 @@ private:
 
     bool show_traj_;
 
+    std::vector<std::vector<int>>  trajs_indices_; // based on flower
+
 };
 
 #endif

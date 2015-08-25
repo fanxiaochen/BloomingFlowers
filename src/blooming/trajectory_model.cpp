@@ -18,12 +18,15 @@ void TrajectoryModel::init(Flower* flower)
     Petals& petals = flower->getPetals();
     trajs_set_.resize(petals.size());
 
+    int sample_ratio = 4;
+
     for (int i = 0; i < petals.size(); i ++)
     {
-        osg::ref_ptr<Skeleton> skeleton = petals[i].getSkeleton();
-        int joint_num = skeleton->getJointNumber();
+        petals[i].sampleTrajsVertices(sample_ratio);
+        int trajs_num = petals[i].getTrajsVertices().size();
         Trajectories& trajs = trajs_set_[i];
-        trajs.resize(joint_num);
+        trajs.resize(trajs_num);
+        trajs_indices_.push_back(petals[i].getTrajsVertices());
     }
 }
 
@@ -139,13 +142,18 @@ void TrajectoryModel::addFlowerPosition(Flower* flower)
     for (int i = 0, i_end = petals.size(); i < i_end; ++ i)
     {
         Trajectories& trajs = trajs_set_[i];
-        osg::ref_ptr<Skeleton> skeleton = petals[i].getSkeleton();
-        Skeleton::Joints& joints = skeleton->getJoints();
-        for (int j = 0, j_end = joints.size(); j < j_end; ++ j)
+        std::vector<int>& trajs_indice = trajs_indices_[i];
+        osg::ref_ptr<osg::Vec3Array> vertices = petals[i].getVertices();
+        for (int j = 0, j_end = trajs_indice.size(); j < j_end; ++ j)
         {
             Trajectory& traj = trajs[j];
-            auto& joint = joints[j];
-            traj.push_back(joint);
+            osg::Vec3& vertice = vertices->at(trajs_indice[j]);
+            Point traj_point;
+            traj_point.x = vertice.x();
+            traj_point.y = vertice.y();
+            traj_point.z = vertice.z();
+
+            traj.push_back(traj_point);
         }
     }
 }

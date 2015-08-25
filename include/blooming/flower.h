@@ -55,6 +55,8 @@ public:
     bool getTextureState();
     bool getSkeletonState();
 
+    void setTrajsIndices(Flower* ref_flower);
+
 private:
     int contains(Petal* petal);
 

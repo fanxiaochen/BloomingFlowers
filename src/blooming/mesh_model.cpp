@@ -73,6 +73,7 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     detected_boundary_ = mesh_model.detected_boundary_;
     detected_tips_ = mesh_model.detected_tips_;
     intersected_vertices_ = mesh_model.intersected_vertices_;
+    trajs_index_ = mesh_model.trajs_index_;
     color_id_ = mesh_model.color_id_;
     *skeleton_ = *mesh_model.skeleton_;
     biharmonic_weights_ = mesh_model.biharmonic_weights_;
@@ -80,6 +81,7 @@ MeshModel::MeshModel(const MeshModel& mesh_model) // deep copy
     show_texture_ = mesh_model.show_texture_;
     show_skeleton_ = mesh_model.show_skeleton_;
     show_boundary_ = mesh_model.show_boundary_;
+
 }
 
 MeshModel::~MeshModel(void)
@@ -110,6 +112,7 @@ MeshModel& MeshModel::operator =(const MeshModel& mesh_model) // deep copy
     detected_boundary_ = mesh_model.detected_boundary_;
     detected_tips_ = mesh_model.detected_tips_;
     intersected_vertices_ = mesh_model.intersected_vertices_;
+    trajs_index_ = mesh_model.trajs_index_;
     color_id_ = mesh_model.color_id_;
     *skeleton_ = *mesh_model.skeleton_;
     biharmonic_weights_ = mesh_model.biharmonic_weights_;
@@ -1001,6 +1004,32 @@ void MeshModel::determineVisibility(PointCloud* aligned_cloud, int petal_id)
     visibility_[i] = 1;
     }*/
 
+}
+
+void MeshModel::sampleTrajsVertices(int ratio)
+{
+    std::vector<int> indices;
+    for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
+    {
+        indices.push_back(i);
+    }
+
+    std::random_shuffle (indices.begin(), indices.end());
+
+    int total_num = vertices_->size();
+    for (int i = 0, i_end = total_num / ratio; i < i_end; ++ i)
+    {
+        trajs_index_.push_back(indices[i]);
+    }
+
+    /*std::unordered_set<int> tmp_set(edge_index_.begin(),edge_index_.end());
+    tmp_set.insert(trajs_index_.begin(), trajs_index_.end());
+    trajs_index_.clear();
+
+    for (auto& itr = tmp_set.begin(); itr != tmp_set.end(); itr++)
+    {
+    trajs_index_.push_back(*itr);
+    }*/
 }
 
 
