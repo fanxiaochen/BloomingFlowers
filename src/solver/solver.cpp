@@ -95,9 +95,11 @@ void Solver::initFittingParas_early_stage()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getSamplingPetalCloud(i, 10);
-        CloudMatrix cm(3, petal_cloud->size());
+
         if (petal_cloud != NULL)
         {
+            CloudMatrix cm(3, petal_cloud->size());
+
             for (size_t j = 0, j_end = petal_cloud->size(); j < j_end; ++ j)
             {
                 cm.col(j) << petal_cloud->at(j).x, petal_cloud->at(j).y, petal_cloud->at(j).z;

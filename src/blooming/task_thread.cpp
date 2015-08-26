@@ -363,7 +363,7 @@ void LATrackThread::run()
 
     std::cout << "Backward Tracking..." << std::endl;
     backward_flower->show();
-    for (int i = key_frame, i_end = start_frame;
+    for (int i = 6, i_end = start_frame;
         i >= i_end; -- i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
