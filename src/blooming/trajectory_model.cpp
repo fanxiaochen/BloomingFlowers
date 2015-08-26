@@ -28,6 +28,8 @@ void TrajectoryModel::init(Flower* flower)
         trajs.resize(trajs_num);
         trajs_indices_.push_back(petals[i].getTrajsVertices());
     }
+
+    petal_order_ = flower->getPetalOrder();
 }
 
 void TrajectoryModel::updateImpl()

@@ -44,16 +44,17 @@ void Solver::init()
 
     deform_petals_.resize(petal_num_);
 
-
+    // for collision detection
     Eigen::MatrixXi petal_relation(6,6);
     // 0 means no relation between two petals; 
     // 1 means petal i is occlused by petal j;
-    petal_relation << 0,0,0,-1,0,-1,
-        0, 0, 0, 0, -1, -1,
-        0, 0, 0, -1, -1, 0,
-        1, 0, 1, 0, 0 ,0,
-        0, 1, 1, 0, 0, 0,
+    petal_relation << 0,1,0,-1,-1,-1,
+        -1, 0, -1, -1, -1, -1,
+        1, 1, 0, -1, -1, -1,
+        1, 1, 1, 0, 0 ,0,
+        1, 1, 1, 0, 0, 0,
         1, 1, 0, 0, 0, 0;
+
     flower_->getPetalRelation() = petal_relation;
 }
 

@@ -400,6 +400,8 @@ void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
 {
     std::vector<Trajectories>& trajs_set = traj_model->getTrajsSet(); // same number as petals
 
+    std::vector<int>& petal_order = traj_model->getPetalOrder();
+
     // build initial match regions
     match_regions_.resize(trajs_set.size());
     for (size_t i = 0; i < match_regions_.size(); i ++)
@@ -456,7 +458,7 @@ void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
             direction.y = tangent_vector.y;
             direction.z = tangent_vector.z;
 
-            prediction_search(origin, direction, dist, i);
+            prediction_search(petal_order, origin, direction, dist, i);
 
             /*ON_3dPoint new_point = origin_point + dist * tangent_vector;
 
@@ -475,7 +477,7 @@ void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
 }
 
 
-void PointCloud::prediction_search(const Point& origin_point, const Point& direction, double radius, int region_id)
+void PointCloud::prediction_search(std::vector<int>& petal_order, const Point& origin_point, const Point& direction, double radius, int region_id)
 {
     int K = 4;
     int r = 2;
@@ -498,12 +500,27 @@ void PointCloud::prediction_search(const Point& origin_point, const Point& direc
             Point& new_point = this->at(pointIdxNKNSearch[i]);
             Point no = new_point - origin_point;
             float projection = no.x * direction.x + no.y * direction.y + no.z * direction.z;
-            if (projection > 0 && projection < r * radius)
+
+            // outside petal
+            if (petal_order[region_id] == 1)
             {
-                predict_point = predict_point + (origin_point + direction * projection);
-                ct ++;
+                if (projection > 0)
+                {
+                    predict_point = predict_point + (origin_point + direction * projection);
+                    ct ++;
+                }
+            }
+            // inner petal
+            else 
+            {
+                if (projection > 0 && projection < r * radius)
+                {
+                    predict_point = predict_point + (origin_point + direction * projection);
+                    ct ++;
+                }
             }
         }
+
         if (ct > 0)
             match_regions_[region_id].second->push_back(predict_point/float(ct));
     }
@@ -663,7 +680,7 @@ bool PointCloud::boundary_segmentation(Flower* flower)
     // whether there's no enough boundary segments
     for (size_t i = 0; i < boundary_segments_.size(); i ++)
     {
-        if (boundary_segments_[i].size() < 10)
+        if (boundary_segments_[i].size() == 0)
             return false;
     }
 

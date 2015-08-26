@@ -134,6 +134,8 @@ public:
 
     inline std::vector<Trajectories>& getTrajsSet() { return trajs_set_; }
 
+    inline std::vector<int>& getPetalOrder() { return petal_order_; }
+
 protected:
     virtual void updateImpl(void);
     virtual void visualizeTrajectory(void);
@@ -144,6 +146,8 @@ private:
     bool show_traj_;
 
     std::vector<std::vector<int>>  trajs_indices_; // based on flower
+
+    std::vector<int>    petal_order_; // based on flower
 
 };
 
