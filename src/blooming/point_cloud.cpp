@@ -391,6 +391,7 @@ void PointCloud::fitting_region(Flower* flower, TrajectoryModel* traj_model)
     // second mode
     std::cout << "trajectory guided mode" << std::endl;
     Solver::has_point_cloud_ = false; // global switch for solver
+    Solver::lambda_inner_fitting_ = 0.1;
     trajectory_prediction(traj_model);
 }
 
