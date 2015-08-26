@@ -34,12 +34,20 @@ void Flower::reorder()
     // manually
     petal_order_.resize(petals_.size());
 
+    //// lily 
+    //petal_order_[0] = 0;
+    //petal_order_[1] = 0;
+    //petal_order_[2] = 0;
+    //petal_order_[3] = 1;
+    //petal_order_[4] = 1;
+    //petal_order_[5] = 1;
+
+    // orchid
     petal_order_[0] = 0;
     petal_order_[1] = 0;
-    petal_order_[2] = 0;
+    petal_order_[2] = 1;
     petal_order_[3] = 1;
     petal_order_[4] = 1;
-    petal_order_[5] = 1;
 
 }
 
