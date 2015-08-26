@@ -90,11 +90,11 @@ void Solver::init_setting()
 void Solver::initFittingParas_early_stage()
 {
     Petals& petals = flower_->getPetals();
-    std::cout <<"start early stage" << std::endl;
+
     // init inner matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
-        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getFittingCloud(i);
+        osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getSamplingPetalCloud(i, 10);
         CloudMatrix cm(3, petal_cloud->size());
         if (petal_cloud != NULL)
         {
@@ -102,9 +102,10 @@ void Solver::initFittingParas_early_stage()
             {
                 cm.col(j) << petal_cloud->at(j).x, petal_cloud->at(j).y, petal_cloud->at(j).z;
             }
+
+            deform_petals_[i]._inner_matrix = cm;
         }
-        std::cout << cm.transpose() << std::endl;
-        deform_petals_[i]._inner_matrix = cm;
+        else deform_petals_[i]._inner_matrix = deform_petals_[i]._origin_petal;
     }
 
     // init petal matrix
