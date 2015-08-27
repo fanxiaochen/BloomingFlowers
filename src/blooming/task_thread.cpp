@@ -300,6 +300,8 @@ void LATrackThread::run()
     flower->reorder();
 
     TipDetector tip_detector;
+    int tip_bin_num = MainWindow::getInstance()->getParameters()->getBinNum();
+    float tip_knn_radius = MainWindow::getInstance()->getParameters()->getKnnRadius();
 
     Flower* forward_flower = new Flower(*flower);
 
@@ -371,26 +373,16 @@ void LATrackThread::run()
 
         std::cout << "detect flower boundary" << std::endl;
         tip_detector.setFlower(backward_flower);
-        tip_detector.detectBoundary(12, 13);
+        tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
 
         std::cout << "detect point cloud boundary" << std::endl;
         tip_detector.setPointCloud(backward_cloud);
-        tip_detector.detectBoundary(12, 13);
+        tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
 
-        //if (i < 27)
-        //{
-        //    std::cout << "trajectory guided mode" << std::endl;
-        //    Solver::has_point_cloud_ = false; // global switch for solver
-        //    Solver::lambda_inner_fitting_ = 0.1;
-        //    backward_cloud->trajectory_prediction(traj_model);
-        //}
-        /* else
-        {*/
-            std::cout << "flower segmentation" << std::endl;
-            backward_cloud->fitting_region(backward_flower, traj_model);
-        //}
+        std::cout << "flower segmentation" << std::endl;
+        backward_cloud->fitting_region(backward_flower, traj_model);
+      
         
-
         tracking_system_->la_registration(*backward_cloud, *backward_flower);
         backward_flower->save(flowers_folder, i);
         backward_flower->update();
@@ -402,6 +394,8 @@ void LATrackThread::run()
         points_file_system->showPointCloud(i);
 
     }
+
+    backward_flower->hide();
 
     std::cout << "LBS + ARAP Tracking Finished!" << std::endl;
 }

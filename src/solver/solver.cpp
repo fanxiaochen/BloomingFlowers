@@ -1,6 +1,8 @@
 #include "flower.h"
 #include "point_cloud.h"
 #include "solver.h"
+#include "main_window.h"
+#include "parameters.h"
 
 int Solver::iter_num_ = 50;
 double Solver::eps_ = 1e-3;
@@ -43,6 +45,16 @@ void Solver::init()
     FA_.resize(3);
 
     deform_petals_.resize(petal_num_);
+
+
+    // init solver parameters
+    iter_num_ = MainWindow::getInstance()->getParameters()->getIterNum();
+    eps_ = MainWindow::getInstance()->getParameters()->getEps();
+    lambda_boundary_fitting_ = MainWindow::getInstance()->getParameters()->getBoundaryFitting();
+    lambda_inner_fitting_ = MainWindow::getInstance()->getParameters()->getInnerFitting();
+    lambda_skel_smooth_ = MainWindow::getInstance()->getParameters()->getSkelSmooth();
+    lambda_collision_ = MainWindow::getInstance()->getParameters()->getCollision();
+    noise_p_ = MainWindow::getInstance()->getParameters()->getNoiseP();
 
 
     // for collision detection

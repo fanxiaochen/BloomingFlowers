@@ -19,6 +19,7 @@
 #include "flower.h"
 #include "solver.h"
 #include "trajectory_model.h"
+#include "parameters.h"
 
 PointCloud::PointCloud(void)
     :segmented_(false),
@@ -649,7 +650,7 @@ bool PointCloud::boundary_segmentation(Flower* flower)
     {
         Petal& petal = petals[i];
         pcl::KdTreeFLANN<pcl::PointXYZ> kdtree = petal.buildKdTree();
-        int K = 3;
+        int K = MainWindow::getInstance()->getParameters()->getNoiseK();
         std::vector<int>& boundary_segment = boundary_segments_[i];
         for (size_t j = 0, j_end = boundary_segment.size(); j < j_end; ++ j)
         {
@@ -756,7 +757,7 @@ void PointCloud::region_matching(Flower* flower)
     // each point's belongs
     // better way to determine belong lists??
     std::vector<std::vector<int>> belong_list(this->size());
-    double delta = 0.1;
+    double delta = MainWindow::getInstance()->getParameters()->getSegmentRatio();
     for (size_t i = 0; i < P.rows(); ++ i)
     {
         std::vector<int> belongs;
@@ -808,7 +809,7 @@ void PointCloud::region_completion(Flower* flower)
     Petals& petals = flower->getPetals();
     PetalOrder& petal_order = flower->getPetalOrder();
 
-    int K = 20;
+    int K = MainWindow::getInstance()->getParameters()->getCompletionDegree();
 
     for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
     {

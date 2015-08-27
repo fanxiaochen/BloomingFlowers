@@ -16,6 +16,24 @@ public:
     inline int getEndFrame() { return end_frame_; }
     inline int getKeyFrame() { return key_frame_; }
 
+    inline int getIterNum() { return iter_num_; }
+    inline double getEps() { return eps_; }
+    inline double getBoundaryFitting() { return boundary_fitting_; }
+    inline double getInnerFitting() { return inner_fitting_; }
+    inline double getSkelSmooth() { return skel_smooth_; }
+    inline double getCollision() { return collision_; }
+    inline double getNoiseP() { return noise_p_; }
+    inline float getMovingRatio() { return moving_ratio_; }
+
+
+    inline int getBinNum() { return bin_num_; }
+    inline float getKnnRadius() { return knn_radius_; }
+    inline int getNoiseK() { return noise_k_; }
+
+
+    inline double getSegmentRatio() { return segment_ratio_; }
+    inline int getCompletionDegree() { return completion_degree_; }
+
 private:
 
     // frame paras

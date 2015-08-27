@@ -1,5 +1,7 @@
 #include "collision_detection_term.h"
 #include "solver.h"
+#include "main_window.h"
+#include "parameters.h"
 
 CollisionDetectionTerm::CollisionDetectionTerm(int petal_id)
     :petal_id_(petal_id)
@@ -30,7 +32,7 @@ osg::Vec3 CollisionDetectionTerm::computeProjection(CollidingPoint cp)
 
     float k = sqrt(cp.dis2_ / cp.normal_.length2());
 
-    float r = 1.2;
+    float r = MainWindow::getInstance()->getParameters()->getMovingRatio();
 
     osg::Vec3 projection;
     projection.x() = cp.p_.x() - cp.normal_.x() * k * r;
