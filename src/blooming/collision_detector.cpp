@@ -445,7 +445,7 @@ void CollisionDetector::resolveCollision()
 		petals[tri_id].getIntersectedVertices().push_back( colliding_points_[i].vertex_id_ );
 	}
 
-	std::cout << "number of colliding points: " << colliding_points_.size() << std::endl;
+	//std::cout << "number of colliding points: " << colliding_points_.size() << std::endl;
 }
 
 // 	std::vector<Petal>& petals = flower_->getPetals();
