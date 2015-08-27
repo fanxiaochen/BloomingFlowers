@@ -875,8 +875,12 @@ void MeshModel::updateNormals()
         const osg::Vec3& v2 = vertices_->at(face[1]);
         const osg::Vec3& v3 = vertices_->at(face[2]);
 
-        osg::Vec3 face_normal = ((v2-v1)^(v3-v2));
-        face_normal.normalize();
+		osg::Vec3 face_normal = ((v2-v1)^(v3-v2));
+		face_normal.normalize();
+
+// 		osg::Vec3 face_normal2 = (v2-v1)^(v3-v1);
+// 		face_normal2.normalize();
+
         vertex_normals_->at(face[0]) = face_normal;
         vertex_normals_->at(face[1]) = face_normal;
         vertex_normals_->at(face[2]) = face_normal;
@@ -1043,6 +1047,7 @@ bool MeshModel::computeProjectionInsideTri( int& tri_id, CollidingPoint& collidi
 	osg::Vec3& B = vertices_->at(vertex_id[1]); 
 	osg::Vec3& C = vertices_->at(vertex_id[2]);
 	osg::Vec3 normal = (B-A)^(C-A);
+	normal.normalize();
 	osg::Vec3& p = colliding_p.p_;
 
 	if( (p - A) * normal > 0 )
