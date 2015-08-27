@@ -30,10 +30,12 @@ osg::Vec3 CollisionDetectionTerm::computeProjection(CollidingPoint cp)
 
     float k = sqrt(cp.dis2_ / cp.normal_.length2());
 
+    float r = 1.2;
+
     osg::Vec3 projection;
-    projection.x() = cp.p_.x() - cp.normal_.x() * k;
-    projection.y() = cp.p_.y() - cp.normal_.y() * k;
-    projection.z() = cp.p_.z() - cp.normal_.z() * k;
+    projection.x() = cp.p_.x() - cp.normal_.x() * k * r;
+    projection.y() = cp.p_.y() - cp.normal_.y() * k * r;
+    projection.z() = cp.p_.z() - cp.normal_.z() * k * r;
 
     return projection;
 }

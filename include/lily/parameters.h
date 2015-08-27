@@ -31,6 +31,7 @@ private:
     double skel_smooth_;
     double collision_;
     double noise_p_;
+    float moving_ratio_;
 
     // boundary paras
     int bin_num_;
