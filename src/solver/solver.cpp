@@ -69,6 +69,7 @@ void Solver::init()
 
 
     flower_->getPetalRelation() = petal_relation;
+
 }
 
 void Solver::boundary_inner_setting()
