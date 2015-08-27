@@ -28,6 +28,7 @@ public:
 
 	inline const PetalRelation& getPetalRelation() const { return petal_relation_;}
 	inline PetalRelation& getPetalRelation() { return  petal_relation_; }
+	inline void setPetalRelation( PetalRelation& m ) { petal_relation_ = m; } 
 
     void save(const std::string& flower_path);
     void save(const std::string& flower_folder, int frame);

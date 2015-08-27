@@ -48,7 +48,8 @@ void Solver::init()
     // for collision detection
     Eigen::MatrixXi petal_relation(petal_num_, petal_num_);
     // 0 means no relation between two petals; 
-    // 1 means petal i is occlused by petal j;
+    // 1 means petal i should occludes petal j;
+	// -1 means petal i should be occluded by petal j
 
     //// lily
     //petal_relation << 
@@ -61,15 +62,12 @@ void Solver::init()
 
     // orchid
     petal_relation << 
-        0, 0, 1, 1, 0,
-        0, 0, 1, 0, 1,
-        -1, -1, 0, 0, 0,
-        -1, 0, 0, 0 ,0,
-        0, -1, 0, 0, 0;
-
-
-    flower_->getPetalRelation() = petal_relation;
-
+		0, 1, -1, -1, 0,
+		-1, 0, -1, 0, -1,
+		1, 1, 0, 0, 0,
+		1, 0, 0, 0 ,0,
+		0, 1, 0, 0, 0;
+    flower_->setPetalRelation( petal_relation );
 }
 
 void Solver::boundary_inner_setting()

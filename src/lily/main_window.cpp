@@ -365,16 +365,29 @@ bool MainWindow::collision_detection()
 	}
     flower->reorder();
 
-	Eigen::MatrixXi petal_relation(6,6);
+	int petal_num = flower->getPetals().size();
+	Eigen::MatrixXi petal_relation( petal_num, petal_num ); 
 	// 0 means no relation between two petals; 
-	// 1 means petal i is occlused by petal j;
-	petal_relation << 0,0,0,-1,0,-1,
-		0, 0, 0, 0, -1, -1,
-		0, 0, 0, -1, -1, 0,
-		1, 0, 1, 0, 0 ,0,
-		0, 1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0, 0;
-	flower->getPetalRelation() = petal_relation;
+	// 1 means petal i should occludes petal j;
+	// -1 means petal i should be occluded by petal j
+
+// 	// lily
+// 	petal_relation << 0,0,0,-1,0,-1,
+// 		0, 0, 0, 0, -1, -1,
+// 		0, 0, 0, -1, -1, 0,
+// 		1, 0, 1, 0, 0 ,0,
+// 		0, 1, 1, 0, 0, 0,
+// 		1, 1, 0, 0, 0, 0;
+
+	// orchid
+	petal_relation << 
+		0, 1, -1, -1, 0,
+		-1, 0, -1, 0, -1,
+		1, 1, 0, 0, 0,
+		1, 0, 0, 0 ,0,
+		0, 1, 0, 0, 0;
+	// orchid
+	flower->setPetalRelation( petal_relation);
 
 	CollisionDetectionThread* cd_thread = new CollisionDetectionThread(flower);
 	flower->show();
