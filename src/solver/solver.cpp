@@ -51,22 +51,22 @@ void Solver::init()
     // 1 means petal i should occludes petal j;
 	// -1 means petal i should be occluded by petal j
 
-    //// lily
-    //petal_relation << 
-    //    0, 1, 0, -1, -1, -1,
-    //    -1, 0, -1, -1, -1, -1,
-    //    1, 1, 0, -1, -1, -1,
-    //    1, 1, 1, 0, 0 ,0,
-    //    1, 1, 1, 0, 0, 0,
-    //    1, 1, 0, 0, 0, 0;
-
-    // orchid
+    // lily
     petal_relation << 
-		0, 1, -1, -1, 0,
-		-1, 0, -1, 0, -1,
-		1, 1, 0, 0, 0,
-		1, 0, 0, 0 ,0,
-		0, 1, 0, 0, 0;
+        0, 1, 0, -1, -1, -1,
+        -1, 0, -1, -1, -1, -1,
+        1, 1, 0, -1, -1, -1,
+        1, 1, 1, 0, 0 ,0,
+        1, 1, 1, 0, 0, 0,
+        1, 1, 0, 0, 0, 0;
+
+  //  // orchid
+  //  petal_relation << 
+		//0, 1, -1, -1, 0,
+		//-1, 0, -1, 0, -1,
+		//1, 1, 0, 0, 0,
+		//1, 0, 0, 0 ,0,
+		//0, 1, 0, 0, 0;
     flower_->setPetalRelation( petal_relation );
 }
 
