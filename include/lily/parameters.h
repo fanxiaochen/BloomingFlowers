@@ -19,6 +19,7 @@ public:
     inline int getIterNum() { return iter_num_; }
     inline double getEps() { return eps_; }
     inline double getBoundaryFitting() { return boundary_fitting_; }
+    inline double getTipFitting() { return tip_fitting_; }
     inline double getInnerFitting() { return inner_fitting_; }
     inline double getSkelSmooth() { return skel_smooth_; }
     inline double getCollision() { return collision_; }
@@ -30,6 +31,7 @@ public:
     inline float getKnnRadius() { return knn_radius_; }
     inline int getNoiseK() { return noise_k_; }
     inline int getMinBoundary() { return min_boundary_; }
+    inline float getTipRadius() { return tip_radius_; }
 
     inline double getSegmentRatio() { return segment_ratio_; }
     inline int getCompletionDegree() { return completion_degree_; }
@@ -44,6 +46,7 @@ private:
     // solver paras
     int iter_num_;
     double eps_;
+    double tip_fitting_;
     double boundary_fitting_;
     double inner_fitting_;
     double skel_smooth_;
@@ -56,6 +59,7 @@ private:
     float knn_radius_;
     int noise_k_;
     int min_boundary_;
+    float tip_radius_;
 
     // segment paras
     double segment_ratio_;

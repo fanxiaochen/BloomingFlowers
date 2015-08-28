@@ -33,6 +33,7 @@ bool Parameters::load(const std::string& filename)
     QDomElement solverElement = root.firstChildElement(QString("solver"));
     iter_num_ = solverElement.attribute("iter_num").toInt();
     eps_ = solverElement.attribute("eps").toDouble();
+    tip_fitting_ = solverElement.attribute("tip_fitting").toDouble();
     boundary_fitting_ = solverElement.attribute("boundary_fitting").toDouble();
     inner_fitting_ = solverElement.attribute("inner_fitting").toDouble();
     skel_smooth_ = solverElement.attribute("skel_smooth").toDouble();
@@ -46,6 +47,7 @@ bool Parameters::load(const std::string& filename)
     knn_radius_ = boundaryElement.attribute("knn_radius").toFloat();
     noise_k_ = boundaryElement.attribute("noise_k").toInt();
     min_boundary_ = boundaryElement.attribute("min_boundary").toInt();
+    tip_radius_ = boundaryElement.attribute("tip_radius").toFloat();
 
     // segment information
     QDomElement segmentElement = root.firstChildElement(QString("segment"));
@@ -82,6 +84,7 @@ bool Parameters::save(const std::string& filename)
     QDomElement solverElement = doc.createElement(QString("solver"));
     solverElement.setAttribute("iter_num", iter_num_);
     solverElement.setAttribute("eps", eps_);
+    solverElement.setAttribute("tip_fitting", tip_fitting_);
     solverElement.setAttribute("boundary_fitting", boundary_fitting_);
     solverElement.setAttribute("inner_fitting", inner_fitting_);
     solverElement.setAttribute("skel_smooth", skel_smooth_);
@@ -96,6 +99,7 @@ bool Parameters::save(const std::string& filename)
     boundaryElement.setAttribute("knn_radius", knn_radius_);
     boundaryElement.setAttribute("noise_k", noise_k_);
     boundaryElement.setAttribute("min_boundary", min_boundary_);
+    boundaryElement.setAttribute("tip_radius", tip_radius_);
     rootElement.appendChild(boundaryElement);
 
     // segment information

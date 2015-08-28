@@ -134,8 +134,10 @@ public:
   std::vector<int>& getTips() { return tip_indices_; }
   std::vector<int>& getBoundary() { return boundary_indices_; }
   std::vector<std::vector<int>>& getBoundarySegments() { return boundary_segments_; }
+  std::vector<std::vector<int>>& getTipsSegments() { return tips_segments_; }
 
   osg::ref_ptr<PointCloud> getBoundary(int id);
+  osg::ref_ptr<PointCloud> getTips(int id);
 
   bool& getShowBoundary() { return show_boundary_; }
   bool& getShowTips() { return show_tips_; }
@@ -150,6 +152,13 @@ public:
   bool boundary_segmentation(Flower* flower);
 
   void indicateSegmentFlags(Flower* flower);
+
+  void tip_segmentation(Flower* flower);
+  void tip_matching(Flower* flower, int id);
+  Point searchTip(Point t, PointCloud* boundary);
+  void tip_region(Point t, Point k, Flower* flower, int id);
+  void searchCloudTips(Point k, int id);
+  void searchPetalTips(Point t, Flower* flower, int id);
 
   // source is this point cloud, target is mesh_model, knn_idx is based on mesh_model
   void searchNearestIdx(MeshModel* mesh_model, std::vector<int>& knn_idx, std::vector<float>& knn_dists);
@@ -193,6 +202,7 @@ protected:
   std::vector<int>              boundary_indices_;
 
   std::vector<std::vector<int>> boundary_segments_;
+  std::vector<std::vector<int>> tips_segments_;
 
   bool                          show_boundary_;
   bool                          show_tips_;

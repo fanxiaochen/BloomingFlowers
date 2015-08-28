@@ -5,6 +5,7 @@
 
 #include <Eigen/Sparse>
 
+#include "tip_fitting_term.h"
 #include "boundary_fitting_term.h"
 #include "data_fitting_term.h"
 #include "arap_term.h"
@@ -49,12 +50,16 @@ public:
         // boundary and inner parts' data
         CloudMatrix         _inner_matrix;
         CloudMatrix         _boundary_cloud; // different from boundary 
+        CloudMatrix         _tip_cloud;
         CorresMatrix        _inner_corres;
         CorresMatrix        _boundary_corres;
+        CorresMatrix        _tip_corres;
         VisList             _boundary_vis;  // vislist's size = whole vertices' size
         VisList             _inner_vis;
+        VisList             _tip_vis;
         WeightList          _boundary_weights;  // weightlist's size = whole vertices' size
         WeightList          _inner_weights;
+        WeightList          _tip_weights;
 
         // mesh and skeleton parts' data
         CovMatrix           _cov_matrix;
@@ -146,6 +151,7 @@ public:
     static int iter_num_;
     static double eps_;
 
+    static double lambda_tip_fitting_;
     static double lambda_boundary_fitting_;
     static double lambda_inner_fitting_;
     static double lambda_skel_smooth_;
@@ -195,7 +201,7 @@ protected:
 
     double boundary_gaussian(int petal_id, int m_id, int c_id); // m_id bases on original petal, c_id is current cloud's index
     double inner_gaussian(int petal_id, int m_id, int c_id);// m_id bases on original petal, c_id is current cloud's index
-
+    double tip_gaussian(int petal_id, int m_id, int c_id);// m_id bases on original petal, c_id is current cloud's index
 
     void deforming();
     void lbs();
@@ -233,6 +239,7 @@ private:
     Flower* flower_;
     PointCloud* point_cloud_;
 
+    std::vector<TipFittingTerm> tip_term_;
     std::vector<BoundaryFittingTerm> boundary_term_;
     std::vector<DataFittingTerm> inner_term_;
     std::vector<ARAPTerm> arap_term_;

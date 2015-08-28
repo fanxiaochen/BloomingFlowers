@@ -6,6 +6,7 @@
 
 int Solver::iter_num_ = 50;
 double Solver::eps_ = 1e-3;
+double Solver::lambda_tip_fitting_ = 0.02;
 double Solver::lambda_boundary_fitting_ = 0.02;
 double Solver::lambda_inner_fitting_ = 0.01;
 double Solver::lambda_skel_smooth_ = 0;
@@ -50,6 +51,7 @@ void Solver::init()
     // init solver parameters
     iter_num_ = MainWindow::getInstance()->getParameters()->getIterNum();
     eps_ = MainWindow::getInstance()->getParameters()->getEps();
+    lambda_tip_fitting_ = MainWindow::getInstance()->getParameters()->getTipFitting();
     lambda_boundary_fitting_ = MainWindow::getInstance()->getParameters()->getBoundaryFitting();
     lambda_inner_fitting_ = MainWindow::getInstance()->getParameters()->getInnerFitting();
     lambda_skel_smooth_ = MainWindow::getInstance()->getParameters()->getSkelSmooth();
@@ -175,16 +177,17 @@ void Solver::initFittingParas_later_stage()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getPetalCloud(i);
-        CloudMatrix cm(3, petal_cloud->size());
         if (petal_cloud != NULL)
         {
+            CloudMatrix cm(3, petal_cloud->size());
+
             for (size_t j = 0, j_end = petal_cloud->size(); j < j_end; ++ j)
             {
                 cm.col(j) << petal_cloud->at(j).x, petal_cloud->at(j).y, petal_cloud->at(j).z;
             }
-        }
 
-        deform_petals_[i]._cloud_matrix = cm;
+            deform_petals_[i]._cloud_matrix = cm;
+        }
     }
 
 
@@ -192,16 +195,18 @@ void Solver::initFittingParas_later_stage()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         osg::ref_ptr<PointCloud> petal_cloud = point_cloud_->getSamplingPetalCloud(i, 10);
-        CloudMatrix cm(3, petal_cloud->size());
+        
         if (petal_cloud != NULL)
         {
+            CloudMatrix cm(3, petal_cloud->size());
             for (size_t j = 0, j_end = petal_cloud->size(); j < j_end; ++ j)
             {
                 cm.col(j) << petal_cloud->at(j).x, petal_cloud->at(j).y, petal_cloud->at(j).z;
             }
+            deform_petals_[i]._inner_matrix = cm;
         }
 
-        deform_petals_[i]._inner_matrix = cm;
+        else deform_petals_[i]._inner_matrix = deform_petals_[i]._origin_petal;
     }
 
     // init petal matrix
@@ -279,6 +284,52 @@ void Solver::initFittingParas_later_stage()
     {
         Petal& petal = petals.at(i);
         deform_petals_[i]._boundary_weights = petal.getWeights();
+    }
+
+
+    // init tip cloud
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        osg::ref_ptr<PointCloud> tip_cloud = point_cloud_->getTips(i);
+        CloudMatrix cm(3, tip_cloud->size());
+        if (tip_cloud != NULL)
+        {
+            for (size_t j = 0, j_end = tip_cloud->size(); j < j_end; ++ j)
+            {
+                cm.col(j) << tip_cloud->at(j).x, tip_cloud->at(j).y, tip_cloud->at(j).z;
+            }
+        }
+
+        deform_petals_[i]._tip_cloud = cm;
+    }
+
+    // init tip correspondence matrix
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        CloudMatrix& boundary_cloud = deform_petals_[i]._tip_cloud;
+        PetalMatrix& petal_mat = deform_petals_[i]._petal_matrix;
+
+        CorresMatrix corres_mat = CorresMatrix::Zero(petal_mat.cols(), boundary_cloud.cols());
+        deform_petals_[i]._tip_corres = corres_mat;
+    }
+
+    // init tip visible parts
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals[i];
+        PetalMatrix& petal_mat = deform_petals_[i]._origin_petal;
+        VisList& vis_list = deform_petals_[i]._tip_vis;
+        std::vector<int> detected_tip = petal.getDetectedTips();
+        vis_list = std::vector<int>(petal_mat.cols(), 0);
+        for (int index : detected_tip)
+            vis_list[index] = 1;
+    }
+
+    // init tip weight list
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        Petal& petal = petals.at(i);
+        deform_petals_[i]._tip_weights = petal.getWeights();
     }
     
 }
@@ -463,6 +514,11 @@ void Solver::initTerms()
         {
             boundary_term_.push_back(BoundaryFittingTerm(i));
         }
+
+        for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+        {
+            tip_term_.push_back(TipFittingTerm(i));
+        }
     }
 
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
@@ -510,8 +566,10 @@ double Solver::solve(int petal_id)
 double Solver::energy(int petal_id)
 {
     DeformPetal& deform_petal = deform_petals_[petal_id];
+    CorresMatrix& tip_corres = deform_petal._tip_corres;
     CorresMatrix& boundary_corres = deform_petal._boundary_corres;
     CorresMatrix& inner_corres = deform_petal._inner_corres;
+    CloudMatrix& tip_cloud = deform_petal._tip_cloud;
     CloudMatrix& boundary_cloud = deform_petal._boundary_cloud;
     CloudMatrix& inner_cloud = deform_petal._inner_matrix;
     PetalMatrix& petal_matrix = deform_petal._petal_matrix;
@@ -522,7 +580,7 @@ double Solver::energy(int petal_id)
     AdjList& adj_list = deform_petal._adj_list;
 
 
-    double e1 = 0, e2 = 0, e3 = 0;
+    double e1 = 0, e2 = 0, e3 = 0, e4 = 0;
 
     for (size_t k = 0, k_end = petal_matrix.cols(); k < k_end; ++ k)
     {
@@ -533,23 +591,29 @@ double Solver::energy(int petal_id)
                 Eigen::Vector3d cm = boundary_cloud.col(n) - petal_matrix.col(k);
                 e1 += boundary_corres(k, n) * cm.transpose() * cov_matrix.col(k).asDiagonal().inverse() * cm;
             }
+
+            for (size_t n = 0, n_end = tip_corres.cols(); n < n_end; ++ n)
+            {
+                Eigen::Vector3d cm = tip_cloud.col(n) - petal_matrix.col(k);
+                e2 += tip_corres(k, n) * cm.transpose() * cov_matrix.col(k).asDiagonal().inverse() * cm;
+            }
         }
 
         for (size_t n = 0, n_end = inner_corres.cols(); n < n_end; ++ n)
         {
             Eigen::Vector3d cm = inner_cloud.col(n) - petal_matrix.col(k);
-            e2 += inner_corres(k, n) * cm.transpose() * cov_matrix.col(k).asDiagonal().inverse() * cm;
+            e3 += inner_corres(k, n) * cm.transpose() * cov_matrix.col(k).asDiagonal().inverse() * cm;
         }
 
         for (size_t j = 0, j_end = adj_list[k].size(); j < j_end; ++ j)
         {
             Eigen::Vector3d mkj = petal_matrix.col(k)-petal_matrix.col(adj_list[k][j]);
             Eigen::Vector3d pre_mkj = origin_petal.col(k)-origin_petal.col(adj_list[k][j]);
-            e3 += weight_matrix.coeffRef(k, adj_list[k][j]) * (mkj-rot_list[k]*pre_mkj).squaredNorm();
+            e4 += weight_matrix.coeffRef(k, adj_list[k][j]) * (mkj-rot_list[k]*pre_mkj).squaredNorm();
         }
     }
 
-    return (e1 + e2 + e3);
+    return (e1 + e2 + e3 + e4);
 }
 
 // both boundary and inner fitting
@@ -558,30 +622,59 @@ void Solver::e_step(int petal_id)
     std::cout << "E-Step:" << std::endl;
 
     if (has_point_cloud_)
-    // boundary corres
     {
-        CorresMatrix& corres_mat = deform_petals_[petal_id]._boundary_corres;
-        WeightList& weight_list = deform_petals_[petal_id]._boundary_weights;
-        VisList& vis_list = deform_petals_[petal_id]._boundary_vis;
-
-        for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
+        // boundary corres
         {
-            for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
+            CorresMatrix& corres_mat = deform_petals_[petal_id]._boundary_corres;
+            WeightList& weight_list = deform_petals_[petal_id]._boundary_weights;
+            VisList& vis_list = deform_petals_[petal_id]._boundary_vis;
+
+            for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
             {
-                corres_mat(j, i) = boundary_gaussian(petal_id, j, i) 
-                    * vis_list[j]  * weight_list[j];
+                for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
+                {
+                    corres_mat(j, i) = boundary_gaussian(petal_id, j, i) 
+                        * vis_list[j]  * weight_list[j];
+                }
+            }
+
+            for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
+            {
+                double sum_gaussian = corres_mat.col(i).sum() + noise_p_;
+
+                for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
+                {
+                    corres_mat(j, i) = corres_mat(j, i) / zero_correction(sum_gaussian);
+                }
             }
         }
 
-        for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
+        // tip corres
         {
-            double sum_gaussian = corres_mat.col(i).sum() + noise_p_;
+            CorresMatrix& corres_mat = deform_petals_[petal_id]._tip_corres;
+            WeightList& weight_list = deform_petals_[petal_id]._tip_weights;
+            VisList& vis_list = deform_petals_[petal_id]._tip_vis;
 
-            for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
+            for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
             {
-                corres_mat(j, i) = corres_mat(j, i) / zero_correction(sum_gaussian);
+                for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
+                {
+                    corres_mat(j, i) = tip_gaussian(petal_id, j, i) 
+                        * vis_list[j]  * weight_list[j];
+                }
+            }
+
+            for (size_t i = 0, i_end = corres_mat.cols(); i < i_end; ++ i)
+            {
+                double sum_gaussian = corres_mat.col(i).sum() + noise_p_;
+
+                for (size_t j = 0, j_end = corres_mat.rows(); j < j_end; ++ j)
+                {
+                    corres_mat(j, i) = corres_mat(j, i) / zero_correction(sum_gaussian);
+                }
             }
         }
+        
     }
 
     // inner corres
@@ -615,14 +708,25 @@ double Solver::m_step(int petal_id)
 {
     std::cout << "M-Step:" << std::endl;
 
+     // update gmm's weights
     if (has_point_cloud_)
-    // update gmm's weights
     {
-        CorresMatrix& corres_mat = deform_petals_[petal_id]._boundary_corres;
-        WeightList& weight_list = deform_petals_[petal_id]._boundary_weights;
-        for (size_t i = 0, i_end = weight_list.size(); i < i_end; ++ i)
         {
-            weight_list[i] = corres_mat.row(i).sum() / corres_mat.cols();
+            CorresMatrix& corres_mat = deform_petals_[petal_id]._boundary_corres;
+            WeightList& weight_list = deform_petals_[petal_id]._boundary_weights;
+            for (size_t i = 0, i_end = weight_list.size(); i < i_end; ++ i)
+            {
+                weight_list[i] = corres_mat.row(i).sum() / corres_mat.cols();
+            }
+        }
+        
+        {
+            CorresMatrix& corres_mat = deform_petals_[petal_id]._tip_corres;
+            WeightList& weight_list = deform_petals_[petal_id]._tip_weights;
+            for (size_t i = 0, i_end = weight_list.size(); i < i_end; ++ i)
+            {
+                weight_list[i] = corres_mat.row(i).sum() / corres_mat.cols();
+            }
         }
     }
 
@@ -750,7 +854,10 @@ double Solver::zero_correction(double value)
 void Solver::initBuild(int petal_id)
 {
     if (has_point_cloud_)
+    {
         boundary_term_[petal_id].build();
+        tip_term_[petal_id].build();
+    }
 
     inner_term_[petal_id].build();
     arap_term_[petal_id].build();
@@ -765,7 +872,7 @@ void Solver::left_sys(int petal_id)
             arap_term_[petal_id].A()[i] + skel_term_[petal_id].A()[i];
 
         if (has_point_cloud_)
-            A_[petal_id][i] += boundary_term_[petal_id].A()[i];
+            A_[petal_id][i] += (boundary_term_[petal_id].A()[i] + tip_term_[petal_id].A()[i]);
     }
 }
 
@@ -775,13 +882,16 @@ void Solver::right_sys(int petal_id)
         arap_term_[petal_id].b() + skel_term_[petal_id].b();
 
     if (has_point_cloud_)
-        b_[petal_id] += boundary_term_[petal_id].b();
+        b_[petal_id] += (boundary_term_[petal_id].b() + tip_term_[petal_id].b());
 }
 
 void Solver::projection(int petal_id)
 {
     if (has_point_cloud_)
+    {
         boundary_term_[petal_id].projection();
+        tip_term_[petal_id].projection();
+    }
 
     inner_term_[petal_id].projection();
     arap_term_[petal_id].projection();
@@ -791,7 +901,10 @@ void Solver::projection(int petal_id)
 void Solver::update(int petal_id)
 {
     if (has_point_cloud_)
+    {
         boundary_term_[petal_id].update();
+        tip_term_[petal_id].update();
+    }
 
     inner_term_[petal_id].update();
     arap_term_[petal_id].update();
@@ -819,6 +932,21 @@ double Solver::boundary_gaussian(int petal_id, int m_id, int c_id)
 
     CovMatrix& cov_mat = deform_petals_[petal_id]._cov_matrix;
     CloudMatrix& cloud_mat = deform_petals_[petal_id]._boundary_cloud;
+    PetalMatrix& petal_mat = deform_petals_[petal_id]._petal_matrix;
+
+    Eigen::Vector3d xu = cloud_mat.col(c_id) - petal_mat.col(m_id);
+    p = pow(2*M_PI, -3/2.0) * pow((cov_mat.col(m_id).asDiagonal()).toDenseMatrix().determinant(), -1/2.0) * 
+        exp((-1/2.0)*xu.transpose()*cov_mat.col(m_id).asDiagonal().inverse()*xu);
+
+    return p;
+}
+
+double Solver::tip_gaussian(int petal_id, int m_id, int c_id)
+{
+    double p;
+
+    CovMatrix& cov_mat = deform_petals_[petal_id]._cov_matrix;
+    CloudMatrix& cloud_mat = deform_petals_[petal_id]._tip_cloud;
     PetalMatrix& petal_mat = deform_petals_[petal_id]._petal_matrix;
 
     Eigen::Vector3d xu = cloud_mat.col(c_id) - petal_mat.col(m_id);
@@ -874,11 +1002,22 @@ double Solver::m_step()
     {
         if (has_point_cloud_)
         {
-            CorresMatrix& corres_mat = deform_petals_[j]._boundary_corres;
-            WeightList& weight_list = deform_petals_[j]._boundary_weights;
-            for (size_t i = 0, i_end = weight_list.size(); i < i_end; ++ i)
             {
-                weight_list[i] = corres_mat.row(i).sum() / corres_mat.cols();
+                CorresMatrix& corres_mat = deform_petals_[j]._boundary_corres;
+                WeightList& weight_list = deform_petals_[j]._boundary_weights;
+                for (size_t i = 0, i_end = weight_list.size(); i < i_end; ++ i)
+                {
+                    weight_list[i] = corres_mat.row(i).sum() / corres_mat.cols();
+                }
+            }
+            
+            {
+                CorresMatrix& corres_mat = deform_petals_[j]._tip_corres;
+                WeightList& weight_list = deform_petals_[j]._tip_weights;
+                for (size_t i = 0, i_end = weight_list.size(); i < i_end; ++ i)
+                {
+                    weight_list[i] = corres_mat.row(i).sum() / corres_mat.cols();
+                }
             }
         }
 
@@ -935,7 +1074,10 @@ void Solver::initBuild()
     for (size_t i = 0; i < petal_num_; ++ i)
     {
         if(has_point_cloud_)
+        {
             boundary_term_[i].build();
+            tip_term_[i].build();
+        }
 
         inner_term_[i].build();
         arap_term_[i].build();
@@ -968,7 +1110,7 @@ void Solver::left_sys()
             A_[j][i] = inner_term_[j].A()[i] + arap_term_[j].A()[i] + skel_term_[j].A()[i] + collision_term_[j].A()[i];
 
             if (has_point_cloud_)
-                A_[j][i] += boundary_term_[j].A()[i];
+                A_[j][i] += (boundary_term_[j].A()[i] + tip_term_[j].A()[i]);
 
             FA_[i].block(row_idx, col_idx, A_[j][i].rows(), A_[j][i].cols()) = A_[j][i];
 
@@ -995,7 +1137,7 @@ void Solver::right_sys()
         b_[j] = inner_term_[j].b() + arap_term_[j].b() + skel_term_[j].b() + collision_term_[j].b();
 
         if (has_point_cloud_)
-            b_[j] += boundary_term_[j].b();
+            b_[j] += (boundary_term_[j].b() + tip_term_[j].b());
 
         Fb_.block(0, col_idx, b_[j].rows(), b_[j].cols()) = b_[j];
         col_idx += b_[j].cols();
@@ -1054,7 +1196,10 @@ void Solver::projection()
     for (size_t j = 0; j < petal_num_; ++ j)
     {
         if (has_point_cloud_)
+        {
             boundary_term_[j].projection();
+            tip_term_[j].projection();
+        }
 
         inner_term_[j].projection();
         arap_term_[j].projection();
@@ -1068,7 +1213,10 @@ void Solver::update()
     for (size_t j = 0; j < petal_num_; ++ j)
     {
         if(has_point_cloud_)
+        {
             boundary_term_[j].update();
+            tip_term_[j].update();
+        }
 
         inner_term_[j].update();
         arap_term_[j].update();

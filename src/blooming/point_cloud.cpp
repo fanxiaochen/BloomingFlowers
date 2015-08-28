@@ -392,8 +392,7 @@ void PointCloud::fitting_region(Flower* flower, TrajectoryModel* traj_model)
     // second mode
     std::cout << "trajectory guided mode" << std::endl;
     Solver::has_point_cloud_ = false; // global switch for solver
-    Solver::lambda_inner_fitting_ = 0.1;
-    //trajectory_prediction(traj_model);
+    //Solver::lambda_inner_fitting_ = 0.01;
 }
 
 
@@ -590,6 +589,9 @@ bool PointCloud::flower_segmentation(Flower* flower)
     
     // segment boundary if detected with filtering noise
     bool flag = boundary_segmentation(flower);
+
+    // tips matching
+    if (flag) tip_segmentation(flower);
     
     return flag;
 }
@@ -694,6 +696,134 @@ bool PointCloud::boundary_segmentation(Flower* flower)
     return true;
 }
 
+void PointCloud::tip_segmentation(Flower* flower)
+{
+    Petals& petals = flower->getPetals();
+
+    tips_segments_.resize(segment_number_);
+
+    for (size_t i = 0; i < segment_number_; ++ i)
+    {
+        tip_matching(flower, i);
+    }
+}
+
+void PointCloud::tip_matching(Flower* flower, int id)
+{
+    Petals& petals = flower->getPetals();
+    osg::ref_ptr<PointCloud> boundary_cloud = getBoundary(id);
+    Petal& petal = petals[id];
+
+    osg::ref_ptr<Skeleton> skeleton = petal.getSkeleton();
+    Point t = skeleton->getJoints()[0]; // default: first joint is tip in petal
+    Point k = searchTip(t, boundary_cloud);
+
+    tip_region(t, k, flower, id);
+}
+
+void PointCloud::tip_region(Point t, Point k, Flower* flower, int id)
+{
+    searchPetalTips(t, flower, id);
+
+    searchCloudTips(k, id);
+}
+
+void PointCloud::searchPetalTips(Point t, Flower* flower, int id)
+{
+    float radius = 5;
+
+    Petal& petal = flower->getPetals()[id];
+
+    pcl::PointCloud<Point>::Ptr cloud (new pcl::PointCloud<Point>);
+
+    for (size_t i = 0, i_end = petal.getVertices()->size(); i < i_end; ++ i)
+    {
+        const osg::Vec3& point = petal.getVertices()->at(i);
+        Point p;
+        p.x = point.x();
+        p.y = point.y();
+        p.z = point.z();
+        cloud->push_back(p);
+    }
+
+    pcl::KdTreeFLANN<Point> kdtree;
+
+    kdtree.setInputCloud (cloud);
+
+    // Neighbors within radius search
+
+    std::vector<int> pointIdxRadiusSearch;
+    std::vector<float> pointRadiusSquaredDistance;
+
+    if ( kdtree.radiusSearch (t, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0 )
+    {
+        petal.getDetectedTips() = pointIdxRadiusSearch;
+    }
+}
+
+void PointCloud::searchCloudTips(Point k, int id)
+{
+    float radius = 5;
+
+    pcl::PointXYZ point;
+    point.x = k.x;
+    point.y = k.y;
+    point.z = k.z;
+    // Neighbors within radius search
+
+    std::vector<int> pointIdxRadiusSearch;
+    std::vector<float> pointRadiusSquaredDistance;
+
+    if ( kdtree_.radiusSearch (point, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0 )
+    {
+        for (size_t i = 0, i_end = pointIdxRadiusSearch.size(); i < i_end; ++ i)
+        {
+            int petal_id = segment_flags_[pointIdxRadiusSearch[i]];
+            if (petal_id == id)
+            {
+                tips_segments_[petal_id].push_back(pointIdxRadiusSearch[i]);
+            }
+        }
+    }
+}
+
+Point PointCloud::searchTip(Point t, PointCloud* boundary)
+{
+    Point k;
+
+    pcl::PointCloud<Point>::Ptr cloud (new pcl::PointCloud<Point>);
+
+    for (size_t i = 0, i_end = boundary->size(); i < i_end; ++ i)
+    {
+        const Point& point = boundary->at(i);
+        cloud->push_back(point);
+    }
+
+    pcl::KdTreeFLANN<Point> kdtree;
+
+    kdtree.setInputCloud (cloud);
+
+    int K = MainWindow::getInstance()->getParameters()->getMinBoundary();
+
+    // K nearest neighbor search
+
+    std::vector<int> pointIdxNKNSearch(K);
+    std::vector<float> pointNKNSquaredDistance(K);
+
+    if ( kdtree.nearestKSearch (t, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+    {
+        for (int index : pointIdxNKNSearch)
+        {
+            k = k + cloud->at(index);
+        }
+
+        k = k / pointIdxNKNSearch.size();
+    }
+  
+    return k;
+
+}
+
 osg::ref_ptr<PointCloud> PointCloud::getBoundary(int id)
 {
     osg::ref_ptr<PointCloud> petal_cloud = new PointCloud;
@@ -701,6 +831,21 @@ osg::ref_ptr<PointCloud> PointCloud::getBoundary(int id)
     for (size_t i = 0, i_end = boundary_segments_[id].size(); i < i_end; ++ i)
     {
         petal_cloud->push_back(this->at(boundary_segments_[id][i]));
+    }
+
+    if (petal_cloud->size() == 0)
+        return NULL;
+
+    return petal_cloud;
+}
+
+osg::ref_ptr<PointCloud> PointCloud::getTips(int id)
+{
+    osg::ref_ptr<PointCloud> petal_cloud = new PointCloud;
+
+    for (size_t i = 0, i_end = tips_segments_[id].size(); i < i_end; ++ i)
+    {
+        petal_cloud->push_back(this->at(tips_segments_[id][i]));
     }
 
     if (petal_cloud->size() == 0)
