@@ -313,52 +313,46 @@ void LATrackThread::run()
     std::string flowers_folder = flowers_dir.absolutePath().toStdString() + "/flowers";
 
 
-   /* std::cout << "Forward Tracking..." << std::endl;
-    forward_flower->show();*/
+    std::cout << "Forward Tracking..." << std::endl;
+    forward_flower->show();
 
     osg::ref_ptr<TrajectoryModel> traj_model = new TrajectoryModel;
     traj_model->init(forward_flower);
     traj_model->show();
 
-    //// LBS + ARAP tracking 
-    //for (size_t i = key_frame, i_end = end_frame;
-    //    i <= i_end; ++ i)
-    //{
-    //    std::cout << "tracking [frame " << i << "]" << std::endl;
+    // LBS + ARAP tracking 
+    for (size_t i = key_frame, i_end = end_frame;
+        i <= i_end; ++ i)
+    {
+        std::cout << "tracking [frame " << i << "]" << std::endl;
 
-    //    forward_cloud = points_file_system->getPointCloud(i);
+        forward_cloud = points_file_system->getPointCloud(i);
 
-    //    std::cout << "detect flower boundary" << std::endl;
-    //    tip_detector.setFlower(forward_flower);
-    //    tip_detector.detectBoundary(12, 13);
+        std::cout << "detect flower boundary" << std::endl;
+        tip_detector.setFlower(forward_flower);
+        tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
 
-    //    std::cout << "detect point cloud boundary" << std::endl;
-    //    tip_detector.setPointCloud(forward_cloud);
-    //    tip_detector.detectBoundary(12, 13);
+        std::cout << "detect point cloud boundary" << std::endl;
+        tip_detector.setPointCloud(forward_cloud);
+        tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
 
-    //    std::cout << "flower segmentation" << std::endl;
-    //    forward_cloud->flower_segmentation(forward_flower);
+        std::cout << "flower segmentation" << std::endl;
+        forward_cloud->fitting_region(forward_flower, traj_model);
 
-    //    std::cout << "determine weights and visibility" << std::endl;
-    //    forward_flower->determineWeights(forward_cloud);  // weights of gmm based on aligned cloud
-    //    forward_flower->determineVisibility(forward_cloud); // visible or not
+        tracking_system_->la_registration(*forward_cloud, *forward_flower);
+        forward_flower->save(flowers_folder, i);
+        forward_flower->update();
 
+        traj_model->addFlowerPosition(forward_flower);
+        traj_model->update();
 
-    //    std::cout << "registration" << std::endl;
-    //    tracking_system_->la_registration(*forward_cloud, *forward_flower);
-    //    forward_flower->save(flowers_folder, i);
-    //    forward_flower->update();
+        points_file_system->hidePointCloud(i - 1);
+        points_file_system->showPointCloud(i);
 
-    //    /* traj_model->addFlowerPosition(forward_flower);
-    //    traj_model->update();*/
+    }
+    forward_flower->hide();
 
-    //    points_file_system->hidePointCloud(i - 1);
-    //    points_file_system->showPointCloud(i);
-
-    //}
-    //forward_flower->hide();
-
-    //traj_model->reverseAll();
+    traj_model->reverseAll();
 
     Flower* backward_flower = new Flower(*flower);
     osg::ref_ptr<PointCloud> backward_cloud;

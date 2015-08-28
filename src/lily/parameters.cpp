@@ -54,6 +54,11 @@ bool Parameters::load(const std::string& filename)
     segment_ratio_ = segmentElement.attribute("segment_ratio").toDouble();
     completion_degree_ = segmentElement.attribute("completion_degree").toInt();
 
+    // petal order information
+    QDomElement orderElement = root.firstChildElement(QString("order"));
+    petal_order_ = orderElement.attribute("petal_order").toStdString();
+    petal_num_ = orderElement.attribute("petal_num").toInt();
+
     file.close();
     return true;
 
@@ -108,10 +113,48 @@ bool Parameters::save(const std::string& filename)
     segmentElement.setAttribute("completion_degree", completion_degree_);
     rootElement.appendChild(segmentElement);
 
+    // petal order
+    QDomElement orderElement = doc.createElement(QString("order"));
+    orderElement.setAttribute("petal_order", QString(petal_order_.c_str()));
+    orderElement.setAttribute("petal_num", petal_num_);
+    rootElement.appendChild(orderElement);
+
     QTextStream text_stream(&file);
     text_stream << doc.toString();
     file.close();
 
     return true;
 
+}
+
+
+Eigen::MatrixXi Parameters::getPetalRelation()
+{
+    // for collision detection
+    Eigen::MatrixXi petal_relation(petal_num_, petal_num_);
+    // 0 means no relation between two petals; 
+    // 1 means petal i should occludes petal j;
+    // -1 means petal i should be occluded by petal j
+
+
+    // not convenient to store, have to indicate manually here...
+
+    // lily
+    petal_relation << 
+        0, 1, 0, -1, -1, -1,
+        -1, 0, -1, -1, -1, -1,
+        1, 1, 0, -1, -1, -1,
+        1, 1, 1, 0, 0 ,0,
+        1, 1, 1, 0, 0, 0,
+        1, 1, 0, 0, 0, 0;
+
+    //  // orchid
+    //  petal_relation << 
+    //0, 1, -1, -1, 0,
+    //-1, 0, -1, 0, -1,
+    //1, 1, 0, 0, 0,
+    //1, 0, 0, 0 ,0,
+    //0, 1, 0, 0, 0;
+
+    return petal_relation;
 }

@@ -58,30 +58,7 @@ void Solver::init()
     lambda_collision_ = MainWindow::getInstance()->getParameters()->getCollision();
     noise_p_ = MainWindow::getInstance()->getParameters()->getNoiseP();
 
-
-    // for collision detection
-    Eigen::MatrixXi petal_relation(petal_num_, petal_num_);
-    // 0 means no relation between two petals; 
-    // 1 means petal i should occludes petal j;
-	// -1 means petal i should be occluded by petal j
-
-    // lily
-    petal_relation << 
-        0, 1, 0, -1, -1, -1,
-        -1, 0, -1, -1, -1, -1,
-        1, 1, 0, -1, -1, -1,
-        1, 1, 1, 0, 0 ,0,
-        1, 1, 1, 0, 0, 0,
-        1, 1, 0, 0, 0, 0;
-
-  //  // orchid
-  //  petal_relation << 
-		//0, 1, -1, -1, 0,
-		//-1, 0, -1, 0, -1,
-		//1, 1, 0, 0, 0,
-		//1, 0, 0, 0 ,0,
-		//0, 1, 0, 0, 0;
-    flower_->setPetalRelation( petal_relation );
+    flower_->setPetalRelation(MainWindow::getInstance()->getParameters()->getPetalRelation());
 }
 
 void Solver::boundary_inner_setting()

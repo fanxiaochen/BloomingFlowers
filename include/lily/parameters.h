@@ -36,6 +36,11 @@ public:
     inline double getSegmentRatio() { return segment_ratio_; }
     inline int getCompletionDegree() { return completion_degree_; }
 
+    inline std::string getPetalOrder() { return petal_order_; }
+    inline int getPetalNum() { return petal_num_; }
+
+    Eigen::MatrixXi getPetalRelation();
+
 private:
 
     // frame paras
@@ -64,6 +69,10 @@ private:
     // segment paras
     double segment_ratio_;
     int completion_degree_;
+
+    // petal order
+    std::string petal_order_;
+    int petal_num_;
 };
 
 #endif

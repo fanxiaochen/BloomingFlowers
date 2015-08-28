@@ -122,13 +122,13 @@ void PointCloud::visualizePoints()
     // for tips
     if (show_tips_)
     {
-        osg::ref_ptr<osg::Vec3Array>  tvertices = new osg::Vec3Array;
+        /*osg::ref_ptr<osg::Vec3Array>  tvertices = new osg::Vec3Array;
         osg::ref_ptr<osg::Vec4Array>  tcolors = new osg::Vec4Array;
         for (size_t i = 0, i_end = tip_indices_.size(); i < i_end; ++ i)
         {
-            const Point& point = at(tip_indices_[i]);
-            tvertices->push_back(osg::Vec3(point.x, point.y, point.z));
-            tcolors->push_back(ColorMap::getInstance().getDiscreteColor(18));
+        const Point& point = at(tip_indices_[i]);
+        tvertices->push_back(osg::Vec3(point.x, point.y, point.z));
+        tcolors->push_back(ColorMap::getInstance().getDiscreteColor(18));
 
         }
 
@@ -138,7 +138,28 @@ void PointCloud::visualizePoints()
         tgeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
         tgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, tvertices->size()));
         tgeometry->getOrCreateStateSet()->setAttribute(new osg::Point(15.0f));
-        geode->addDrawable(tgeometry);
+        geode->addDrawable(tgeometry);*/
+
+
+        for (size_t i = 0; i < tips_segments_.size(); i ++)
+        {
+            osg::ref_ptr<osg::Vec3Array>  tvertices = new osg::Vec3Array;
+            osg::ref_ptr<osg::Vec4Array>  tcolors = new osg::Vec4Array;
+            for (size_t j = 0, j_end = tips_segments_[i].size(); j < j_end; ++ j)
+            {
+                const Point& point = at(tips_segments_[i][j]);
+                tvertices->push_back(osg::Vec3(point.x, point.y, point.z));
+                tcolors->push_back(ColorMap::getInstance().getDiscreteColor(18));
+
+            }
+            osg::Geometry* tgeometry = new osg::Geometry;
+            tgeometry->setVertexArray(tvertices);
+            tgeometry->setColorArray(tcolors);
+            tgeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+            tgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, tvertices->size()));
+            tgeometry->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f));
+            geode->addDrawable(tgeometry);
+        }
     }
 
     // for boundary
