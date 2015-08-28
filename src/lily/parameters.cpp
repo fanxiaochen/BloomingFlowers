@@ -45,6 +45,7 @@ bool Parameters::load(const std::string& filename)
     bin_num_ = boundaryElement.attribute("bin_num").toInt();
     knn_radius_ = boundaryElement.attribute("knn_radius").toFloat();
     noise_k_ = boundaryElement.attribute("noise_k").toInt();
+    min_boundary_ = boundaryElement.attribute("min_boundary").toInt();
 
     // segment information
     QDomElement segmentElement = root.firstChildElement(QString("segment"));
@@ -94,6 +95,7 @@ bool Parameters::save(const std::string& filename)
     boundaryElement.setAttribute("bin_num", bin_num_);
     boundaryElement.setAttribute("knn_radius", knn_radius_);
     boundaryElement.setAttribute("noise_k", noise_k_);
+    boundaryElement.setAttribute("min_boundary", min_boundary_);
     rootElement.appendChild(boundaryElement);
 
     // segment information

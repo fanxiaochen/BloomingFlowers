@@ -29,7 +29,7 @@ public:
     inline int getBinNum() { return bin_num_; }
     inline float getKnnRadius() { return knn_radius_; }
     inline int getNoiseK() { return noise_k_; }
-
+    inline int getMinBoundary() { return min_boundary_; }
 
     inline double getSegmentRatio() { return segment_ratio_; }
     inline int getCompletionDegree() { return completion_degree_; }
@@ -55,6 +55,7 @@ private:
     int bin_num_;
     float knn_radius_;
     int noise_k_;
+    int min_boundary_;
 
     // segment paras
     double segment_ratio_;

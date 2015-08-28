@@ -393,7 +393,7 @@ void PointCloud::fitting_region(Flower* flower, TrajectoryModel* traj_model)
     std::cout << "trajectory guided mode" << std::endl;
     Solver::has_point_cloud_ = false; // global switch for solver
     Solver::lambda_inner_fitting_ = 0.1;
-  //  trajectory_prediction(traj_model);
+    //trajectory_prediction(traj_model);
 }
 
 
@@ -644,44 +644,50 @@ bool PointCloud::boundary_segmentation(Flower* flower)
     }
 
     // filtering noise
-    std::vector<std::vector<int>> tmp_bs(boundary_segments_.size());
-
-    for (size_t i = 0, i_end = boundary_segments_.size(); i < i_end; ++ i)
+    int K = MainWindow::getInstance()->getParameters()->getNoiseK();
+    if (K > 0)
     {
-        Petal& petal = petals[i];
-        pcl::KdTreeFLANN<pcl::PointXYZ> kdtree = petal.buildKdTree();
-        int K = MainWindow::getInstance()->getParameters()->getNoiseK();
-        std::vector<int>& boundary_segment = boundary_segments_[i];
-        for (size_t j = 0, j_end = boundary_segment.size(); j < j_end; ++ j)
-        {
-            Point& point = this->at(boundary_segment[j]);
-            pcl::PointXYZ searchPoint;
-            std::vector<int> pointIdxNKNSearch(K);
-            std::vector<float> pointNKNSquaredDistance(K);
-            searchPoint.x = point.x;
-            searchPoint.y = point.y;
-            searchPoint.z = point.z;
-            if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
-            {
-                int t = 0;
-                for (; t < pointIdxNKNSearch.size(); ++ t)
-                {
-                    if (petal.onDetectedBoundary(pointIdxNKNSearch[t]))
-                        break;
-                }
+        std::vector<std::vector<int>> tmp_bs(boundary_segments_.size());
 
-                if (t != pointIdxNKNSearch.size())
-                    tmp_bs[i].push_back(boundary_segment[j]);
+        for (size_t i = 0, i_end = boundary_segments_.size(); i < i_end; ++ i)
+        {
+            Petal& petal = petals[i];
+            pcl::KdTreeFLANN<pcl::PointXYZ> kdtree = petal.buildKdTree();
+
+            std::vector<int>& boundary_segment = boundary_segments_[i];
+            for (size_t j = 0, j_end = boundary_segment.size(); j < j_end; ++ j)
+            {
+                Point& point = this->at(boundary_segment[j]);
+                pcl::PointXYZ searchPoint;
+                std::vector<int> pointIdxNKNSearch(K);
+                std::vector<float> pointNKNSquaredDistance(K);
+                searchPoint.x = point.x;
+                searchPoint.y = point.y;
+                searchPoint.z = point.z;
+                if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+                {
+                    int t = 0;
+                    for (; t < pointIdxNKNSearch.size(); ++ t)
+                    {
+                        if (petal.onDetectedBoundary(pointIdxNKNSearch[t]))
+                            break;
+                    }
+
+                    if (t != pointIdxNKNSearch.size())
+                        tmp_bs[i].push_back(boundary_segment[j]);
+                }
             }
         }
+
+        boundary_segments_ = tmp_bs;
     }
 
-    boundary_segments_ = tmp_bs;
-
     // whether there's no enough boundary segments
+    int min_boundary = MainWindow::getInstance()->getParameters()->getMinBoundary();
+
     for (size_t i = 0; i < boundary_segments_.size(); i ++)
     {
-        if (boundary_segments_[i].size() == 0)
+        if (boundary_segments_[i].size() < min_boundary)
             return false;
     }
 

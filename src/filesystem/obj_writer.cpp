@@ -116,7 +116,7 @@ bool ObjWriter::save(const std::string& new_obj_file, bool tex_flag)
         std::string new_tga_file = new_obj_file + ".tga";
         /*new_tga_file = QString(new_tga_file.c_str()).replace(
         QString(new_tga_file.c_str()).indexOf("obj"), 3, "tga").toStdString();*/
-        QFile::copy(QString(mesh_model_->getMapKa().c_str()), QString(new_tga_file.c_str()));
+        QFile::copy(QString(mesh_model_->getMapKd().c_str()), QString(new_tga_file.c_str()));
     }
     
 
