@@ -170,6 +170,7 @@ void MainWindow::init(void)
     connect(this, SIGNAL(showStatusRequested(const QString&, int)), this, SLOT(slotShowStatus(const QString&, int)));
 
 
+
 	loadSettings();
 	points_widget_->setWorkspace( QString(points_path_.c_str()));
 	mesh_widget_->setWorkspace( QString(mesh_path_.c_str() ));
@@ -421,10 +422,23 @@ bool MainWindow::slotLoadPoints(void)
 
     points_path_ = directory.toStdString();
 
-    points_widget_->setWorkspace(directory);
-
     directory.resize(directory.size()-7); // remove string "/points", the workspace is based on points path
     workspace_ = directory.toStdString();
+
+    // load parameters before load points
+    QString para_file = QString(workspace_.c_str()) + "/parameters.xml";
+    parameters_->load(para_file.toStdString());
+
+    // load axis before load points
+    QString axis_file = QString(workspace_.c_str()) + "/axis.txt";
+    registrator_->load(axis_file);
+
+    // load points
+    scene_widget_->removeSceneChildren();
+    points_widget_->setWorkspace(QString(points_path_.c_str()));
+    
+
+    
 
     return true;
 }

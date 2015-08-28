@@ -59,6 +59,10 @@ bool Parameters::load(const std::string& filename)
     petal_order_ = orderElement.attribute("petal_order").toStdString();
     petal_num_ = orderElement.attribute("petal_num").toInt();
 
+    // camera information
+    QDomElement cameraElement = root.firstChildElement(QString("camera"));
+    z_offset_ = cameraElement.attribute("z_offset").toFloat();
+
     file.close();
     return true;
 
@@ -118,6 +122,11 @@ bool Parameters::save(const std::string& filename)
     orderElement.setAttribute("petal_order", QString(petal_order_.c_str()));
     orderElement.setAttribute("petal_num", petal_num_);
     rootElement.appendChild(orderElement);
+
+    // camera
+    QDomElement cameraElement = doc.createElement(QString("camera"));
+    cameraElement.setAttribute("z_offset", z_offset_);
+    rootElement.appendChild(cameraElement);
 
     QTextStream text_stream(&file);
     text_stream << doc.toString();

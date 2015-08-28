@@ -14,6 +14,7 @@
 #include "toggle_handler.h"
 #include "registrator.h"
 #include "osg_viewer_widget.h"
+#include "parameters.h"
 
 QMutex OSGViewerWidget::mutex_first_frame_;
 
@@ -227,7 +228,8 @@ void OSGViewerWidget::centerScene(void)
 
     if (!center_scene_)
     {
-        camera_manipulator->setHomePosition(osg::Vec3(0.0, 0.0, bounding_sphere.center().z()-4.0*radius), 
+        float z_offset = MainWindow::getInstance()->getParameters()->getCameraZoffset();
+        camera_manipulator->setHomePosition(osg::Vec3(0.0, 0.0, bounding_sphere.center().z()-z_offset*radius), 
             osg::Vec3(0.0, 0.0, bounding_sphere.center().z()), up_vector_);
         camera_manipulator->home(0);
     }
@@ -364,6 +366,11 @@ CameraHandler::CameraHandler()
 CameraHandler::~CameraHandler(void)
 {
 
+}
+
+void CameraHandler::reset()
+{
+    count_ = 0;
 }
 
 bool CameraHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapter& aa)

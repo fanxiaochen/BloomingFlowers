@@ -39,6 +39,8 @@ public:
     inline std::string getPetalOrder() { return petal_order_; }
     inline int getPetalNum() { return petal_num_; }
 
+    inline float getCameraZoffset() { return z_offset_; }
+
     Eigen::MatrixXi getPetalRelation();
 
 private:
@@ -73,6 +75,9 @@ private:
     // petal order
     std::string petal_order_;
     int petal_num_;
+
+    // camera
+    float z_offset_;
 };
 
 #endif

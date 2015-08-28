@@ -84,6 +84,8 @@ public:
 
     virtual bool handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapter& aa);
     virtual void accept(osgGA::GUIEventHandlerVisitor& v)   { v.visit(*this); };
+
+    void reset();
 private:
     int count_;
 
