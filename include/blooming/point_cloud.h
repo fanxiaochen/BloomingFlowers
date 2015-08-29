@@ -153,7 +153,7 @@ public:
 
   void indicateSegmentFlags(Flower* flower);
 
-  void tip_segmentation(Flower* flower);
+  bool tip_segmentation(Flower* flower);
   void tip_matching(Flower* flower, int id);
   Point searchTip(Point t, PointCloud* boundary);
   void tip_region(Point t, Point k, Flower* flower, int id);

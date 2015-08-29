@@ -609,10 +609,8 @@ bool PointCloud::flower_segmentation(Flower* flower)
     indicateSegmentFlags(flower);
     
     // segment boundary if detected with filtering noise
-    bool flag = boundary_segmentation(flower);
-
-    // tips matching
-    if (flag) tip_segmentation(flower);
+    // segment tips
+    bool flag = boundary_segmentation(flower) && tip_segmentation(flower);
     
     return flag;
 }
@@ -717,7 +715,7 @@ bool PointCloud::boundary_segmentation(Flower* flower)
     return true;
 }
 
-void PointCloud::tip_segmentation(Flower* flower)
+bool PointCloud::tip_segmentation(Flower* flower)
 {
     Petals& petals = flower->getPetals();
 
@@ -727,6 +725,14 @@ void PointCloud::tip_segmentation(Flower* flower)
     {
         tip_matching(flower, i);
     }
+
+    for (size_t i = 0; i < segment_number_; ++ i)
+    {
+        if (tips_segments_[i].empty())
+            return false;
+    }
+
+    return true;
 }
 
 void PointCloud::tip_matching(Flower* flower, int id)

@@ -148,22 +148,22 @@ Eigen::MatrixXi Parameters::getPetalRelation()
 
     // not convenient to store, have to indicate manually here...
 
-    // lily
-    petal_relation << 
-        0, 1, 0, -1, -1, -1,
-        -1, 0, -1, -1, -1, -1,
-        1, 1, 0, -1, -1, -1,
-        1, 1, 1, 0, 0 ,0,
-        1, 1, 1, 0, 0, 0,
-        1, 1, 0, 0, 0, 0;
+    //// lily
+    //petal_relation << 
+    //    0, 1, 0, -1, -1, -1,
+    //    -1, 0, -1, -1, -1, -1,
+    //    1, 1, 0, -1, -1, -1,
+    //    1, 1, 1, 0, 0 ,0,
+    //    1, 1, 1, 0, 0, 0,
+    //    1, 1, 0, 0, 0, 0;
 
-    //  // orchid
-    //  petal_relation << 
-    //0, 1, -1, -1, 0,
-    //-1, 0, -1, 0, -1,
-    //1, 1, 0, 0, 0,
-    //1, 0, 0, 0 ,0,
-    //0, 1, 0, 0, 0;
+      // orchid
+      petal_relation << 
+    0, 1, -1, -1, 0,
+    -1, 0, -1, 0, -1,
+    1, 1, 0, 0, 0,
+    1, 0, 0, 0 ,0,
+    0, 1, 0, 0, 0;
 
     return petal_relation;
 }

@@ -64,20 +64,33 @@ void Solver::init()
 void Solver::boundary_inner_setting()
 {
     initMeshParas();
-    initSkelParas();
-    initFittingParas_later_stage();
+    std::cout << "finish mesh initialization" << std::endl;
 
+    initSkelParas();
+    std::cout << "finish skeleton initialization" << std::endl;
+
+    initFittingParas_later_stage();
+    std::cout << "finish data fitting initialization" << std::endl;
 
     initTerms();
+
+    std::cout << "finish solver initialization" << std::endl;
 }
 
 void Solver::trajectory_guided_setting()
 {
     initMeshParas();
+    std::cout << "finish mesh initialization" << std::endl;
+
     initSkelParas();
+    std::cout << "finish skeleton initialization" << std::endl;
+
     initFittingParas_early_stage();
+    std::cout << "finish data fitting initialization" << std::endl;
 
     initTerms();
+
+    std::cout << "finish solver initialization" << std::endl;
 }
 
 void Solver::init_setting()
@@ -165,6 +178,7 @@ void Solver::initFittingParas_later_stage()
 
             deform_petals_[i]._cloud_matrix = cm;
         }
+        else deform_petals_[i]._cloud_matrix = deform_petals_[i]._origin_petal;
     }
 
 
@@ -222,16 +236,20 @@ void Solver::initFittingParas_later_stage()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         osg::ref_ptr<PointCloud> boundary_cloud = point_cloud_->getBoundary(i);
-        CloudMatrix cm(3, boundary_cloud->size());
+        
         if (boundary_cloud != NULL)
         {
+            CloudMatrix cm(3, boundary_cloud->size());
+
             for (size_t j = 0, j_end = boundary_cloud->size(); j < j_end; ++ j)
             {
                 cm.col(j) << boundary_cloud->at(j).x, boundary_cloud->at(j).y, boundary_cloud->at(j).z;
             }
+
+            deform_petals_[i]._boundary_cloud = cm;
         }
 
-        deform_petals_[i]._boundary_cloud = cm;
+        // boundary cloud couldn't be empty here
     }
 
     // init boundary correspondence matrix
@@ -268,27 +286,35 @@ void Solver::initFittingParas_later_stage()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         osg::ref_ptr<PointCloud> tip_cloud = point_cloud_->getTips(i);
-        CloudMatrix cm(3, tip_cloud->size());
+        if (tip_cloud == NULL) std::cout << "tip empty!" << std::endl;
         if (tip_cloud != NULL)
         {
+            CloudMatrix cm(3, tip_cloud->size());
+
             for (size_t j = 0, j_end = tip_cloud->size(); j < j_end; ++ j)
             {
                 cm.col(j) << tip_cloud->at(j).x, tip_cloud->at(j).y, tip_cloud->at(j).z;
             }
+
+            deform_petals_[i]._tip_cloud = cm;
         }
 
-        deform_petals_[i]._tip_cloud = cm;
+        // tip cloud couldn't be empty here
     }
+
+
 
     // init tip correspondence matrix
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
-        CloudMatrix& boundary_cloud = deform_petals_[i]._tip_cloud;
+        CloudMatrix& tip_cloud = deform_petals_[i]._tip_cloud;
         PetalMatrix& petal_mat = deform_petals_[i]._petal_matrix;
 
-        CorresMatrix corres_mat = CorresMatrix::Zero(petal_mat.cols(), boundary_cloud.cols());
+        CorresMatrix corres_mat = CorresMatrix::Zero(petal_mat.cols(), tip_cloud.cols());
         deform_petals_[i]._tip_corres = corres_mat;
     }
+
+
 
     // init tip visible parts
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
@@ -302,6 +328,8 @@ void Solver::initFittingParas_later_stage()
             vis_list[index] = 1;
     }
 
+
+
     // init tip weight list
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
@@ -309,6 +337,7 @@ void Solver::initFittingParas_later_stage()
         deform_petals_[i]._tip_weights = petal.getWeights();
     }
     
+
 }
 
 void Solver::initMeshParas()
