@@ -11,6 +11,7 @@ double Solver::lambda_boundary_fitting_ = 0.02;
 double Solver::lambda_inner_fitting_ = 0.01;
 double Solver::lambda_skel_smooth_ = 0;
 double Solver::lambda_collision_ = 1;
+double Solver::lambda_arap_ = 1;
 double Solver::noise_p_ = 0.0;
 std::vector<Solver::DeformPetal> Solver::deform_petals_;
 std::vector<CollidingPoint> Solver::colliding_points_;
@@ -56,6 +57,7 @@ void Solver::init()
     lambda_inner_fitting_ = MainWindow::getInstance()->getParameters()->getInnerFitting();
     lambda_skel_smooth_ = MainWindow::getInstance()->getParameters()->getSkelSmooth();
     lambda_collision_ = MainWindow::getInstance()->getParameters()->getCollision();
+    lambda_arap_ = MainWindow::getInstance()->getParameters()->getARAP();
     noise_p_ = MainWindow::getInstance()->getParameters()->getNoiseP();
 
     flower_->setPetalRelation(MainWindow::getInstance()->getParameters()->getPetalRelation());
@@ -286,7 +288,7 @@ void Solver::initFittingParas_later_stage()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         osg::ref_ptr<PointCloud> tip_cloud = point_cloud_->getTips(i);
-        if (tip_cloud == NULL) std::cout << "tip empty!" << std::endl;
+
         if (tip_cloud != NULL)
         {
             CloudMatrix cm(3, tip_cloud->size());
@@ -584,9 +586,10 @@ double Solver::energy(int petal_id)
     RotList& rot_list = deform_petal._R_list;
     WeightMatrix& weight_matrix = deform_petal._weight_matrix;
     AdjList& adj_list = deform_petal._adj_list;
+    IntersectList& intersect_list = deform_petal._intersect_list;
 
 
-    double e1 = 0, e2 = 0, e3 = 0, e4 = 0;
+    double e1 = 0, e2 = 0, e3 = 0, e4 = 0, e5 = 0;
 
     for (size_t k = 0, k_end = petal_matrix.cols(); k < k_end; ++ k)
     {
@@ -619,7 +622,20 @@ double Solver::energy(int petal_id)
         }
     }
 
-    return (e1 + e2 + e3 + e4);
+    for (size_t i = 0, i_end = intersect_list.size(); i < i_end; ++ i)
+    {
+        CollidingPoint cp = getCollidingPoint(petal_id, i);
+        osg::Vec3 projection = computeProjection(cp);
+        osg::Vec3 point = cp.p_;
+        
+        std::cout << "colliding point:" << point.x() << " " << point.y() << " " << point.z() << std::endl;
+        std::cout << "projection point:" << projection.x() << " " << projection.y() << " " << projection.z() << std::endl;
+        e5 += (point - projection).length2();
+    }
+    std::cout << "e1:" << e1 << " e2:" << e2 << " e3:" << e3 << " e4:" << e4 << " e5:" << e5 << std::endl;
+
+    return (Solver::lambda_boundary_fitting_ * e1 + Solver::lambda_tip_fitting_ * e2 + 
+        Solver::lambda_inner_fitting_ * e3 + Solver::lambda_arap_ * e4 + Solver::lambda_collision_ * e5);
 }
 
 // both boundary and inner fitting
@@ -1050,6 +1066,7 @@ double Solver::m_step()
 
     do {
         double e_n = solve();
+        std::cout << "en: " << e_n << std::endl;
         eps = std::fabs((e_n - e) / e_n);
         e = e_n;
 
@@ -1058,6 +1075,7 @@ double Solver::m_step()
         update();
         left_sys();
         right_sys(); 
+
 
         iter ++;
 
@@ -1291,3 +1309,17 @@ CollidingPoint Solver::getCollidingPoint(int petal_id, int ver_id)
     return cp;
 }
 
+osg::Vec3 Solver::computeProjection(CollidingPoint cp)
+{
+
+    float k = sqrt(cp.dis2_ / cp.normal_.length2());
+
+    float r = MainWindow::getInstance()->getParameters()->getMovingRatio();
+
+    osg::Vec3 projection;
+    projection.x() = cp.p_.x() - cp.normal_.x() * k * r;
+    projection.y() = cp.p_.y() - cp.normal_.y() * k * r;
+    projection.z() = cp.p_.z() - cp.normal_.z() * k * r;
+
+    return projection;
+}

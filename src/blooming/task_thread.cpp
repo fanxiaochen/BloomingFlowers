@@ -321,7 +321,7 @@ void LATrackThread::run()
     traj_model->show();
 
     // LBS + ARAP tracking 
-    for (size_t i = key_frame, i_end = end_frame;
+    for (size_t i = 50, i_end = 50;
         i <= i_end; ++ i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
@@ -352,7 +352,7 @@ void LATrackThread::run()
     }
     forward_flower->hide();
 
-    traj_model->reverseAll();
+    /*traj_model->reverseAll();
 
     Flower* backward_flower = new Flower(*flower);
     osg::ref_ptr<PointCloud> backward_cloud;
@@ -360,36 +360,36 @@ void LATrackThread::run()
     std::cout << "Backward Tracking..." << std::endl;
     backward_flower->show();
     for (int i = key_frame-1, i_end = start_frame;
-        i >= i_end; -- i)
+    i >= i_end; -- i)
     {
-        std::cout << "tracking [frame " << i << "]" << std::endl;
-        backward_cloud = points_file_system->getPointCloud(i);
+    std::cout << "tracking [frame " << i << "]" << std::endl;
+    backward_cloud = points_file_system->getPointCloud(i);
 
-        std::cout << "detect flower boundary" << std::endl;
-        tip_detector.setFlower(backward_flower);
-        tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
+    std::cout << "detect flower boundary" << std::endl;
+    tip_detector.setFlower(backward_flower);
+    tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
 
-        std::cout << "detect point cloud boundary" << std::endl;
-        tip_detector.setPointCloud(backward_cloud);
-        tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
+    std::cout << "detect point cloud boundary" << std::endl;
+    tip_detector.setPointCloud(backward_cloud);
+    tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
 
-        std::cout << "flower segmentation" << std::endl;
-        backward_cloud->fitting_region(backward_flower, traj_model);
-      
-        
-        tracking_system_->la_registration(*backward_cloud, *backward_flower);
-        backward_flower->save(flowers_folder, i);
-        backward_flower->update();
+    std::cout << "flower segmentation" << std::endl;
+    backward_cloud->fitting_region(backward_flower, traj_model);
 
-        traj_model->addFlowerPosition(backward_flower);
-        traj_model->update();
 
-        points_file_system->hidePointCloud(i + 1);
-        points_file_system->showPointCloud(i);
+    tracking_system_->la_registration(*backward_cloud, *backward_flower);
+    backward_flower->save(flowers_folder, i);
+    backward_flower->update();
+
+    traj_model->addFlowerPosition(backward_flower);
+    traj_model->update();
+
+    points_file_system->hidePointCloud(i + 1);
+    points_file_system->showPointCloud(i);
 
     }
 
-    backward_flower->hide();
+    backward_flower->hide();*/
 
     std::cout << "LBS + ARAP Tracking Finished!" << std::endl;
 }

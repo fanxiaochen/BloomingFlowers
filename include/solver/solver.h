@@ -156,6 +156,7 @@ public:
     static double lambda_inner_fitting_;
     static double lambda_skel_smooth_;
     static double lambda_collision_;
+    static double lambda_arap_;
     static double noise_p_;
 
 public:
@@ -222,6 +223,7 @@ protected:
     void collision_detection();
     void PetalMatrix_to_Flower();
     void Flower_to_PetalMatrix();
+    osg::Vec3 computeProjection(CollidingPoint cp);
 
 public:
     static CollidingPoint getCollidingPoint(int petal_id, int ver_id);

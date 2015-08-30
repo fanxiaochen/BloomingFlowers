@@ -38,6 +38,7 @@ bool Parameters::load(const std::string& filename)
     inner_fitting_ = solverElement.attribute("inner_fitting").toDouble();
     skel_smooth_ = solverElement.attribute("skel_smooth").toDouble();
     collision_ = solverElement.attribute("collision").toDouble();
+    arap_ = solverElement.attribute("arap").toDouble();
     noise_p_ = solverElement.attribute("noise_p").toDouble();
     moving_ratio_ = solverElement.attribute("moving_ratio").toFloat();
 
@@ -98,6 +99,7 @@ bool Parameters::save(const std::string& filename)
     solverElement.setAttribute("inner_fitting", inner_fitting_);
     solverElement.setAttribute("skel_smooth", skel_smooth_);
     solverElement.setAttribute("collision", collision_);
+    solverElement.setAttribute("arap", arap_);
     solverElement.setAttribute("noise_p", noise_p_);
     solverElement.setAttribute("moving_ratio", moving_ratio_);
     rootElement.appendChild(solverElement);
@@ -148,22 +150,22 @@ Eigen::MatrixXi Parameters::getPetalRelation()
 
     // not convenient to store, have to indicate manually here...
 
-    //// lily
-    //petal_relation << 
-    //    0, 1, 0, -1, -1, -1,
-    //    -1, 0, -1, -1, -1, -1,
-    //    1, 1, 0, -1, -1, -1,
-    //    1, 1, 1, 0, 0 ,0,
-    //    1, 1, 1, 0, 0, 0,
-    //    1, 1, 0, 0, 0, 0;
+    // lily
+    petal_relation << 
+        0, 1, 0, -1, -1, -1,
+        -1, 0, -1, -1, -1, -1,
+        1, 1, 0, -1, -1, -1,
+        1, 1, 1, 0, 0 ,0,
+        1, 1, 1, 0, 0, 0,
+        1, 1, 0, 0, 0, 0;
 
-      // orchid
-      petal_relation << 
-    0, 1, -1, -1, 0,
-    -1, 0, -1, 0, -1,
-    1, 1, 0, 0, 0,
-    1, 0, 0, 0 ,0,
-    0, 1, 0, 0, 0;
+    //  // orchid
+    //  petal_relation << 
+    //0, 1, -1, -1, 0,
+    //-1, 0, -1, 0, -1,
+    //1, 1, 0, 0, 0,
+    //1, 0, 0, 0 ,0,
+    //0, 1, 0, 0, 0;
 
     return petal_relation;
 }
