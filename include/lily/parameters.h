@@ -12,35 +12,35 @@ public:
     bool load(const std::string& filename);
     bool save(const std::string& filename);
 
-    inline int getStartFrame() { return start_frame_; }
-    inline int getEndFrame() { return end_frame_; }
-    inline int getKeyFrame() { return key_frame_; }
+    inline int& getStartFrame() { return start_frame_; }
+    inline int& getEndFrame() { return end_frame_; }
+    inline int& getKeyFrame() { return key_frame_; }
 
-    inline int getIterNum() { return iter_num_; }
-    inline double getEps() { return eps_; }
-    inline double getBoundaryFitting() { return boundary_fitting_; }
-    inline double getTipFitting() { return tip_fitting_; }
-    inline double getInnerFitting() { return inner_fitting_; }
-    inline double getSkelSmooth() { return skel_smooth_; }
-    inline double getCollision() { return collision_; }
-    inline double getARAP() { return arap_; }
-    inline double getNoiseP() { return noise_p_; }
-    inline float getMovingRatio() { return moving_ratio_; }
+    inline int& getIterNum() { return iter_num_; }
+    inline double& getEps() { return eps_; }
+    inline double& getBoundaryFitting() { return boundary_fitting_; }
+    inline double& getTipFitting() { return tip_fitting_; }
+    inline double& getInnerFitting() { return inner_fitting_; }
+    inline double& getSkelSmooth() { return skel_smooth_; }
+    inline double& getCollision() { return collision_; }
+    inline double& getARAP() { return arap_; }
+    inline double& getNoiseP() { return noise_p_; }
+    inline float& getMovingRatio() { return moving_ratio_; }
 
 
-    inline int getBinNum() { return bin_num_; }
-    inline float getKnnRadius() { return knn_radius_; }
-    inline int getNoiseK() { return noise_k_; }
-    inline int getMinBoundary() { return min_boundary_; }
-    inline float getTipRadius() { return tip_radius_; }
+    inline int& getBinNum() { return bin_num_; }
+    inline float& getKnnRadius() { return knn_radius_; }
+    inline int& getNoiseK() { return noise_k_; }
+    inline int& getMinBoundary() { return min_boundary_; }
+    inline float& getTipRadius() { return tip_radius_; }
 
-    inline double getSegmentRatio() { return segment_ratio_; }
-    inline int getCompletionDegree() { return completion_degree_; }
+    inline double& getSegmentRatio() { return segment_ratio_; }
+    inline int& getCompletionDegree() { return completion_degree_; }
 
-    inline std::string getPetalOrder() { return petal_order_; }
-    inline int getPetalNum() { return petal_num_; }
+    inline std::string& getPetalOrder() { return petal_order_; }
+    inline int& getPetalNum() { return petal_num_; }
 
-    inline float getCameraZoffset() { return z_offset_; }
+    inline float& getCameraZoffset() { return z_offset_; }
 
     Eigen::MatrixXi getPetalRelation();
 

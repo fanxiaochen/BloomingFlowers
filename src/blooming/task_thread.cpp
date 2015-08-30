@@ -280,12 +280,14 @@ void LATrackThread::run()
     std::cout << "LBS + ARAP Tracking Starts..." << std::endl;
 
     int key_frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
+    int start_frame = MainWindow::getInstance()->getParameters()->getStartFrame();
+    int end_frame = MainWindow::getInstance()->getParameters()->getEndFrame();
 
     PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
     MeshFileSystem* mesh_file_system = tracking_system_->getMeshFileSystem();
 
-    int start_frame = points_file_system->getStartFrame();
-    int end_frame = points_file_system->getEndFrame();
+    /*int start_frame = points_file_system->getStartFrame();
+    int end_frame = points_file_system->getEndFrame();*/
 
     QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
 
@@ -313,53 +315,53 @@ void LATrackThread::run()
     std::string flowers_folder = flowers_dir.absolutePath().toStdString() + "/flowers";
 
 
-    std::cout << "Forward Tracking..." << std::endl;
-    forward_flower->show();
+    /*std::cout << "Forward Tracking..." << std::endl;
+    forward_flower->show();*/
 
     osg::ref_ptr<TrajectoryModel> traj_model = new TrajectoryModel;
     traj_model->init(forward_flower);
     traj_model->show();
 
-    // LBS + ARAP tracking 
-    for (size_t i = key_frame, i_end = end_frame;
-        i <= i_end; ++ i)
-    {
-        std::cout << "tracking [frame " << i << "]" << std::endl;
+    //// LBS + ARAP tracking 
+    //for (size_t i = key_frame, i_end = end_frame;
+    //    i <= i_end; ++ i)
+    //{
+    //    std::cout << "tracking [frame " << i << "]" << std::endl;
 
-        forward_cloud = points_file_system->getPointCloud(i);
+    //    forward_cloud = points_file_system->getPointCloud(i);
 
-        std::cout << "detect flower boundary" << std::endl;
-        tip_detector.setFlower(forward_flower);
-        tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
+    //    std::cout << "detect flower boundary" << std::endl;
+    //    tip_detector.setFlower(forward_flower);
+    //    tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
 
-        std::cout << "detect point cloud boundary" << std::endl;
-        tip_detector.setPointCloud(forward_cloud);
-        tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
+    //    std::cout << "detect point cloud boundary" << std::endl;
+    //    tip_detector.setPointCloud(forward_cloud);
+    //    tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
 
-        std::cout << "flower segmentation" << std::endl;
-        forward_cloud->fitting_region(forward_flower, traj_model);
+    //    std::cout << "flower segmentation" << std::endl;
+    //    forward_cloud->fitting_region(forward_flower, traj_model);
 
-        tracking_system_->la_registration(*forward_cloud, *forward_flower);
-        forward_flower->save(flowers_folder, i);
-        forward_flower->update();
+    //    tracking_system_->la_registration(*forward_cloud, *forward_flower);
+    //    forward_flower->save(flowers_folder, i);
+    //    forward_flower->update();
 
-        traj_model->addFlowerPosition(forward_flower);
-        traj_model->update();
+    //    traj_model->addFlowerPosition(forward_flower);
+    //    traj_model->update();
 
-        points_file_system->hidePointCloud(i - 1);
-        points_file_system->showPointCloud(i);
+    //    points_file_system->hidePointCloud(i - 1);
+    //    points_file_system->showPointCloud(i);
 
-    }
-    forward_flower->hide();
+    //}
+    //forward_flower->hide();
 
-    traj_model->reverseAll();
+    //traj_model->reverseAll();
 
     Flower* backward_flower = new Flower(*flower);
     osg::ref_ptr<PointCloud> backward_cloud;
 
     std::cout << "Backward Tracking..." << std::endl;
     backward_flower->show();
-    for (int i = key_frame-1, i_end = start_frame;
+    for (int i = key_frame, i_end = start_frame;
         i >= i_end; -- i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
