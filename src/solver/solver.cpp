@@ -624,15 +624,13 @@ double Solver::energy(int petal_id)
 
     for (size_t i = 0, i_end = intersect_list.size(); i < i_end; ++ i)
     {
-        CollidingPoint cp = getCollidingPoint(petal_id, i);
+        CollidingPoint cp = getCollidingPoint(petal_id, intersect_list[i]);
         osg::Vec3 projection = computeProjection(cp);
         osg::Vec3 point = cp.p_;
-        
-        std::cout << "colliding point:" << point.x() << " " << point.y() << " " << point.z() << std::endl;
-        std::cout << "projection point:" << projection.x() << " " << projection.y() << " " << projection.z() << std::endl;
         e5 += (point - projection).length2();
     }
-    std::cout << "e1:" << e1 << " e2:" << e2 << " e3:" << e3 << " e4:" << e4 << " e5:" << e5 << std::endl;
+
+    //std::cout << "e1:" << e1 << " e2:" << e2 << " e3:" << e3 << " e4:" << e4 << " e5:" << e5 << std::endl;
 
     return (Solver::lambda_boundary_fitting_ * e1 + Solver::lambda_tip_fitting_ * e2 + 
         Solver::lambda_inner_fitting_ * e3 + Solver::lambda_arap_ * e4 + Solver::lambda_collision_ * e5);
@@ -1061,21 +1059,19 @@ double Solver::m_step()
     double e = 0;
 
     initBuild();
-    left_sys();
-    right_sys();
+    /* left_sys();
+    right_sys();*/
 
     do {
-        double e_n = solve();
-        std::cout << "en: " << e_n << std::endl;
-        eps = std::fabs((e_n - e) / e_n);
-        e = e_n;
-
         collision_detection();
         projection();
         update();
         left_sys();
         right_sys(); 
 
+        double e_n = solve();
+        eps = std::fabs((e_n - e) / e_n);
+        e = e_n;
 
         iter ++;
 
