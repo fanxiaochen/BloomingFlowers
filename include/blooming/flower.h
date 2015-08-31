@@ -30,6 +30,8 @@ public:
 	inline PetalRelation& getPetalRelation() { return  petal_relation_; }
 	inline void setPetalRelation( PetalRelation& m ) { petal_relation_ = m; } 
 
+    void saveAll(const std::string& flower_path);
+    void saveAll(const std::string& flower_folder, int frame);
     void save(const std::string& flower_path);
     void save(const std::string& flower_folder, int frame);
     void load(const std::string& flower_path);

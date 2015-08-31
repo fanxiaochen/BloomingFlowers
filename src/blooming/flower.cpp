@@ -5,6 +5,7 @@
 #include "scene_widget.h"
 #include "parameters.h"
 
+
 Flower::Flower()
 {
 }
@@ -55,6 +56,20 @@ void Flower::reorder()
     //petal_order_[3] = 1;
     //petal_order_[4] = 1;
 
+}
+
+void Flower::saveAll(const std::string& flower_path)
+{
+    ObjWriter obj_writer(this);
+
+    obj_writer.saveAll(flower_path, this->getPetals()[0].getHasTexture());
+    obj_writer.saveMtl(flower_path, this->getPetals()[0].getHasTexture());
+}
+
+void Flower::saveAll(const std::string& flower_folder, int frame)
+{
+    std::string& flower_file = flower_folder + QString("/%1.obj").arg(frame).toStdString();
+    saveAll(flower_file);
 }
 
 void Flower::save(const std::string& flower_path)
