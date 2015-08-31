@@ -99,6 +99,7 @@ public:
     inline int getEndFrame() const { return end_frame_; }
     inline int getCurrentFrame() const { return current_frame_; }
     osg::ref_ptr<Flower> flower(int frame);
+    std::string getFlowerFolder() { return flowers_folder_; }
 
 private:
     void extractStartEndFrame(const QStringList& entries, int& start_frame, int& end_frame);

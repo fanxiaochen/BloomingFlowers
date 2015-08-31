@@ -71,6 +71,8 @@
     <addaction name="actionCollision_Detection"/>
     <addaction name="separator"/>
     <addaction name="actionTrajectoriesGeneration"/>
+    <addaction name="separator"/>
+    <addaction name="actionMergePetals"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTracking"/>
@@ -221,6 +223,11 @@
   <action name="actionTrajectoriesGeneration">
    <property name="text">
     <string>Trajectories Generation</string>
+   </property>
+  </action>
+  <action name="actionMergePetals">
+   <property name="text">
+    <string>Merge Petals</string>
    </property>
   </action>
  </widget>

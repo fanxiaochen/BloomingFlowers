@@ -194,6 +194,7 @@ void MainWindow::init(void)
     connect(ui_.actionRegionProbability, SIGNAL(triggered()), this, SLOT(region_probability()));
 	connect(ui_.actionCollision_Detection, SIGNAL(triggered()), this, SLOT(collision_detection()));
     connect(ui_.actionTrajectoriesGeneration, SIGNAL(triggered()), this, SLOT(trajectories_generation()));
+    connect(ui_.actionMergePetals, SIGNAL(triggered()), this, SLOT(merge_petals()));
     // connect
 
     return;
@@ -348,6 +349,21 @@ bool MainWindow::region_probability()
     return true;
 }
 
+
+bool MainWindow::merge_petals()
+{
+    QString flower_folder = QFileDialog::getExistingDirectory(this, tr("Load Flowers"), workspace_.c_str(), QFileDialog::ShowDirsOnly);
+
+    if (flower_folder.isEmpty())
+        return false;
+
+    flowers_viewer_ = new FlowersViewer(flower_folder.toStdString());
+    flowers_viewer_->computeFrameRange();
+    
+    ObjWriter obj_writer;
+    obj_writer.merge(flowers_viewer_);
+    return true;
+}
 
 
 // only flower is needed

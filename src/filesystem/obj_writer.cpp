@@ -5,6 +5,11 @@
 #include "mesh_model.h"
 #include "obj_writer.h"
 
+ObjWriter::ObjWriter()
+{
+
+}
+
 ObjWriter::ObjWriter(Flower* flower)
     :flower_(flower)
 {
@@ -292,4 +297,26 @@ bool ObjWriter::saveMtl(const std::string& new_obj_file, bool tex_flag /* = fals
 
     return true;
 
+}
+
+void ObjWriter::merge(FlowersViewer* flower_viewer)
+{
+    if (flower_viewer == nullptr)
+        return;
+
+    int start_frame = flower_viewer->getStartFrame();
+    int end_frame = flower_viewer->getEndFrame();
+
+    std::string flower_folder = flower_viewer->getFlowerFolder();
+    QDir flowers_dir(QString(flower_folder.c_str()));
+    flowers_dir.mkdir("merged_flowers");
+    std::string merged_flower = flowers_dir.absolutePath().toStdString() + "/merged_flowers";
+
+    for (int i = start_frame; i <= end_frame; ++ i)
+    {
+        osg::ref_ptr<Flower> current_flower = flower_viewer->flower(i);
+        current_flower->saveAll(merged_flower, i);
+    }
+
+    std::cout << "merge finished" << std::endl;
 }
