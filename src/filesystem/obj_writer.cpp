@@ -120,15 +120,11 @@ bool ObjWriter::save(const std::string& new_obj_file, bool tex_flag)
     {
         // mtl file
         std::string new_mtl_file = new_obj_file + ".mtl";
-        /*new_mtl_file = QString(new_mtl_file.c_str()).replace(
-        QString(new_mtl_file.c_str()).indexOf("obj"), 3, "mtl").toStdString();*/
         QFile::copy(QString(mesh_model_->getMtlFile().c_str()), QString(new_mtl_file.c_str()));
 
-        // tga file
-        std::string new_tga_file = new_obj_file + ".tga";
-        /*new_tga_file = QString(new_tga_file.c_str()).replace(
-        QString(new_tga_file.c_str()).indexOf("obj"), 3, "tga").toStdString();*/
-        QFile::copy(QString(mesh_model_->getMapKd().c_str()), QString(new_tga_file.c_str()));
+        // jpg file
+        std::string new_jpg_file = new_obj_file + ".jpg";
+        QFile::copy(QString(mesh_model_->getMapKd().c_str()), QString(new_jpg_file.c_str()));
     }
     
 
@@ -284,10 +280,10 @@ bool ObjWriter::saveMtl(const std::string& new_obj_file, bool tex_flag /* = fals
 
         fs << "\n\n";
 
-        // tga file
+        // jpg file
         
-        std::string new_tga_file = base_folder + "/" + petal.getObjName() + ".tga";
-        QFile::copy(QString(petal.getMapKd().c_str()), QString(new_tga_file.c_str()));
+        std::string new_jpg_file = base_folder + "/" + petal.getObjName() + ".jpg";
+        QFile::copy(QString(petal.getMapKd().c_str()), QString(new_jpg_file.c_str()));
 
     }
 
