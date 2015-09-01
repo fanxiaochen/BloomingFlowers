@@ -472,7 +472,7 @@ bool CameraHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdap
             {
             case (osgGA::GUIEventAdapter::MODKEY_ALT):
                 {
-                    if (ea.getKey() == osgGA::GUIEventAdapter::KEY_C)
+                    if (ea.getKey() == osgGA::GUIEventAdapter::KEY_A)
                     {
                         osgGA::CameraManipulator* cm = view->getCameraManipulator();
                         cm->setHomePosition(eye_, center_, up_);
