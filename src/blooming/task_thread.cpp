@@ -380,7 +380,7 @@ void LATrackThread::run()
 
 
         tracking_system_->la_registration(*backward_cloud, *backward_flower);
-        backward_flower->save(flowers_folder, i);
+        backward_flower->saveAll(flowers_folder, i);
         backward_flower->update();
 
         traj_model->addFlowerPosition(backward_flower);
@@ -390,7 +390,7 @@ void LATrackThread::run()
         points_file_system->showPointCloud(i);
 
     }
-
+    
     backward_flower->hide();
 
     std::cout << "LBS + ARAP Tracking Finished!" << std::endl;

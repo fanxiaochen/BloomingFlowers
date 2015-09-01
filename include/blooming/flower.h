@@ -30,6 +30,8 @@ public:
 	inline PetalRelation& getPetalRelation() { return  petal_relation_; }
 	inline void setPetalRelation( PetalRelation& m ) { petal_relation_ = m; } 
 
+    void saveAll(const std::string& flower_path);
+    void saveAll(const std::string& flower_folder, int frame);
     void save(const std::string& flower_path);
     void save(const std::string& flower_folder, int frame);
     void load(const std::string& flower_path);
@@ -97,6 +99,7 @@ public:
     inline int getEndFrame() const { return end_frame_; }
     inline int getCurrentFrame() const { return current_frame_; }
     osg::ref_ptr<Flower> flower(int frame);
+    std::string getFlowerFolder() { return flowers_folder_; }
 
 private:
     void extractStartEndFrame(const QStringList& entries, int& start_frame, int& end_frame);
