@@ -182,6 +182,9 @@ void MainWindow::init(void)
     connect(ui_.actionSaveParameters, SIGNAL(triggered()), this, SLOT(slotSaveParameters()));
     connect(ui_.actionLoadAxis, SIGNAL(triggered()), this, SLOT(slotLoadAxis()));
     connect(ui_.actionLoadFlowers, SIGNAL(triggered()), this, SLOT(slotLoadFlowers()));
+	connect(ui_.actionLoadCamera, SIGNAL( triggered () ),this, SLOT( loadCamera()) );
+	connect(ui_.actionSaveCamera, SIGNAL( triggered () ),this, SLOT( saveCamera()) );
+
 
     connect(ui_.actionEMARAP, SIGNAL(triggered()), tracking_system_, SLOT(em_arap()));
     connect(ui_.actionWEMARAP, SIGNAL(triggered()), tracking_system_, SLOT(wem_arap()));
@@ -532,6 +535,30 @@ void MainWindow::saveSettings()
 	settings.setValue("meshs_path", QString( mesh_path_.c_str()) );
 
     return;
+}
+
+
+bool MainWindow::loadCamera()
+{
+	MainWindow* main_window = MainWindow::getInstance();
+	QString filename = QFileDialog::getOpenFileName(this, "Load Camera",QString(workspace_.c_str()), "Camera (*.camera)");
+	if (filename.isEmpty())
+		return false;
+	scene_widget_->readCameraParameters( filename );
+	return true;
+}
+
+
+bool MainWindow::saveCamera()
+{
+	MainWindow* main_window = MainWindow::getInstance();
+	QString filename = QFileDialog::getSaveFileName(this, "Save Camera",QString(workspace_.c_str()), "Camera (*.camera)");
+	if (filename.isEmpty())
+		return false;
+
+	scene_widget_->writeCameraParameters( filename );
+	return true;
+
 }
 
 
