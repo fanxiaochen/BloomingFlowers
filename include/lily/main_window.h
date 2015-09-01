@@ -66,6 +66,8 @@ private slots:
     bool slotLoadMesh();
     bool slotLoadParameters();
     bool slotSaveParameters();
+	bool loadCamera();
+	bool saveCamera();
     bool slotLoadAxis();
     bool slotLoadFlowers();
     bool slotSendCheckBoxRenderState();

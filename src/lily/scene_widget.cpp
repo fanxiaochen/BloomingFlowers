@@ -23,6 +23,7 @@ SceneWidget::SceneWidget(QWidget * parent, const QGLWidget * shareWidget, Qt::Wi
     addEventHandler(new PickHandler());
     addEventHandler(new CameraHandler());
     addEventHandler(new NodeHandler(scene_root_));
+	addEventHandler(new osgViewer::ScreenCaptureHandler(new WriteToFile(QString(""))));	
 }
 
 SceneWidget::~SceneWidget()

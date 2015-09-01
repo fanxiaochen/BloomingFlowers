@@ -49,6 +49,10 @@
     <addaction name="actionLoadAxis"/>
     <addaction name="separator"/>
     <addaction name="actionLoadFlowers"/>
+    <addaction name="separator"/>
+    <addaction name="actionLoadCamera"/>
+    <addaction name="actionSaveCamera"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuTracking">
     <property name="title">
@@ -221,6 +225,16 @@
   <action name="actionTrajectoriesGeneration">
    <property name="text">
     <string>Trajectories Generation</string>
+   </property>
+  </action>
+  <action name="actionLoadCamera">
+   <property name="text">
+    <string>Load Camera</string>
+   </property>
+  </action>
+  <action name="actionSaveCamera">
+   <property name="text">
+    <string>Save Camera</string>
    </property>
   </action>
  </widget>

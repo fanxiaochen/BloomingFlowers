@@ -10,6 +10,9 @@
 #include <osgGA/TrackballManipulator>
 #include <osgGA/StateSetManipulator>
 
+#include <osgDB/WriteFile>
+#include "time.h"
+
 #include "main_window.h"
 #include "toggle_handler.h"
 #include "registrator.h"
@@ -314,6 +317,54 @@ bool OSGViewerWidget::hasOtherChild(osg::Node *child)
     return (other_root_->getChildIndex(child) != -1);
 }
 
+void OSGViewerWidget::writeCameraParameters( const QString& filename )
+{
+	osg::Vec3 eye, center, up;
+	getCamera()->getViewMatrixAsLookAt(eye, center, up);
+	QFile txt_file(filename);
+	txt_file.open(QIODevice::WriteOnly | QIODevice::Text);
+	QTextStream txt_file_stream(&txt_file);
+	txt_file_stream << eye.x() << " " << eye.y() << " " << eye.z() << "\n";
+	txt_file_stream << center.x() << " " << center.y() << " " << center.z() << "\n";
+	txt_file_stream << up.x() << " " << up.y() << " " << up.z() << "\n";
+
+	// 	QFile inc_file(filename+".inc");
+	// 	inc_file.open(QIODevice::WriteOnly | QIODevice::Text);
+	// 	QTextStream inc_file_stream(&inc_file);
+	// 	inc_file_stream << QString("\tcamera\n\t{\n\t    perspective\n\t    up -y\n\t    right x*image_width/image_height\n\t %1\t %2\t %3\t}\n")
+	// 		.arg(QString("   location <%1, %2, %3>\n").arg(eye[0]).arg(eye[1]).arg(eye[2]))
+	// 		.arg(QString("   sky <%1, %2, %3>\n").arg(up[0]).arg(up[1]).arg(up[2]))
+	// 		.arg(QString("   look_at <%1, %2, %3>\n").arg(center[0]).arg(center[1]).arg(center[2]));
+
+
+	return;
+}
+
+void OSGViewerWidget::readCameraParameters( const QString& filename )
+{
+	QMutexLocker locker(&mutex_);
+
+	QFile txt_file(filename);
+	txt_file.open(QIODevice::ReadOnly | QIODevice::Text);
+	QTextStream txt_file_stream(&txt_file);
+
+	osg::Vec3d eye, center, up;
+	txt_file_stream >> eye.x() >> eye.y() >> eye.z();
+	txt_file_stream >> center.x() >> center.y() >> center.z();
+	txt_file_stream >> up.x() >> up.y() >> up.z();
+	getCamera()->setViewMatrixAsLookAt(eye, center, up);
+
+	osgGA::CameraManipulator* camera_manipulator = getCameraManipulator();
+	osg::Vec3d e, c, u;
+	camera_manipulator->getHomePosition(e, c, u);
+
+	camera_manipulator->setHomePosition(eye, center, up);
+	camera_manipulator->home(0);
+
+	camera_manipulator->setHomePosition(e, c, u);
+	return;
+}
+
 void OSGViewerWidget::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Equal)
@@ -385,7 +436,7 @@ bool CameraHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdap
 
             switch (ea.getKey())
             {
-            case (osgGA::GUIEventAdapter::KEY_C):
+            case (osgGA::GUIEventAdapter::KEY_A):
                 {
                     osgGA::CameraManipulator* cm = view->getCameraManipulator();
                     osg::Vec3d eye, center, up;
@@ -480,4 +531,33 @@ bool NodeHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapte
     }
 
     return false;
+}
+
+
+WriteToFile::WriteToFile(const QString& workspace )
+	:workspace_(workspace),
+	osgViewer::ScreenCaptureHandler::WriteToFile("screen_shot", "jpg")
+{
+}
+
+WriteToFile::~WriteToFile(void)
+{
+
+}
+
+void WriteToFile::operator() (const osg::Image& image, const unsigned int context_id)
+{
+	std::stringstream filename;
+	filename << workspace_.toStdString() << _filename;
+
+
+	time_t timer = time(NULL);
+	struct tm* current_time = localtime(&timer);
+
+	filename << "_" << current_time->tm_hour << current_time->tm_min << current_time->tm_sec;
+	filename << "." << _extension;
+
+	osgDB::writeImageFile(image, filename.str());
+
+	OSG_INFO<<"ScreenCaptureHandler: Taking a screen shot, saved as '"<<filename.str()<<"'"<<std::endl;
 }

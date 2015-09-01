@@ -6,6 +6,8 @@
 #include <QThread>
 #include <osgViewer/Viewer>
 #include <osg/BoundingSphere>
+#include <osgViewer/View>
+#include <osgViewer/ViewerEventHandlers>
 
 #include "threaded_painter.h"
 #include "adapter_widget.h"
@@ -47,6 +49,10 @@ public:
     void setCenterScene(bool center_scene);
 
 	virtual void eventTraversal();
+
+	void writeCameraParameters(const QString& filename);
+	void readCameraParameters(const QString& filename); 
+
 public slots:
 	void increasePointSize(void);
 	void decreasePointSize(void);
@@ -105,6 +111,19 @@ public:
 private:
     osg::Group* root_;
     bool visible_;
+};
+
+class WriteToFile : public osgViewer::ScreenCaptureHandler::WriteToFile
+{
+public:
+
+	WriteToFile(const QString& workspace);
+	virtual ~WriteToFile(void);
+
+	virtual void operator() (const osg::Image& image, const unsigned int context_id);
+
+private:
+	QString    workspace_;
 };
 
 #endif // OSG_VIEWER_WIDGET_H
