@@ -76,6 +76,7 @@ private slots:
 	bool collision_detection();
     bool trajectories_generation();
     bool merge_petals();
+    bool petal_sequences();
 
 private:
     void loadSettings();

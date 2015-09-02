@@ -198,6 +198,7 @@ void MainWindow::init(void)
 	connect(ui_.actionCollision_Detection, SIGNAL(triggered()), this, SLOT(collision_detection()));
     connect(ui_.actionTrajectoriesGeneration, SIGNAL(triggered()), this, SLOT(trajectories_generation()));
     connect(ui_.actionMergePetals, SIGNAL(triggered()), this, SLOT(merge_petals()));
+    connect(ui_.actionPetalSequences, SIGNAL(triggered()), this, SLOT(petal_sequences()));
     // connect
 
     return;
@@ -365,6 +366,44 @@ bool MainWindow::merge_petals()
     
     ObjWriter obj_writer;
     obj_writer.merge(flowers_viewer_);
+    return true;
+}
+
+bool MainWindow::petal_sequences()
+{
+    QString flower_folder = QFileDialog::getExistingDirectory(this, tr("Load Flowers"), workspace_.c_str(), QFileDialog::ShowDirsOnly);
+
+    if (flower_folder.isEmpty())
+        return false;
+
+    flowers_viewer_ = new FlowersViewer(flower_folder.toStdString());
+    flowers_viewer_->computeFrameRange();
+
+    int start_frame = flowers_viewer_->getStartFrame();
+    int end_frame = flowers_viewer_->getEndFrame();
+
+    std::cout << start_frame << end_frame << std::endl;
+
+    QDir flowers_dir(flower_folder);
+    flowers_dir.mkdir("petal sequences");
+    std::string petals_folder = flowers_dir.absolutePath().toStdString() + "/petal sequences";
+    
+    int petal_num = MainWindow::getInstance()->getParameters()->getPetalNum();
+    for (size_t j = 0; j < petal_num; ++ j)
+    {
+        QDir petals_dir(QString(petals_folder.c_str()));
+        petals_dir.mkdir(QString("petal-%1").arg(j));
+    }
+    
+    ObjWriter obj_writer;
+
+    for (size_t i = start_frame; i <= end_frame; ++ i)
+    {
+        obj_writer.copyPetals(flower_folder.toStdString(), i, petals_folder);
+    }
+
+    std::cout << "petal sequences finished" << std::endl;
+
     return true;
 }
 

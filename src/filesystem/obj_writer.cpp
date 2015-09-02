@@ -316,3 +316,33 @@ void ObjWriter::merge(FlowersViewer* flower_viewer)
 
     std::cout << "merge finished" << std::endl;
 }
+
+void ObjWriter::copyPetals(const std::string& flower_folder, int frame, const std::string& petals_folder)
+{
+    std::string frame_folder = flower_folder + QString("/frame_%1").arg(frame, 5, 10, QChar('0')).toStdString();
+
+    QDir frame_dir = QDir(frame_folder.c_str());
+    QStringList allowed_file_extensions;
+    allowed_file_extensions.push_back("*.obj");
+    frame_dir.setNameFilters(allowed_file_extensions);
+
+    QStringList petals_entries = frame_dir.entryList();
+
+    for (size_t i = 0, i_end = petals_entries.size(); i < i_end; ++ i)
+    {
+        std::string petal_folder = petals_folder + QString("/petal-%1").arg(i).toStdString();
+
+        std::string petal_obj = frame_folder + "/" + petals_entries.at(i).toStdString();
+        std::string petal_mtl = petal_obj + ".mtl";
+        std::string petal_jpg = petal_obj + ".jpg";
+
+        std::string new_petal_obj = petal_folder + "/" + QString("%1.obj").arg(frame).toStdString();
+        std::string new_petal_mtl = petal_folder + "/" + petals_entries.at(i).toStdString() + ".mtl";
+        std::string new_petal_jpg = petal_folder + "/" + petals_entries.at(i).toStdString() + ".jpg";
+
+        QFile::copy(QString(petal_obj.c_str()), QString(new_petal_obj.c_str()));
+        QFile::copy(QString(petal_mtl.c_str()), QString(new_petal_mtl.c_str()));
+        QFile::copy(QString(petal_jpg.c_str()), QString(new_petal_jpg.c_str()));
+    }
+}
+

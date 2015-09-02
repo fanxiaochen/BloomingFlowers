@@ -105,6 +105,7 @@ void ARAPTerm::buildb()
     Solver::AdjList& adj_list = deform_petal._adj_list;
     Solver::WeightMatrix& weight_matrix = deform_petal._weight_matrix;
     Solver::RotList& R_list = deform_petal._R_list;
+    Solver::ScaleList& S_list = deform_petal._S_list;
     Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
     Solver::HardCtrsIdx& hc_idx = deform_petal._hc_idx;
     int ver_num = origin_petal.cols();
@@ -117,7 +118,7 @@ void ARAPTerm::buildb()
         for (size_t j = 0, j_end = adj_list[i].size(); j < j_end; ++j)
         {
             b_.col(i) += ((weight_matrix.coeffRef(i, adj_list[i][j])/2)*
-                (R_list[i]+R_list[adj_list[i][j]])*(origin_petal.col(i) - origin_petal.col(adj_list[i][j]))).transpose();
+                (S_list[i]*R_list[i]+S_list[adj_list[i][j]]*R_list[adj_list[i][j]])*(origin_petal.col(i) - origin_petal.col(adj_list[i][j]))).transpose();
         }
     }
 
@@ -133,7 +134,7 @@ void ARAPTerm::buildb()
 
 void ARAPTerm::initRotation()
 {
-    // init rotation matrix
+    // init rotation matrix and scale list
     Solver::DeformPetal& deform_petal = Solver::deform_petals_[petal_id_];
     Solver::PetalMatrix& origin_petal = deform_petal._origin_petal;
     Solver::RotList R_list;
@@ -144,6 +145,8 @@ void ARAPTerm::initRotation()
     }
 
     deform_petal._R_list = R_list;
+
+    deform_petal._S_list = std::vector<double>(origin_petal.cols(), 1);
 }
 
 void ARAPTerm::updateRotation()
@@ -152,6 +155,7 @@ void ARAPTerm::updateRotation()
     Solver::PetalMatrix& origin_petal = deform_petal._origin_petal;
     Solver::PetalMatrix& petal_matrix = deform_petal._petal_matrix;
     Solver::RotList& rot_list = deform_petal._R_list;
+    Solver::ScaleList& scale_list = deform_petal._S_list;
     Solver::AdjList& adj_list = deform_petal._adj_list;
     Solver::WeightMatrix& weight_matrix = deform_petal._weight_matrix;
 
@@ -182,5 +186,23 @@ void ARAPTerm::updateRotation()
 
         if (rot_list[i].determinant() < 0)
             std::cout << "determinant is negative!" << std::endl;
+
+        double s = 0;
+        for (size_t j = 0, j_end = adj_list[i].size(); j < j_end; ++j) 
+        {
+            s += Di(j, j) * Pi.col(j).squaredNorm();
+        }
+
+       // scale_list[i] = Wi.trace() / s;
+
+       /* if (scale_list[i] < 0.95 )
+            scale_list[i] = 0.95;
+        else if (scale_list[i] > 1.05)
+            scale_list[i] = 1.05;*/
     }
+
+    /*if (petal_id_ == 0) std::cout << "vertex: " << 0 << "  " << scale_list[0] << std::endl;*/
 }
+
+
+

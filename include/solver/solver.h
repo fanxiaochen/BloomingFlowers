@@ -30,6 +30,7 @@ public:
     typedef std::vector<Eigen::Vector3i > FaceList;
     typedef Eigen::SparseMatrix<double> WeightMatrix;
     typedef std::vector<Eigen::Matrix3d> RotList;
+    typedef std::vector<double> ScaleList;
     typedef Eigen::MatrixXd BiWeightMatrix;
     typedef Eigen::MatrixXd ConvertAffineMatrix;
     typedef Eigen::MatrixXd AffineMatrix;
@@ -67,6 +68,7 @@ public:
         FaceList            _face_list;
         WeightMatrix        _weight_matrix;
         RotList             _R_list;
+        ScaleList           _S_list;
         BiWeightMatrix      _biweight_matrix;
         ConvertAffineMatrix _convert_affine;
         AffineMatrix        _affine_matrix;

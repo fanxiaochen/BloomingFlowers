@@ -22,6 +22,8 @@ public:
 
     void merge(FlowersViewer* flower_viewer);
 
+    void copyPetals(const std::string& flower_folder, int frame, const std::string& petals_folder);
+
 private:
     MeshModel* mesh_model_;
     Flower* flower_;
