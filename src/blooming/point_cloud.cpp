@@ -989,6 +989,8 @@ void PointCloud::region_completion(Flower* flower)
 
     int K = MainWindow::getInstance()->getParameters()->getCompletionDegree();
 
+    if (K == 0) return;
+
     for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
     {
         if (petal_order[i] == 1)
@@ -1001,7 +1003,7 @@ void PointCloud::region_completion(Flower* flower)
             {
                 for (int idx : knn_idx[t])
                 {
-                    if (!isInRegion(idx, i))
+                    if (!isInRegion(idx, i, flower))
                     {
                         match_regions_[i].first.push_back(idx);
                         match_regions_[i].second->push_back(this->at(idx));
@@ -1013,15 +1015,26 @@ void PointCloud::region_completion(Flower* flower)
     }
 }
 
-bool PointCloud::isInRegion(int knn_idx, int region_id)
+// in all outside petal region or not
+bool PointCloud::isInRegion(int knn_idx, int region_id, Flower* flower)
 {
-    MatchRegion& mr = match_regions_[region_id];
-    osg::ref_ptr<PointCloud> point_cloud = mr.second;
-    for (int i = 0; i < point_cloud->size(); i ++)
+    Petals& petals = flower->getPetals();
+    PetalOrder& petal_order = flower->getPetalOrder();
+
+    for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
     {
-        if (point_cloud->at(i) == this->at(knn_idx))
-            return true;
+        if (petal_order[i] == 1)
+        {
+            MatchRegion& mr = match_regions_[i];
+            osg::ref_ptr<PointCloud> point_cloud = mr.second;
+            for (int i = 0; i < point_cloud->size(); i ++)
+            {
+                if (point_cloud->at(i) == this->at(knn_idx))
+                    return true;
+            }
+        }
     }
+    
     return false;
 }
 

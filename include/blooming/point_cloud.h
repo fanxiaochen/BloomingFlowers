@@ -182,7 +182,7 @@ protected:
   // gaussian distribution
   double gaussian(int m_id, int c_id, MeshModel* petal);
 
-  bool isInRegion(int knn_idx, int region_id);
+  bool isInRegion(int knn_idx, int region_id, Flower* flower);
 
 
 protected:
