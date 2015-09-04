@@ -111,6 +111,15 @@ void Flower::load(const std::string& flower_path)
     }
 }
 
+void Flower::setTransFolder(const std::string& flower_folder, int frame)
+{
+    QDir flower_frame(flower_folder.c_str());
+    QString frame_file = QString("frame_%1").arg(frame, 5, 10, QChar('0'));
+    QString flower_path = flower_frame.absolutePath() + "/" + frame_file;
+
+    trans_folder_ = flower_path.toStdString();
+}
+
 void Flower::clear()
 {
     petals_.clear();

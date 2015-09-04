@@ -36,6 +36,9 @@ public:
     void save(const std::string& flower_folder, int frame);
     void load(const std::string& flower_path);
 
+    void setTransFolder(const std::string& flower_folder, int frame);
+    std::string getTransFolder() { return trans_folder_; }
+
     void reorder();
 
     void clear();
@@ -71,6 +74,7 @@ private:
 
 	PetalRelation	                  petal_relation_;
 
+    std::string                       trans_folder_;
 };
 
 typedef std::vector<Flower> Flowers;

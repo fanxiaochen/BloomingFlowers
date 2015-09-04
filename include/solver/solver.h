@@ -161,6 +161,8 @@ public:
     static double lambda_arap_;
     static double noise_p_;
 
+    static bool is_forward_;
+
 public:
     Solver(PointCloud* point_cloud, Flower* flower);
 
@@ -226,6 +228,10 @@ protected:
     void PetalMatrix_to_Flower();
     void Flower_to_PetalMatrix();
     osg::Vec3 computeProjection(CollidingPoint cp);
+
+    // save transforms 
+    void saveT(int petal_id);
+    void saveT();
 
 public:
     static CollidingPoint getCollidingPoint(int petal_id, int ver_id);

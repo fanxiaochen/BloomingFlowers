@@ -230,30 +230,30 @@ void MeshModel::visualizeMesh(void)
     
 
 
-    if (!visibility_.empty())
+    /*if (!visibility_.empty())
     {
-        osg::ref_ptr<osg::Geode> vis_geo(new osg::Geode);
-        osg::ref_ptr<osg::Geometry> vis_geometry = new osg::Geometry;
-        osg::ref_ptr<osg::Vec3Array> vis_vetices = new osg::Vec3Array;
-        osg::ref_ptr<osg::Vec4Array> vis_colors = new osg::Vec4Array;
-        vis_colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 0.0f));
+    osg::ref_ptr<osg::Geode> vis_geo(new osg::Geode);
+    osg::ref_ptr<osg::Geometry> vis_geometry = new osg::Geometry;
+    osg::ref_ptr<osg::Vec3Array> vis_vetices = new osg::Vec3Array;
+    osg::ref_ptr<osg::Vec4Array> vis_colors = new osg::Vec4Array;
+    vis_colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 0.0f));
 
-        for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
-        {
-            if (visibility_[i] == 1)
-                vis_vetices->push_back(vertices_->at(i));
-        }
-
-        vis_geometry->setUseDisplayList(true);
-        vis_geometry->setVertexArray(vis_vetices);
-        vis_geometry->setColorArray(vis_colors);
-        vis_colors->setBinding(osg::Array::BIND_OVERALL);
-        vis_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vis_vetices->size()));
-        vis_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
-
-        vis_geo->addDrawable(vis_geometry);
-        content_root_->addChild(vis_geo);
+    for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
+    {
+    if (visibility_[i] == 1)
+    vis_vetices->push_back(vertices_->at(i));
     }
+
+    vis_geometry->setUseDisplayList(true);
+    vis_geometry->setVertexArray(vis_vetices);
+    vis_geometry->setColorArray(vis_colors);
+    vis_colors->setBinding(osg::Array::BIND_OVERALL);
+    vis_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vis_vetices->size()));
+    vis_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
+
+    vis_geo->addDrawable(vis_geometry);
+    content_root_->addChild(vis_geo);
+    }*/
 
     if (!hard_index_.empty())
     {
@@ -297,7 +297,7 @@ void MeshModel::visualizeMesh(void)
         bd_geometry->setColorArray(bd_colors);
         bd_colors->setBinding(osg::Array::BIND_OVERALL);
         bd_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bd_vetices->size()));
-        bd_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
+        bd_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(15.0f));
 
         bd_geo->addDrawable(bd_geometry);
         content_root_->addChild(bd_geo);

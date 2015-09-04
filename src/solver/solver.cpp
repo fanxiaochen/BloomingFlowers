@@ -13,6 +13,7 @@ double Solver::lambda_skel_smooth_ = 0;
 double Solver::lambda_collision_ = 1;
 double Solver::lambda_arap_ = 1;
 double Solver::noise_p_ = 0.0;
+bool Solver::is_forward_ = true;
 std::vector<Solver::DeformPetal> Solver::deform_petals_;
 std::vector<CollidingPoint> Solver::colliding_points_;
 
@@ -1003,6 +1004,9 @@ void Solver::full_deform()
 
     // flower deformed
     deforming();
+
+    // save trans
+    saveT();
 }
 
 void Solver::e_step()
@@ -1318,4 +1322,33 @@ osg::Vec3 Solver::computeProjection(CollidingPoint cp)
     projection.z() = cp.p_.z() - cp.normal_.z() * k * r;
 
     return projection;
+}
+
+
+void Solver::saveT(int petal_id)
+{
+    std::string& flower_path = flower_->getTransFolder();
+
+    std::string trans_file_ext = is_forward_ ? ".ft" : ".bt";
+
+    DeformPetal& deform_petal = deform_petals_[petal_id];
+    HandleMatrix& handle_matrix = deform_petal._handle_matrix;
+    AffineMatrix& am = deform_petal._affine_matrix;
+
+    Petal& petal = flower_->getPetals()[petal_id];
+    std::string& obj_name = petal.getObjName();
+
+    std::string trans_file = flower_path + "/" + obj_name + trans_file_ext;
+    std::fstream fs(trans_file, std::ios_base::out);
+
+    fs << handle_matrix.rows() << "\n";
+    fs << am << "\n";
+}
+
+void Solver::saveT()
+{
+    for (size_t i = 0; i < deform_petals_.size(); ++ i)
+    {
+        saveT(i);
+    }
 }
