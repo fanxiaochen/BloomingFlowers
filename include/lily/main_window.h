@@ -78,6 +78,9 @@ private slots:
     bool merge_petals();
     bool petal_sequences();
 
+    bool transfer();
+    bool multi_layer();
+
 private:
     void loadSettings();
     void saveSettings();

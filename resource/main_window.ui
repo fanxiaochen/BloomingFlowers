@@ -79,9 +79,17 @@
     <addaction name="actionMergePetals"/>
     <addaction name="actionPetalSequences"/>
    </widget>
+   <widget class="QMenu" name="menuApplications">
+    <property name="title">
+     <string>Applications</string>
+    </property>
+    <addaction name="actionTransfer"/>
+    <addaction name="actionMultiLayer"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTracking"/>
    <addaction name="menuTools"/>
+   <addaction name="menuApplications"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">
@@ -248,6 +256,16 @@
   <action name="actionPetalSequences">
    <property name="text">
     <string>Petal Sequences</string>
+   </property>
+  </action>
+  <action name="actionTransfer">
+   <property name="text">
+    <string>Transfer</string>
+   </property>
+  </action>
+  <action name="actionMultiLayer">
+   <property name="text">
+    <string>Multi-Layer</string>
    </property>
   </action>
  </widget>
