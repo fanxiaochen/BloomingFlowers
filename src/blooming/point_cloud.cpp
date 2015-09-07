@@ -126,9 +126,9 @@ void PointCloud::visualizePoints()
         osg::ref_ptr<osg::Vec4Array>  tcolors = new osg::Vec4Array;
         for (size_t i = 0, i_end = tip_indices_.size(); i < i_end; ++ i)
         {
-        const Point& point = at(tip_indices_[i]);
-        tvertices->push_back(osg::Vec3(point.x, point.y, point.z));
-        tcolors->push_back(ColorMap::getInstance().getDiscreteColor(18));
+            const Point& point = at(tip_indices_[i]);
+            tvertices->push_back(osg::Vec3(point.x, point.y, point.z));
+            tcolors->push_back(ColorMap::getInstance().getDiscreteColor(18));
 
         }
 
@@ -165,7 +165,7 @@ void PointCloud::visualizePoints()
     // for boundary
     if (show_boundary_)
     {
-        /*osg::ref_ptr<osg::Vec3Array>  bvertices = new osg::Vec3Array;
+        osg::ref_ptr<osg::Vec3Array>  bvertices = new osg::Vec3Array;
         osg::ref_ptr<osg::Vec4Array>  bcolors = new osg::Vec4Array;
         for (size_t i = 0, i_end = boundary_indices_.size(); i < i_end; ++ i)
         {
@@ -180,9 +180,9 @@ void PointCloud::visualizePoints()
         bgeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
         bgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bvertices->size()));
         bgeometry->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f));
-        geode->addDrawable(bgeometry);*/
+        geode->addDrawable(bgeometry);
 
-        for (size_t i = 0; i < boundary_segments_.size(); i ++)
+        /*for (size_t i = 0; i < boundary_segments_.size(); i ++)
         {
             osg::ref_ptr<osg::Vec3Array>  bvertices = new osg::Vec3Array;
             osg::ref_ptr<osg::Vec4Array>  bcolors = new osg::Vec4Array;
@@ -200,7 +200,7 @@ void PointCloud::visualizePoints()
             bgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bvertices->size()));
             bgeometry->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f));
             geode->addDrawable(bgeometry);
-        }
+        }*/
     }
     
     content_root_->addChild(geode);
@@ -413,7 +413,7 @@ void PointCloud::fitting_region(Flower* flower, TrajectoryModel* traj_model)
     // second mode
     std::cout << "trajectory guided mode" << std::endl;
     Solver::has_point_cloud_ = false; // global switch for solver
-    MainWindow::getInstance()->getParameters()->getEps() = 0.01;
+    MainWindow::getInstance()->getParameters()->getEps() = 0.05;
 }
 
 
