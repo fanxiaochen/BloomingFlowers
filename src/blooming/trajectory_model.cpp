@@ -34,7 +34,7 @@ void TrajectoryModel::init(Flower* flower)
 
 void TrajectoryModel::updateImpl()
 {
-   // visualizeTrajectory();
+    visualizeTrajectory();
     return;
 }
 

@@ -16,9 +16,9 @@
 SceneWidget::SceneWidget(QWidget * parent, const QGLWidget * shareWidget, Qt::WindowFlags f)
 	:OSGViewerWidget(parent, shareWidget, f), light_number_(6), light_status_(false)
 {
-	osg::ref_ptr<osg::LightModel> light_model = new osg::LightModel();
-	light_model->setTwoSided(true);
-	scene_root_->getOrCreateStateSet()->setAttributeAndModes(light_model.get(), osg::StateAttribute::ON);
+    osg::ref_ptr<osg::LightModel> light_model = new osg::LightModel();
+    light_model->setTwoSided(true);
+    scene_root_->getOrCreateStateSet()->setAttributeAndModes(light_model.get(), osg::StateAttribute::ON);
 
     addEventHandler(new PickHandler());
     addEventHandler(new CameraHandler());
@@ -48,7 +48,7 @@ void SceneWidget::turnOnLights()
     osg::BoundingSphere bounding_sphere = scene_root_->getBound();
     osg::Vec3 center = bounding_sphere.center();
     double radius = bounding_sphere.radius();
-    double scale = 2.0;
+    double scale = 20.0;
     std::vector<osg::Vec4> light_pos;
     light_pos.push_back(osg::Vec4(center.x()+scale*radius, center.y(), center.z(), 1));
     light_pos.push_back(osg::Vec4(center.x()-scale*radius, center.y(), center.z(), 1));

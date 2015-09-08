@@ -285,7 +285,7 @@ void MeshModel::visualizeMesh(void)
         osg::ref_ptr<osg::Geometry> bd_geometry = new osg::Geometry;
         osg::ref_ptr<osg::Vec3Array> bd_vetices = new osg::Vec3Array;
         osg::ref_ptr<osg::Vec4Array> bd_colors = new osg::Vec4Array;
-        bd_colors->push_back(osg::Vec4(0.0f, 0.0f, 1.0f, 0.0f));
+        bd_colors->push_back(ColorMap::getInstance().getDiscreteColor(8));
 
         for (size_t i = 0, i_end = detected_boundary_.size(); i < i_end; ++ i)
         {

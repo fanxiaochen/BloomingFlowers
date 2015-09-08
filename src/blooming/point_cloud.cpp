@@ -73,6 +73,7 @@ void PointCloud::visualizePoints()
 {
     // for points
     osg::ref_ptr<osg::Vec3Array>  vertices = new osg::Vec3Array;
+    osg::ref_ptr<osg::Vec3Array>  normals = new osg::Vec3Array;
     osg::ref_ptr<osg::Vec4Array>  colors = new osg::Vec4Array;
 
     for (size_t i = 0, i_end = size(); i < i_end; i ++)
@@ -81,6 +82,7 @@ void PointCloud::visualizePoints()
         {
             const Point& point = at(i);
             vertices->push_back(osg::Vec3(point.x, point.y, point.z));
+            normals->push_back(osg::Vec3(point.normal_x, point.normal_y, point.normal_z));
             colors->push_back(ColorMap::getInstance().getContinusColor(color_flags_[i]));
         }
         else {
@@ -88,6 +90,7 @@ void PointCloud::visualizePoints()
             {
                 const Point& point = at(i);
                 vertices->push_back(osg::Vec3(point.x, point.y, point.z));
+                normals->push_back(osg::Vec3(point.normal_x, point.normal_y, point.normal_z));
                 colors->push_back(osg::Vec4(point.r / 255.0, point.g / 255.0, point.b / 255.0, 0));
             }
             else
@@ -96,12 +99,14 @@ void PointCloud::visualizePoints()
                 {
                     const Point& point = at(i);
                     vertices->push_back(osg::Vec3(point.x, point.y, point.z));
+                    normals->push_back(osg::Vec3(point.normal_x, point.normal_y, point.normal_z));
                     colors->push_back(osg::Vec4(point.r / 255.0, point.g / 255.0, point.b / 255.0, 0));
                 }
                 else 
                 {
                     const Point& point = at(i);
                     vertices->push_back(osg::Vec3(point.x, point.y, point.z));
+                    normals->push_back(osg::Vec3(point.normal_x, point.normal_y, point.normal_z));
                     colors->push_back(ColorMap::getInstance().getDiscreteColor(segment_flags_[i]));
                 }
             }
@@ -111,6 +116,8 @@ void PointCloud::visualizePoints()
     osg::Geometry* geometry = new osg::Geometry;
     geometry->setVertexArray(vertices);
     geometry->setColorArray(colors);
+    geometry->setNormalArray(normals);
+    geometry->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
     geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
     geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, size()));
     geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
@@ -144,16 +151,19 @@ void PointCloud::visualizePoints()
         for (size_t i = 0; i < tips_segments_.size(); i ++)
         {
             osg::ref_ptr<osg::Vec3Array>  tvertices = new osg::Vec3Array;
+            osg::ref_ptr<osg::Vec3Array>  tnormals = new osg::Vec3Array;
             osg::ref_ptr<osg::Vec4Array>  tcolors = new osg::Vec4Array;
             for (size_t j = 0, j_end = tips_segments_[i].size(); j < j_end; ++ j)
             {
                 const Point& point = at(tips_segments_[i][j]);
                 tvertices->push_back(osg::Vec3(point.x, point.y, point.z));
+                tnormals->push_back(osg::Vec3(point.normal_x, point.normal_y, point.normal_z));
                 tcolors->push_back(ColorMap::getInstance().getDiscreteColor(18));
 
             }
             osg::Geometry* tgeometry = new osg::Geometry;
             tgeometry->setVertexArray(tvertices);
+            tgeometry->setNormalArray(tnormals);
             tgeometry->setColorArray(tcolors);
             tgeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
             tgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, tvertices->size()));
@@ -166,16 +176,19 @@ void PointCloud::visualizePoints()
     if (show_boundary_)
     {
         osg::ref_ptr<osg::Vec3Array>  bvertices = new osg::Vec3Array;
+        osg::ref_ptr<osg::Vec3Array>  bnormals = new osg::Vec3Array;
         osg::ref_ptr<osg::Vec4Array>  bcolors = new osg::Vec4Array;
         for (size_t i = 0, i_end = boundary_indices_.size(); i < i_end; ++ i)
         {
         const Point& point = at(boundary_indices_[i]);
         bvertices->push_back(osg::Vec3(point.x, point.y, point.z));
+        bnormals->push_back(osg::Vec3(point.normal_x, point.normal_y, point.normal_z));
         bcolors->push_back(ColorMap::getInstance().getDiscreteColor(8));
 
         }
         osg::Geometry* bgeometry = new osg::Geometry;
         bgeometry->setVertexArray(bvertices);
+        bgeometry->setNormalArray(bnormals);
         bgeometry->setColorArray(bcolors);
         bgeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
         bgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bvertices->size()));
@@ -185,16 +198,19 @@ void PointCloud::visualizePoints()
         /*for (size_t i = 0; i < boundary_segments_.size(); i ++)
         {
             osg::ref_ptr<osg::Vec3Array>  bvertices = new osg::Vec3Array;
+            osg::ref_ptr<osg::Vec3Array>  bnormals = new osg::Vec3Array;
             osg::ref_ptr<osg::Vec4Array>  bcolors = new osg::Vec4Array;
             for (size_t j = 0, j_end = boundary_segments_[i].size(); j < j_end; ++ j)
             {
                 const Point& point = at(boundary_segments_[i][j]);
                 bvertices->push_back(osg::Vec3(point.x, point.y, point.z));
+                bnormals->push_back(osg::Vec3(point.normal_x, point.normal_y, point.normal_z));
                 bcolors->push_back(ColorMap::getInstance().getDiscreteColor(8));
 
             }
             osg::Geometry* bgeometry = new osg::Geometry;
             bgeometry->setVertexArray(bvertices);
+            bgeometry->setNormalArray(bnormals);
             bgeometry->setColorArray(bcolors);
             bgeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
             bgeometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bvertices->size()));

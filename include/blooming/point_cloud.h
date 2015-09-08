@@ -13,7 +13,7 @@
 
 #include "renderable.h"
    
-typedef  pcl::PointXYZRGB        Point;
+typedef  pcl::PointXYZRGBNormal        Point;
 typedef  pcl::PointCloud<Point>  PclPointCloud;
 
 // pcl::PointXYZRGB could not be inherited and used as template of PointCloud class in pcl, I have to write 

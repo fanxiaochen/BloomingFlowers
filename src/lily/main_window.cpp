@@ -217,6 +217,7 @@ void MainWindow::setRenderingBox()
     render_names.push_back( std::make_pair("Show Trajectory", false));
     render_names.push_back( std::make_pair("Show Boundary", false));
     render_names.push_back( std::make_pair("Show Tips", false));
+    render_names.push_back( std::make_pair("Open Lights", false));
 
     QGroupBox* rendering_group = new QGroupBox(tr("Rendering Box"));
     QVBoxLayout *layout = new QVBoxLayout();
@@ -324,6 +325,11 @@ bool MainWindow::slotSendCheckBoxRenderState()
                 point_cloud->expire();
 
             }
+        }
+
+        else if (name == "Open Lights")
+        {
+            scene_widget_->setLight();
         }
     }
 
