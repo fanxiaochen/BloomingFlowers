@@ -9,6 +9,7 @@
 #include <osg/Image>
 #include <osgDB/ReadFile>
 #include <osg/Texture2D>
+#include <osg/ShadeModel>
 
 #include <pcl/kdtree/kdtree_flann.h>
 
@@ -132,6 +133,17 @@ void MeshModel::visualizeMesh(void)
     geometry->setVertexArray(vertices_);
     
 
+    osg::StateSet* state = this->getOrCreateStateSet();
+    state->setMode( GL_LIGHTING, osg::StateAttribute::ON );
+    state->setMode( GL_LIGHT0, osg::StateAttribute::ON );
+    state->setMode( GL_LIGHT1, osg::StateAttribute::ON );
+    state->setMode( GL_LIGHT2, osg::StateAttribute::ON );
+    state->setMode( GL_LIGHT3, osg::StateAttribute::ON );
+    state->setMode( GL_LIGHT4, osg::StateAttribute::ON );
+    state->setMode( GL_LIGHT5, osg::StateAttribute::ON );
+
+    geometry->getOrCreateStateSet()->setAttribute( new osg::ShadeModel(osg::ShadeModel::SMOOTH) );
+
     if (has_texture_ && show_texture_)
     {
         geometry->setTexCoordArray(0, texcoords_);
@@ -165,6 +177,14 @@ void MeshModel::visualizeMesh(void)
     {
         osg::StateSet* stateset = this->getOrCreateStateSet();
         stateset->clear();
+
+        osg::ref_ptr<osg::Material> mat = new osg::Material;
+        mat->setDiffuse( osg::Material::FRONT_AND_BACK,
+            ColorMap::getInstance().getDiscreteColor(color_id_) );
+        mat->setSpecular( osg::Material::FRONT_AND_BACK,
+            ColorMap::getInstance().getDiscreteColor(color_id_) );
+        mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );
+        state->setAttribute( mat.get() );
 
         osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
         colors->push_back(ColorMap::getInstance().getDiscreteColor(color_id_));
@@ -293,12 +313,13 @@ void MeshModel::visualizeMesh(void)
         }
 
         bd_geometry->setUseDisplayList(true);
+
         bd_geometry->setVertexArray(bd_vetices);
         bd_geometry->setColorArray(bd_colors);
         bd_colors->setBinding(osg::Array::BIND_OVERALL);
         bd_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bd_vetices->size()));
         bd_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(15.0f));
-
+        bd_geo->getOrCreateStateSet()->setMode(GL_LIGHTING,osg::StateAttribute::OFF); // close light for boundary points
         bd_geo->addDrawable(bd_geometry);
         content_root_->addChild(bd_geo);
     }
@@ -868,6 +889,9 @@ void MeshModel::updateNormals()
     if (vertex_normals_->empty())
         return;
 
+    vertex_normals_->resize(vertices_->size());
+    std::vector<std::vector<osg::Vec3>> normals_set(vertices_->size());
+
     for (size_t i = 0, i_end = faces_.size(); i < i_end; ++ i)
     {
         const std::vector<int>& face = faces_.at(i);
@@ -881,9 +905,26 @@ void MeshModel::updateNormals()
 // 		osg::Vec3 face_normal2 = (v2-v1)^(v3-v1);
 // 		face_normal2.normalize();
 
-        vertex_normals_->at(face[0]) = face_normal;
+        normals_set[face[0]].push_back(face_normal);
+        normals_set[face[1]].push_back(face_normal);
+        normals_set[face[2]].push_back(face_normal);
+
+        /*vertex_normals_->at(face[0]) = face_normal;
         vertex_normals_->at(face[1]) = face_normal;
-        vertex_normals_->at(face[2]) = face_normal;
+        vertex_normals_->at(face[2]) = face_normal;*/
+    }
+
+    for (size_t i = 0; i < vertex_normals_->size(); i ++)
+    {
+        osg::Vec3 normal;
+        std::vector<osg::Vec3>& normals = normals_set[i];
+        for (size_t j = 0; j < normals.size(); ++ j)
+        {
+            normal += normals[j];
+        }
+        normal /= normals.size();
+        normal.normalize();
+        vertex_normals_->at(i) = normal;
     }
 }
 

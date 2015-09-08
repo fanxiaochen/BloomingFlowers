@@ -45,6 +45,7 @@ bool SceneWidget::setLight()
 
 void SceneWidget::turnOnLights()
 {
+
     osg::BoundingSphere bounding_sphere = scene_root_->getBound();
     osg::Vec3 center = bounding_sphere.center();
     double radius = bounding_sphere.radius();
@@ -61,9 +62,11 @@ void SceneWidget::turnOnLights()
     {
         osg::Light* light = new osg::Light;
         light->setLightNum(i);
-        light->setDiffuse(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
-        light->setAmbient(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
-        light->setSpecular(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        light->setAmbient( osg::Vec4( .1f, .1f, .1f, 1.f ));
+        light->setDiffuse( osg::Vec4( .8f, .8f, .8f, 1.f ));
+        light->setSpecular( osg::Vec4( .8f, .8f, .8f, 1.f ));
+        //light->setDirection( osg::Vec3( 1.f, 0.f, 0.f ));
+        //light->setSpotCutoff(25.f );
         light->setPosition(light_pos[i]);
 
         osg::ref_ptr<osg::LightSource> ls = new osg::LightSource;

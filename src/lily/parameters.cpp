@@ -167,14 +167,35 @@ Eigen::MatrixXi Parameters::getPetalRelation()
     //1, 0, 0, 0 ,0,
     //0, 1, 0, 0, 0;
 
-    // golden lily
-    petal_relation << 
-        0,  1,  1,  1,  1,  1,
-        -1, 0, -1,  1, -1, -1,
-        -1,  1,  0,  1,  -1,  1,
-        -1,-1, -1,  0, -1,  1,
-        -1,  1,  1,  1,  0,  1,
-        -1, 1, -1, -1, -1,  0;
+    //// golden lily
+    //petal_relation << 
+    //    0,  1,  1,  1,  1,  1,
+    //    -1, 0, -1,  1, -1, -1,
+    //    -1,  1,  0,  1,  -1,  1,
+    //    -1,-1, -1,  0, -1,  1,
+    //    -1,  1,  1,  1,  0,  1,
+    //    -1, 1, -1, -1, -1,  0;
+
+
+    // waterlily
+    petal_relation.setZero();
+    
+    petal_relation(0, 1) = 1;
+    petal_relation(0, 13) = 1;
+    petal_relation(1, 2) = -1;
+    petal_relation(2, 3) = 1;
+    petal_relation(3, 4) = -1;
+    petal_relation(4, 5) = 1;
+    petal_relation(5, 6) = -1;
+    petal_relation(6, 7) = -1;
+    petal_relation(7, 8) = 1;
+    petal_relation(8, 9) = -1;
+    petal_relation(9, 10) = 1;
+    petal_relation(10, 11) = -1;
+    petal_relation(11, 12) = -1;
+    petal_relation(12, 13) = 1;
+
+    petal_relation = (-petal_relation.transpose()) + petal_relation;
 
     return petal_relation;
 }

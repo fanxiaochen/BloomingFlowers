@@ -109,6 +109,14 @@ void Flower::load(const std::string& flower_path)
         petal.load(petal_file);
         petals_.push_back(petal);
     }
+
+    //reorder();
+
+    for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
+    {
+        petals_[i].getColorId() = i;
+        petals_[i].updateNormals();
+    }
 }
 
 void Flower::setTransFolder(const std::string& flower_folder, int frame)

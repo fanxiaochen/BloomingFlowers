@@ -355,10 +355,12 @@ void CollisionDetector::checkCollision()
 {
 	intersected_pairs_.clear();
 	int petal_num = flower_->getPetals().size();
+    PetalRelation& pr = flower_->getPetalRelation();
 	for( int a_id = 0; a_id != petal_num; ++a_id )
 	{
 		for( int b_id = a_id+1; b_id < petal_num; ++b_id )
 		{
+            if (pr(a_id, b_id) == 0) continue;
 			checkCollision(a_id, b_id);
 		}
 	}
