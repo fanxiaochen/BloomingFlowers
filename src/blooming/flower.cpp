@@ -113,16 +113,16 @@ void Flower::load(const std::string& flower_path)
     if (petals_.size() != 1)
         reorder();
 
-    // for lily's petal order
-    int color_id[] = {0, 5, 1, 4, 2, 3};
+    //// for lily's petal order
+    //int color_id[] = {0, 5, 1, 4, 2, 3};
 
-    /*std::vector<int> color_id = [&]{
+    std::vector<int> color_id = [&]{
         int num = petals_.size();
         std::vector<int> ids(num);
         for (size_t i = 0; i < num; ++ i)
             ids[i] = i;
         return ids;
-    }();*/
+    }();
 
     for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
     {
