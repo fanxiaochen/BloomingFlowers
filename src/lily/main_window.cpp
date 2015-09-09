@@ -241,98 +241,61 @@ bool MainWindow::slotSendCheckBoxRenderState()
     MeshFileSystem* mesh_file_system = dynamic_cast<MeshFileSystem*>(mesh_files_);
     PointsFileSystem* points_file_system = dynamic_cast<PointsFileSystem*>(points_files_);
 
+
+	std::map<std::string, bool> states;
     int num = Check_list_.size();
     for( size_t i = 0; i != num; ++i )
     {
         bool flag = Check_list_[i]->isChecked();
         std::string name = Check_list_[i]->text().toStdString();
-        
-        if (name == "Show Texture")
-        {
-            // for mesh viewer
-            QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
-            for (size_t i = 0, i_end = mesh_indexes.size(); i < i_end; ++ i)
-            {
-                osg::ref_ptr<MeshModel> mesh_model = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
-                mesh_model->getShowTexture() = flag;
-                mesh_model->expire();
-            }
 
-            // for flower viewer
-            if (flowers_viewer_ != NULL)
-            {
-                Flower& current_flower = flowers_viewer_->getCurrentFlower();
-                current_flower.setTextureState(flag);
-                current_flower.update();
-            }
+		states[name] = flag;
+	}
 
-        }
-        else if (name == "Show Skeleton")
-        {
-            // for mesh viewer
-            QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
-            for (size_t i = 0, i_end = mesh_indexes.size(); i < i_end; ++ i)
-            {
-                osg::ref_ptr<MeshModel> mesh_model = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
+	// for mesh viewer
+	{
+		QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
+		for (size_t i = 0, i_end = mesh_indexes.size(); i < i_end; ++ i)
+		{
+			osg::ref_ptr<MeshModel> mesh_model = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
+			mesh_model->getShowTexture() = states["Show Texture"];
+			if (!mesh_model->getSkeleton()->isEmpty())
+			{
+				mesh_model->showSkeletonState(states["Show Skeleton"]);
+			}
+			mesh_model->expire();
+		}
+	}
+	
 
-                if (!mesh_model->getSkeleton()->isEmpty())
-                {
-                    mesh_model->showSkeletonState(flag);
-                }
-                
-                /*mesh_model->getShowSkeleton() = flag;
-                if (!mesh_model->getSkeleton()->isEmpty())
-                {
-                    mesh_model->getSkeleton()->setHiddenState(!flag);
-                    mesh_model->getSkeleton()->expire();
-                }*/
-            }
+	// for flower viewer
+	if (flowers_viewer_ != NULL)
+	{
+		Flower& current_flower = flowers_viewer_->getCurrentFlower();
+		current_flower.setTextureState(states["Show Texture"]);
+		current_flower.setSkeletonState(states["Show Skeleton"]);
+		current_flower.update();
+	}
 
-            // for flower viewer
-            if (flowers_viewer_ != NULL)
-            {
-                Flower& current_flower = flowers_viewer_->getCurrentFlower();
-                current_flower.setSkeletonState(flag);
-                current_flower.update();
-            }
-        }
-        else if (name == "Show Boundary")
-        {
-            PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
+	// for points
+	{
+		PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
 
-            int start_frame = points_file_system->getStartFrame();
-            int end_frame = points_file_system->getEndFrame();
+		int start_frame = points_file_system->getStartFrame();
+		int end_frame = points_file_system->getEndFrame();
 
-            for (size_t i = start_frame, i_end = end_frame; i <= i_end; ++ i)
-            {
-                osg::ref_ptr<PointCloud> point_cloud = points_file_system->getPointCloud(i);
-                point_cloud->getShowBoundary() = flag;
-                point_cloud->expire();
-          
-            }
-        }
-        else if (name == "Show Tips")
-        {
-            PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
+		for (size_t i = start_frame, i_end = end_frame; i <= i_end; ++ i)
+		{
+			osg::ref_ptr<PointCloud> point_cloud = points_file_system->getPointCloud(i);
+			point_cloud->getShowBoundary() = states["Show Boundary"];
+			point_cloud->getShowTips() = states["Show Tips"];
+			point_cloud->expire();
+		}
+	}
 
-            int start_frame = points_file_system->getStartFrame();
-            int end_frame = points_file_system->getEndFrame();
-
-            for (size_t i = start_frame, i_end = end_frame; i <= i_end; ++ i)
-            {
-                osg::ref_ptr<PointCloud> point_cloud = points_file_system->getPointCloud(i);
-                point_cloud->getShowTips() = flag;
-                point_cloud->expire();
-
-            }
-        }
-
-        else if (name == "Open Lights")
-        {
-            scene_widget_->setLight();
-        }
-    }
-
+// 	// 重设光源
+//     scene_widget_->setLight();  
+	
     return true;
 }
 
@@ -572,6 +535,8 @@ bool MainWindow::slotLoadFlowers()
     flowers_viewer_->computeFrameRange();
     flowers_viewer_->getFlower();
     flowers_viewer_->show();
+	slotSendCheckBoxRenderState();
+	
     return true;
 
 }

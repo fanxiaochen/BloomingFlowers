@@ -133,30 +133,19 @@ void MeshModel::visualizeMesh(void)
     geometry->setVertexArray(vertices_);
     
 
-    osg::StateSet* state = this->getOrCreateStateSet();
-    state->setMode( GL_LIGHTING, osg::StateAttribute::ON );
-    state->setMode( GL_LIGHT0, osg::StateAttribute::ON );
-    state->setMode( GL_LIGHT1, osg::StateAttribute::ON );
-    state->setMode( GL_LIGHT2, osg::StateAttribute::ON );
-    state->setMode( GL_LIGHT3, osg::StateAttribute::ON );
-    state->setMode( GL_LIGHT4, osg::StateAttribute::ON );
-    state->setMode( GL_LIGHT5, osg::StateAttribute::ON );
 
-    geometry->getOrCreateStateSet()->setAttribute( new osg::ShadeModel(osg::ShadeModel::SMOOTH) );
 
     if (has_texture_ && show_texture_)
     {
         geometry->setTexCoordArray(0, texcoords_);
-        osg::StateSet* stateset = this->getOrCreateStateSet();
+        osg::StateSet* stateset = geode->getOrCreateStateSet();
 
         osg::Material* material = new osg::Material;
-        material->setColorMode(osg::Material::OFF); 
         material->setAmbient(osg::Material::FRONT_AND_BACK, ambient_);
         material->setDiffuse(osg::Material::FRONT_AND_BACK, diffuse_);
         material->setSpecular(osg::Material::FRONT_AND_BACK, specular_);
         material->setEmission(osg::Material::FRONT_AND_BACK, emission_);
-        stateset->setAttributeAndModes(material,osg::StateAttribute::OVERRIDE|osg::StateAttribute::ON);
-        stateset->setMode(GL_LIGHTING,osg::StateAttribute::OVERRIDE|osg::StateAttribute::ON);
+        stateset->setAttribute(material);
 
         osg::Image *image = osgDB::readImageFile(map_Kd_);
         if (!image)
@@ -175,21 +164,23 @@ void MeshModel::visualizeMesh(void)
     }
     else
     {
-        osg::StateSet* stateset = this->getOrCreateStateSet();
-        stateset->clear();
+        osg::StateSet* stateset = geode->getOrCreateStateSet();
 
         osg::ref_ptr<osg::Material> mat = new osg::Material;
         mat->setDiffuse( osg::Material::FRONT_AND_BACK,
             ColorMap::getInstance().getDiscreteColor(color_id_) );
         mat->setSpecular( osg::Material::FRONT_AND_BACK,
             ColorMap::getInstance().getDiscreteColor(color_id_) );
-        mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );
-        state->setAttribute( mat.get() );
+		mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(color_id_));
+/*		mat->setEmission(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(color_id_));*/
 
-        osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
-        colors->push_back(ColorMap::getInstance().getDiscreteColor(color_id_));
-        geometry->setColorArray(colors);
-        colors->setBinding(osg::Array::BIND_OVERALL);
+        mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );
+		stateset->setAttribute( mat.get());
+
+//         osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
+//         colors->push_back(ColorMap::getInstance().getDiscreteColor(color_id_));
+//         geometry->setColorArray(colors);
+//         colors->setBinding(osg::Array::BIND_OVERALL);
     }
 
     /*if (!texcoords_->empty() && !map_Ka_.empty() && !map_Kd_.empty())
@@ -348,6 +339,8 @@ void MeshModel::visualizeMesh(void)
 		content_root_->addChild(inter_geo);
 	}
 
+	osg::StateSet* state = this->getOrCreateStateSet();
+	state->setAttribute( new osg::ShadeModel(osg::ShadeModel::SMOOTH) );
     return;
 }
 

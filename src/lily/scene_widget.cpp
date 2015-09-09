@@ -18,7 +18,16 @@ SceneWidget::SceneWidget(QWidget * parent, const QGLWidget * shareWidget, Qt::Wi
 {
     osg::ref_ptr<osg::LightModel> light_model = new osg::LightModel();
     light_model->setTwoSided(true);
+	light_model->setAmbientIntensity( osg::Vec4(0.5,0.5,0.5,0.5));
     scene_root_->getOrCreateStateSet()->setAttributeAndModes(light_model.get(), osg::StateAttribute::ON);
+
+	scene_root_->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::ON );
+	scene_root_->getOrCreateStateSet()->setMode( GL_LIGHT0, osg::StateAttribute::ON );
+	scene_root_->getOrCreateStateSet()->setMode( GL_LIGHT1, osg::StateAttribute::ON );
+	scene_root_->getOrCreateStateSet()->setMode( GL_LIGHT2, osg::StateAttribute::ON );
+	scene_root_->getOrCreateStateSet()->setMode( GL_LIGHT3, osg::StateAttribute::ON );
+	scene_root_->getOrCreateStateSet()->setMode( GL_LIGHT4, osg::StateAttribute::ON );
+	scene_root_->getOrCreateStateSet()->setMode( GL_LIGHT5, osg::StateAttribute::ON );
 
     addEventHandler(new PickHandler());
     addEventHandler(new CameraHandler());
