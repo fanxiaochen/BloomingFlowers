@@ -492,7 +492,7 @@ void BoundaryThread::run()
     int end_frame = points_file_system->getEndFrame();
     
     TipDetector tip_detector;
-    for (int i = start_frame; i <= end_frame; ++ i)
+    for (int i = 93; i <= end_frame; ++ i)
     {
         std::cout << "frame " << i << std::endl;
 

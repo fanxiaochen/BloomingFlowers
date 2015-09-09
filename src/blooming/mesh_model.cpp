@@ -296,7 +296,7 @@ void MeshModel::visualizeMesh(void)
         osg::ref_ptr<osg::Geometry> bd_geometry = new osg::Geometry;
         osg::ref_ptr<osg::Vec3Array> bd_vetices = new osg::Vec3Array;
         osg::ref_ptr<osg::Vec4Array> bd_colors = new osg::Vec4Array;
-        bd_colors->push_back(ColorMap::getInstance().getDiscreteColor(8));
+        bd_colors->push_back(osg::Vec4(21.0 / 255, 210.0 / 255, 235.0 / 255, 1));
 
         for (size_t i = 0, i_end = detected_boundary_.size(); i < i_end; ++ i)
         {
@@ -309,7 +309,7 @@ void MeshModel::visualizeMesh(void)
         bd_geometry->setColorArray(bd_colors);
         bd_colors->setBinding(osg::Array::BIND_OVERALL);
         bd_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bd_vetices->size()));
-        bd_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(15.0f));
+        bd_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(12.0f));
         bd_geo->getOrCreateStateSet()->setMode(GL_LIGHTING,osg::StateAttribute::OFF); // close light for boundary points
         bd_geo->addDrawable(bd_geometry);
         content_root_->addChild(bd_geo);
