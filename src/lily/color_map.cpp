@@ -67,7 +67,13 @@ static const double continuous[64][3] = {
   0.5000,    0,         0
 };
 
-static const double discrete[22][3] = {
+static const double discrete[28][3] = {
+    0.9686,    0.2471,    0.2980,	// red
+    0.9725,    0.4863,    0.1333,	// orange  
+    0.8863,    0.8471,    0.1176,	// yellow
+    0.1373,    0.6196,    0.2039,	// green
+    0.1804,    0.4863,    0.8824,	// blue
+    0.5882,    0.3059,    0.8706,	// purple
   0.7500,		0.9400,		0.6000,
   0.6900,		0.3725,		0.4353,
   0.5804,		0.0000,		0.8275,
@@ -100,7 +106,7 @@ ColorMap::ColorMap()
     continuous_.push_back(osg::Vec4(continuous[i][0], continuous[i][1], continuous[i][2], 1.0f));
   }
 
-  for (size_t i = 0, iEnd = 22; i < iEnd; ++ i) {
+  for (size_t i = 0, iEnd = 28; i < iEnd; ++ i) {
     discrete_.push_back(osg::Vec4(discrete[i][0], discrete[i][1], discrete[i][2], 1.0f));
   }
 

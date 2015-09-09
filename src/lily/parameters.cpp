@@ -195,7 +195,12 @@ Eigen::MatrixXi Parameters::getPetalRelation()
     petal_relation(11, 12) = -1;
     petal_relation(12, 13) = 1;
 
-    petal_relation = (-petal_relation.transpose()) + petal_relation;
+    /*petal_relation = (-petal_relation.transpose()) + petal_relation;*/
+    Eigen::MatrixXi r1 = petal_relation;
+    Eigen::MatrixXi r2 = -petal_relation.transpose();
+    petal_relation = r1 + r2;
+
+   // std::cout << petal_relation << std::endl;
 
     return petal_relation;
 }
