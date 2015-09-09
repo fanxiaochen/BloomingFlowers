@@ -18,7 +18,7 @@ SceneWidget::SceneWidget(QWidget * parent, const QGLWidget * shareWidget, Qt::Wi
 {
     osg::ref_ptr<osg::LightModel> light_model = new osg::LightModel();
     light_model->setTwoSided(true);
-	light_model->setAmbientIntensity( osg::Vec4(0.5,0.5,0.5,0.5));
+	light_model->setAmbientIntensity( osg::Vec4(0.6,0.6,0.6,0.5));
     scene_root_->getOrCreateStateSet()->setAttributeAndModes(light_model.get(), osg::StateAttribute::ON);
 
 	scene_root_->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::ON );

@@ -67,7 +67,7 @@ static const double continuous[64][3] = {
   0.5000,    0,         0
 };
 
-static const double discrete[28][3] = {
+static const double discrete[29][3] = {
     0.9686,    0.2471,    0.2980,	// red
     0.9725,    0.4863,    0.1333,	// orange  
     0.8863,    0.8471,    0.1176,	// yellow
@@ -97,7 +97,9 @@ static const double discrete[28][3] = {
   //0.0000,       1.0000,     1.0000, // for skeleton
   //1.0000,       0.6470,     0.0000  // for skeleton
   0.4353,       0.5569,     0.7843, // for skeleton
-  0.1176,       0.3000,     0.8000 // for skeleton
+  0.1176,       0.3000,     0.8000, // for skeleton
+  0.7529,     0.9333,    0.9882   // for skeleton
+
 };
 
 ColorMap::ColorMap()
@@ -106,7 +108,7 @@ ColorMap::ColorMap()
     continuous_.push_back(osg::Vec4(continuous[i][0], continuous[i][1], continuous[i][2], 1.0f));
   }
 
-  for (size_t i = 0, iEnd = 28; i < iEnd; ++ i) {
+  for (size_t i = 0, iEnd = 29; i < iEnd; ++ i) {
     discrete_.push_back(osg::Vec4(discrete[i][0], discrete[i][1], discrete[i][2], 1.0f));
   }
 

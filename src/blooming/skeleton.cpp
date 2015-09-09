@@ -175,6 +175,10 @@ void Skeleton::updateImpl()
 
 void Skeleton::visualizeSkeleton(void)
 {
+	osg::Vec4 black(0.1, 0.1, 0.1, 1);
+	osg::Vec4 sklColor = black;
+
+
     osg::ref_ptr<osg::Geode> geode(new osg::Geode);
 
     for (int i = 0, branch_num = branches_.size(); i < branch_num; ++ i)
@@ -195,7 +199,8 @@ void Skeleton::visualizeSkeleton(void)
             osg::Cylinder* cylinder = new osg::Cylinder(center,radius,height);
             cylinder->setRotation(rotation);
             osg::ShapeDrawable* drawable = new osg::ShapeDrawable(cylinder);
-            drawable->setColor(ColorMap::getInstance().getDiscreteColor(26));
+/*            drawable->setColor(ColorMap::getInstance().getDiscreteColor(28));*/
+			drawable->setColor(sklColor);
             geode->addDrawable(drawable);
 
         }
@@ -207,7 +212,8 @@ void Skeleton::visualizeSkeleton(void)
             osg::Vec3 point(joint.x, joint.y, joint.z);
             osg::Sphere* sphere = new osg::Sphere(point, 2);
             osg::ShapeDrawable* drawable = new osg::ShapeDrawable(sphere);
-            drawable->setColor(ColorMap::getInstance().getDiscreteColor(27));
+/*            drawable->setColor(ColorMap::getInstance().getDiscreteColor(28));*/
+			drawable->setColor(sklColor);
             geode->addDrawable(drawable);
     }
 
