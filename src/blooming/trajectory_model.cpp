@@ -114,11 +114,27 @@ void TrajectoryModel::visualizeTrajectory()
     return;
 }
 
+void TrajectoryModel::setShowTrajState(bool traj_state)
+{
+    if (traj_state == show_traj_)
+        return;
+
+    if (!traj_state)
+    {
+        this->hide();
+    }
+    else 
+    {
+        this->show();
+    }
+}
+
 void TrajectoryModel::show()
 {
     if (show_traj_ == false)
     {
-        MainWindow::getInstance()->getSceneWidget()->addSceneChild(this);
+       /* this->setNodeMask(1);*/
+       // MainWindow::getInstance()->getSceneWidget()->addSceneChild(this);
         show_traj_ = !show_traj_;
     }
 }
@@ -127,7 +143,8 @@ void TrajectoryModel::hide()
 {
     if (show_traj_ == true)
     {
-        MainWindow::getInstance()->getSceneWidget()->removeSceneChild(this);
+        //this->setNodeMask(0X0);
+       // MainWindow::getInstance()->getSceneWidget()->removeSceneChild(this);
         show_traj_ = !show_traj_;
     }
 }

@@ -136,6 +136,8 @@ public:
 
     inline std::vector<int>& getPetalOrder() { return petal_order_; }
 
+    void setShowTrajState(bool traj_state);
+
 protected:
     virtual void updateImpl(void);
     virtual void visualizeTrajectory(void);

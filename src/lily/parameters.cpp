@@ -150,14 +150,14 @@ Eigen::MatrixXi Parameters::getPetalRelation()
 
     // not convenient to store, have to indicate manually here...
 
-    // lily
-    petal_relation << 
-        0, 1, -1, -1, -1, -1,
-        -1, 0, -1, -1, -1, -1,
-        1, 1, 0, -1, -1, -1,
-        1, 1, 1, 0, 0 ,0,
-        1, 1, 1, 0, 0, 0,
-        1, 1, 0, 0, 0, 0;
+    //// lily
+    //petal_relation << 
+    //    0, 1, -1, -1, -1, -1,
+    //    -1, 0, -1, -1, -1, -1,
+    //    1, 1, 0, -1, -1, -1,
+    //    1, 1, 1, 0, 0 ,0,
+    //    1, 1, 1, 0, 0, 0,
+    //    1, 1, 0, 0, 0, 0;
 
     //  // orchid
     //  petal_relation << 
@@ -177,28 +177,66 @@ Eigen::MatrixXi Parameters::getPetalRelation()
     //    -1, 1, -1, -1, -1,  0;
 
 
-    //// waterlily
-    //petal_relation.setZero();
-    //
-    //petal_relation(0, 1) = 1;
-    //petal_relation(0, 13) = 1;
-    //petal_relation(1, 2) = -1;
-    //petal_relation(2, 3) = 1;
-    //petal_relation(3, 4) = -1;
-    //petal_relation(4, 5) = 1;
-    //petal_relation(5, 6) = -1;
-    //petal_relation(6, 7) = -1;
-    //petal_relation(7, 8) = 1;
-    //petal_relation(8, 9) = -1;
-    //petal_relation(9, 10) = 1;
-    //petal_relation(10, 11) = -1;
-    //petal_relation(11, 12) = -1;
-    //petal_relation(12, 13) = 1;
+    // waterlily
+    petal_relation.setZero();
+    
+    // a
+    petal_relation(0, 1) = 1;
+    petal_relation(0, 2) = -1;
+    petal_relation(0, 11) = -1;
+    petal_relation(0, 12) = -1;
+    petal_relation(0, 13) = 1;
 
-    ///*petal_relation = (-petal_relation.transpose()) + petal_relation;*/
-    //Eigen::MatrixXi r1 = petal_relation;
-    //Eigen::MatrixXi r2 = -petal_relation.transpose();
-    //petal_relation = r1 + r2;
+    // b
+    petal_relation(1, 2) = -1;
+    petal_relation(1, 3) = 1;
+
+    // c
+    petal_relation(2, 3) = 1;
+    petal_relation(2, 4) = 1;
+
+    // d
+    petal_relation(3, 4) = -1;
+    petal_relation(3, 5) = -1;
+
+    // e
+    petal_relation(4, 5) = 1;
+    petal_relation(4, 6) = 1;
+
+    // f 
+    petal_relation(5, 6) = -1;
+    petal_relation(5, 7) = -1;
+
+    // g
+    petal_relation(6, 7) = -1;
+    petal_relation(6, 8) = -1;
+    
+    // h
+    petal_relation(7, 8) = 1;
+    petal_relation(7, 9) = 1;
+
+    // i
+    petal_relation(8, 9) = -1;
+    petal_relation(8, 10) = 1;
+
+    // j
+    petal_relation(9, 10) = 1;
+    petal_relation(9, 11) = -1;
+
+    // k
+    petal_relation(10, 11) = -1;
+    petal_relation(10, 12) = -1;
+
+    // l
+    petal_relation(11, 12) = -1;
+    petal_relation(11, 13) = 1;
+
+    // m
+    petal_relation(12, 13) = 1;
+
+    Eigen::MatrixXi r1 = petal_relation;
+    Eigen::MatrixXi r2 = -petal_relation.transpose();
+    petal_relation = r1 + r2;
 
    //// std::cout << petal_relation << std::endl;
 

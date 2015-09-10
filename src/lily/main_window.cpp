@@ -293,6 +293,12 @@ bool MainWindow::slotSendCheckBoxRenderState()
 		}
 	}
 
+    // trajectory
+    if (trajectory_model_ != nullptr)
+    {
+        trajectory_model_->setShowTrajState(states["Show Trajectory"]);
+    }
+
 // 	// 重设光源
 //     scene_widget_->setLight();  
 	
@@ -535,7 +541,7 @@ bool MainWindow::slotLoadFlowers()
     flowers_viewer_->computeFrameRange();
     flowers_viewer_->getFlower();
     flowers_viewer_->show();
-	slotSendCheckBoxRenderState();
+	//slotSendCheckBoxRenderState();
 	
     return true;
 
