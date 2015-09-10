@@ -119,6 +119,9 @@ public:
     void hide();
     void update();
 
+	void  showState(bool show_traj);	
+
+
     void init(Flower* flower);
 
     /*inline Trajectories& getTrajectories(int petal_id){ return trajs_set_[petal_id]; }

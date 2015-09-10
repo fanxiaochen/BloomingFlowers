@@ -293,6 +293,11 @@ bool MainWindow::slotSendCheckBoxRenderState()
 		}
 	}
 
+	// trajectory mode
+	if( trajectory_model_ )
+	{
+		trajectory_model_->showState( states["Show Trajectory"] );
+	}
 // 	// 重设光源
 //     scene_widget_->setLight();  
 	

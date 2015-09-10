@@ -42,8 +42,11 @@ void TrajectoryModel::visualizeTrajectory()
 {
     osg::ref_ptr<osg::Geode> geode(new osg::Geode);
 
-    for (int i = 0, i_end = trajs_set_.size(); i < i_end; ++ i)
+    for (int i = 0, i_end = trajs_set_.size(); i < i_end ; ++ i)
     {
+		if( i<2 )
+			continue;
+
         Trajectories& trajs = trajs_set_[i];
         for (int j = 0, j_end = trajs.size(); j < j_end; ++ j)
         {
@@ -56,7 +59,7 @@ void TrajectoryModel::visualizeTrajectory()
                 osg::Vec3 end(traj[k+1].x, traj[k+1].y, traj[k+1].z);
                 double height = (start-end).length();
                 osg::Vec3 center = (start+end) / 2;
-                double radius = 1;
+                double radius = 0.4;
 
                 osg::Vec3 z_axis(0.0, 0.0, 1.0);
                 osg::Quat rotation;
@@ -66,7 +69,7 @@ void TrajectoryModel::visualizeTrajectory()
                 osg::Cylinder* cylinder = new osg::Cylinder(center,radius,height);
                 cylinder->setRotation(rotation);
                 osg::ShapeDrawable* drawable = new osg::ShapeDrawable(cylinder);
-                drawable->setColor(ColorMap::getInstance().getDiscreteColor(20));
+                drawable->setColor(ColorMap::getInstance().getDiscreteColor(i));
                 geode->addDrawable(drawable);
             }
 
@@ -194,4 +197,21 @@ void TrajectoryModel::recoverFromFlowerViewer(FlowersViewer* flower_viewer)
     {
         this->addFlowerPosition(flower_viewer->flower(i));
     }
+}
+
+void TrajectoryModel::showState( bool show_traj )
+{
+	if (show_traj_ == show_traj)
+		return;
+
+	show_traj_ = show_traj;
+
+	if (show_traj_ )
+	{
+		show();
+	}
+	else 
+	{
+		hide();
+	}
 }
