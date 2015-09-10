@@ -201,17 +201,21 @@ void TrajectoryModel::recoverFromFlowerViewer(FlowersViewer* flower_viewer)
 
 void TrajectoryModel::showState( bool show_traj )
 {
-	if (show_traj_ == show_traj)
-		return;
-
-	show_traj_ = show_traj;
-
-	if (show_traj_ )
-	{
-		show();
-	}
-	else 
-	{
-		hide();
-	}
+	if( show_traj )
+		this->setNodeMask(1);
+	else
+		this->setNodeMask(0x0);
+// 	if (show_traj_ == show_traj)
+// 		return;
+// 
+// 	show_traj_ = show_traj;
+// 
+// 	if (show_traj_ )
+// 	{
+// 		show();
+// 	}
+// 	else 
+// 	{
+// 		hide();
+// 	}
 }
