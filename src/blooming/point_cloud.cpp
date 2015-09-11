@@ -9,6 +9,7 @@
 #include <osg/Point>
 
 #include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/features/normal_3d.h>
 
 #include "main_window.h"
 #include "points_file_system.h"
@@ -1185,4 +1186,48 @@ void PointCloud::region_growing(std::vector<int>& segment_index, int petal_id)
             }
         }
     }
+}
+
+void PointCloud::reEstimateNormal()
+{
+	// Create the normal estimation class, and pass the input dataset to it
+	pcl::NormalEstimation<Point, pcl::Normal> ne;
+	pcl::PointCloud<Point>::Ptr pcp(this);
+	ne.setInputCloud(pcp);
+
+	// Create an empty kdtree representation, and pass it to the normal estimation object.
+	// Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+	pcl::search::KdTree<Point>::Ptr tree( new pcl::search::KdTree<Point>() );
+	ne.setSearchMethod( tree );
+
+	// Output datasets
+	pcl::PointCloud<pcl::Normal>::Ptr cloud_normals( new pcl::PointCloud<pcl::Normal>);
+
+	// set the search radius
+	ne.setRadiusSearch( 0.03 );
+
+	// compute the feature
+	ne.compute( *cloud_normals );
+
+	// assign the output to the points
+	// check if n is consistently oriented towards the viewpoint and flip otherwise
+	for( int i = 0, i_end = cloud_normals->points.size();  
+		i != i_end ; ++i)
+	{
+		pcl::Normal& n = cloud_normals->points[i];
+		// check the dot produect
+		Point p = points[i];
+		if( p.normal_x*n.normal_x + p.normal_y*n.normal_y + p.normal_z*n.normal_z >0 )
+		{
+			p.normal_x = n.normal_x;
+			p.normal_y = n.normal_y;
+			p.normal_z = n.normal_z;
+		}
+		else
+		{
+			p.normal_x = -n.normal_x;
+			p.normal_y = -n.normal_y;
+			p.normal_z = -n.normal_z;
+		}
+	}
 }

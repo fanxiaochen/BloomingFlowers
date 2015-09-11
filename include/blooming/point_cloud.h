@@ -168,6 +168,9 @@ public:
 
   void buildSelfKdtree();
 
+
+  void reEstimateNormal();
+
 protected:
   virtual void clearData();
   virtual void updateImpl();
