@@ -108,9 +108,9 @@ void TrackingSystem::ee_registration( PointCloud& tracked_frame, Flower& trackin
 }
 
 // em + lbs + arap registration
-void TrackingSystem::la_registration( PointCloud& tracked_frame, Flower& tracking_template )
+void TrackingSystem::la_registration( PointCloud& tracked_frame, Flower& tracking_template, int current_frame )
 {
-    Solver solver(&tracked_frame, &tracking_template);
+    Solver solver(&tracked_frame, &tracking_template, current_frame);
 
     //// first stage -- global boundary tracking
     //solver.init_global_deform();

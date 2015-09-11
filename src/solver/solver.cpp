@@ -14,6 +14,8 @@ double Solver::lambda_collision_ = 1;
 double Solver::lambda_arap_ = 1;
 double Solver::lambda_closure_ = 1;
 double Solver::noise_p_ = 0.0;
+std::string Solver::closure_ids_ = "";
+int Solver::closure_start_frame_ = 20;
 bool Solver::is_forward_ = true;
 std::vector<Solver::DeformPetal> Solver::deform_petals_;
 std::vector<CollidingPoint> Solver::colliding_points_;
@@ -22,10 +24,13 @@ bool Solver::has_point_cloud_ = true;
 
 PointCloud* Solver::closure_cloud_ = nullptr;
 
-Solver::Solver(PointCloud* point_cloud, Flower* flower)
+int Solver::cloud_frame_ = 0;
+
+Solver::Solver(PointCloud* point_cloud, Flower* flower, int cloud_frame)
 {
     point_cloud_ = point_cloud;
     flower_ = flower;
+    cloud_frame_ = cloud_frame;
 
     init();
 }
@@ -64,6 +69,8 @@ void Solver::init()
     lambda_arap_ = MainWindow::getInstance()->getParameters()->getARAP();
     lambda_closure_ = MainWindow::getInstance()->getParameters()->getClosure();
     noise_p_ = MainWindow::getInstance()->getParameters()->getNoiseP();
+    closure_ids_ = MainWindow::getInstance()->getParameters()->getClosureIds();
+    closure_start_frame_ = MainWindow::getInstance()->getParameters()->getClosureStartFrame();
 
     flower_->setPetalRelation(MainWindow::getInstance()->getParameters()->getPetalRelation());
 
@@ -555,6 +562,11 @@ void Solver::initTerms()
     for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
     {
         collision_term_.push_back(CollisionDetectionTerm(i));
+    }
+
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++ i)
+    {
+        closure_term_.push_back(ClosureTerm(i));
     }
 }
 

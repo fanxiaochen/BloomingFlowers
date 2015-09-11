@@ -239,6 +239,15 @@ std::string PointsFileSystem::getPointsFilename(int frame)
     return folder+"/points.pcd";
 }
 
+std::string PointsFileSystem::getClosureCloudFilename(int frame)
+{
+    std::string folder = getPointsFolder(frame);
+    if (folder.empty())
+        return folder;
+
+    return folder+"/points-closure.obj";
+}
+
 void PointsFileSystem::savePointCloudAsPly(int frame)
 {
     std::string folder = getPointsFolder(frame);

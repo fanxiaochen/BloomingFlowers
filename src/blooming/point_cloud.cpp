@@ -52,6 +52,28 @@ bool PointCloud::open(const std::string& filename)
 void PointCloud::setClosureCloud(const std::string& closure_cloud)
 {
     // read obj file to closure_cloud_
+    MeshModel mm;
+    mm.load(closure_cloud);
+
+    // convert mesh model to point cloud
+    closure_cloud_ = new PointCloud;
+    osg::ref_ptr<osg::Vec3Array> vertices = mm.getVertices();
+    osg::ref_ptr<osg::Vec3Array> vertice_normals = mm.getVertexNormals();
+
+    for (size_t i = 0, i_end = vertices->size(); i < i_end; ++ i)
+    {
+        Point p;
+        p.x = vertices->at(i).x();
+        p.y = vertices->at(i).y();
+        p.z = vertices->at(i).z();
+
+        vertice_normals->at(i).normalize();
+        p.normal_x = vertice_normals->at(i).x();
+        p.normal_y = vertice_normals->at(i).y();
+        p.normal_z = vertice_normals->at(i).z();
+
+        closure_cloud_->push_back(p);
+    }
 }
 
 osg::ref_ptr<PointCloud> PointCloud::getClosureCloud()

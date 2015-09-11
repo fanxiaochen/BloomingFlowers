@@ -162,13 +162,17 @@ public:
     static double lambda_arap_;
     static double lambda_closure_;
     static double noise_p_;
+    static std::string closure_ids_;
+    static int closure_start_frame_;
 
     static bool is_forward_;
 
     static PointCloud* closure_cloud_;
 
+    static int cloud_frame_;
+
 public:
-    Solver(PointCloud* point_cloud, Flower* flower);
+    Solver(PointCloud* point_cloud, Flower* flower, int cloud_frame);
 
     void setFlower(Flower* flower);
     void setPointCloud(PointCloud* point_cloud);
@@ -270,7 +274,6 @@ private:
     Eigen::SparseLU<Eigen::SparseMatrix<double> > lu_solver_;
 
     int petal_num_;
-
 
     static std::vector<CollidingPoint> colliding_points_;
 

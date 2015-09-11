@@ -31,6 +31,7 @@ public:
 
     std::string getPointsFolder(int frame);
     std::string getPointsFilename(int frame);
+    std::string getClosureCloudFilename(int frame);
 
     osg::ref_ptr<PointCloud> getPointCloud(const std::string& filename);
     osg::ref_ptr<PointCloud> getPointCloud(int frame);

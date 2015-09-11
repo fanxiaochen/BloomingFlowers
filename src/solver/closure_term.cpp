@@ -16,6 +16,18 @@ void ClosureTerm::build()
 
 void ClosureTerm::projection()
 {
+    const std::string& valid_ids = Solver::closure_ids_;
+    int i = 0;
+    for (; i < valid_ids.size(); i++)
+        if ((valid_ids[i] - '0') == petal_id_)
+            break;
+    if (i == valid_ids.size())
+        return;
+
+    const int& closure_start_frame = Solver::closure_start_frame_;
+    if (closure_start_frame < Solver::cloud_frame_)
+        return;
+
     collision_pair_.clear();
 
     pcl::KdTreeFLANN<pcl::PointXYZ>& kdtree = Solver::closure_cloud_->getSelfKdtree();
@@ -58,6 +70,19 @@ void ClosureTerm::projection()
 
 void ClosureTerm::update()
 {
+    const std::string& valid_ids = Solver::closure_ids_;
+    int i = 0;
+    for (; i < valid_ids.size(); i++)
+        if ((valid_ids[i] - '0') == petal_id_)
+            break;
+    if (i == valid_ids.size())
+        return;
+
+    const int& closure_start_frame = Solver::closure_start_frame_;
+    if (closure_start_frame < Solver::cloud_frame_)
+        return;
+
+
     buildA();
     buildb();
     return;
