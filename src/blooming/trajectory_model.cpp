@@ -137,7 +137,7 @@ void TrajectoryModel::show()
     if (show_traj_ == false)
     {
        /* this->setNodeMask(1);*/
-       // MainWindow::getInstance()->getSceneWidget()->addSceneChild(this);
+        MainWindow::getInstance()->getSceneWidget()->addSceneChild(this);
         show_traj_ = !show_traj_;
     }
 }
@@ -147,7 +147,7 @@ void TrajectoryModel::hide()
     if (show_traj_ == true)
     {
         //this->setNodeMask(0X0);
-       // MainWindow::getInstance()->getSceneWidget()->removeSceneChild(this);
+        MainWindow::getInstance()->getSceneWidget()->removeSceneChild(this);
         show_traj_ = !show_traj_;
     }
 }
@@ -222,17 +222,4 @@ void TrajectoryModel::showState( bool show_traj )
 		this->setNodeMask(1);
 	else
 		this->setNodeMask(0x0);
-// 	if (show_traj_ == show_traj)
-// 		return;
-// 
-// 	show_traj_ = show_traj;
-// 
-// 	if (show_traj_ )
-// 	{
-// 		show();
-// 	}
-// 	else 
-// 	{
-// 		hide();
-// 	}
 }

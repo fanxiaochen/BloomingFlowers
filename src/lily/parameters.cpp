@@ -38,6 +38,7 @@ bool Parameters::load(const std::string& filename)
     inner_fitting_ = solverElement.attribute("inner_fitting").toDouble();
     skel_smooth_ = solverElement.attribute("skel_smooth").toDouble();
     collision_ = solverElement.attribute("collision").toDouble();
+    closure_ = solverElement.attribute("closure").toDouble();
     arap_ = solverElement.attribute("arap").toDouble();
     noise_p_ = solverElement.attribute("noise_p").toDouble();
     moving_ratio_ = solverElement.attribute("moving_ratio").toFloat();
@@ -99,6 +100,7 @@ bool Parameters::save(const std::string& filename)
     solverElement.setAttribute("inner_fitting", inner_fitting_);
     solverElement.setAttribute("skel_smooth", skel_smooth_);
     solverElement.setAttribute("collision", collision_);
+    solverElement.setAttribute("closure", closure_);
     solverElement.setAttribute("arap", arap_);
     solverElement.setAttribute("noise_p", noise_p_);
     solverElement.setAttribute("moving_ratio", moving_ratio_);
@@ -183,6 +185,8 @@ Eigen::MatrixXi Parameters::getPetalRelation()
     // a
     petal_relation(0, 1) = 1;
     petal_relation(0, 2) = -1;
+    petal_relation(0, 8) = 1;
+    petal_relation(0, 9) = -1;
     petal_relation(0, 11) = -1;
     petal_relation(0, 12) = -1;
     petal_relation(0, 13) = 1;
@@ -198,6 +202,7 @@ Eigen::MatrixXi Parameters::getPetalRelation()
     // d
     petal_relation(3, 4) = -1;
     petal_relation(3, 5) = -1;
+    petal_relation(3, 6) = -1;
 
     // e
     petal_relation(4, 5) = 1;
@@ -206,6 +211,8 @@ Eigen::MatrixXi Parameters::getPetalRelation()
     // f 
     petal_relation(5, 6) = -1;
     petal_relation(5, 7) = -1;
+    petal_relation(5, 8) = -1;
+    petal_relation(5, 9) = 1;
 
     // g
     petal_relation(6, 7) = -1;
@@ -233,6 +240,7 @@ Eigen::MatrixXi Parameters::getPetalRelation()
 
     // m
     petal_relation(12, 13) = 1;
+    petal_relation(12, 2) = 1;
 
     Eigen::MatrixXi r1 = petal_relation;
     Eigen::MatrixXi r2 = -petal_relation.transpose();

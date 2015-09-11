@@ -11,6 +11,7 @@
 #include "arap_term.h"
 #include "skel_smooth_term.h"
 #include "collision_detection_term.h"
+#include "closure_term.h"
 
 #include "collision_detector.h"
 
@@ -159,9 +160,12 @@ public:
     static double lambda_skel_smooth_;
     static double lambda_collision_;
     static double lambda_arap_;
+    static double lambda_closure_;
     static double noise_p_;
 
     static bool is_forward_;
+
+    static PointCloud* closure_cloud_;
 
 public:
     Solver(PointCloud* point_cloud, Flower* flower);
@@ -255,6 +259,7 @@ private:
     std::vector<ARAPTerm> arap_term_;
     std::vector<SkelSmoothTerm> skel_term_;
     std::vector<CollisionDetectionTerm> collision_term_;
+    std::vector<ClosureTerm> closure_term_;
 
     std::vector<std::vector<Eigen::MatrixXd>> A_; // x, y, z
     std::vector<Eigen::Matrix3Xd> b_;

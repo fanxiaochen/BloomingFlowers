@@ -168,6 +168,11 @@ public:
 
   void buildSelfKdtree();
 
+  void setClosureCloud(const std::string& closure_cloud);
+  osg::ref_ptr<PointCloud> getClosureCloud(); 
+
+  pcl::KdTreeFLANN<pcl::PointXYZ>& getSelfKdtree() { return kdtree_; }
+
 protected:
   virtual void clearData();
   virtual void updateImpl();
@@ -209,6 +214,8 @@ protected:
   bool                          show_probs_;;
 
   pcl::KdTreeFLANN<pcl::PointXYZ>     kdtree_;
+
+  osg::ref_ptr<PointCloud>            closure_cloud_;
 
 };
 

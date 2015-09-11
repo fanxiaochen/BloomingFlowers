@@ -48,6 +48,16 @@ bool PointCloud::open(const std::string& filename)
   return true;
 }
 
+void PointCloud::setClosureCloud(const std::string& closure_cloud)
+{
+    // read obj file to closure_cloud_
+}
+
+osg::ref_ptr<PointCloud> PointCloud::getClosureCloud()
+{
+    return closure_cloud_;
+}
+
 void PointCloud::reload(void)
 {
   clearData();

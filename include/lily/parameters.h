@@ -24,6 +24,7 @@ public:
     inline double& getSkelSmooth() { return skel_smooth_; }
     inline double& getCollision() { return collision_; }
     inline double& getARAP() { return arap_; }
+    inline double& getClosure() { return closure_; }
     inline double& getNoiseP() { return noise_p_; }
     inline float& getMovingRatio() { return moving_ratio_; }
 
@@ -60,6 +61,7 @@ private:
     double skel_smooth_;
     double collision_;
     double arap_;
+    double closure_;
     double noise_p_;
     float moving_ratio_;
 
