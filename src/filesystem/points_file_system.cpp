@@ -5,6 +5,8 @@
 #include <osg/Group>
 #include <osgDB/ReadFile>
 
+#include <pcl/io/ply_io.h>
+
 
 #include "main_window.h"
 #include "point_cloud.h"
@@ -235,6 +237,19 @@ std::string PointsFileSystem::getPointsFilename(int frame)
         return folder;
 
     return folder+"/points.pcd";
+}
+
+void PointsFileSystem::savePointCloudAsPly(int frame)
+{
+    std::string folder = getPointsFolder(frame);
+    if (folder.empty())
+        return;
+
+    PointCloud* point_cloud = getPointCloud(frame);
+    point_cloud->reEstimateNormal();
+
+    std::string save_ply = folder + "/points.ply";
+    pcl::io::savePLYFileASCII (save_ply, *point_cloud); 
 }
 
 void PointsFileSystem::showPointCloud(int frame)

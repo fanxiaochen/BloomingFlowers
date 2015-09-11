@@ -37,6 +37,8 @@ public:
 
     osg::ref_ptr<PointCloud> getPointCloud(QPersistentModelIndex index);
 
+    void savePointCloudAsPly(int frame);
+
     void showPointCloud(const std::string& filename);
     void hidePointCloud(const std::string& filename);
 

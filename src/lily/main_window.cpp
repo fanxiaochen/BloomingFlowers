@@ -386,10 +386,16 @@ bool MainWindow::petal_sequences()
 }
 
 
-
-
 bool MainWindow::save_plys()
 {
+    PointsFileSystem* points_file = dynamic_cast<PointsFileSystem*>(points_files_);
+    int start_frame = points_file->getStartFrame();
+    int end_frame = points_file->getEndFrame();
+    
+    for (int i = start_frame; i <= end_frame; ++ i)
+    {
+        points_file->savePointCloudAsPly(i);
+    }
 
 	return true;
 }
