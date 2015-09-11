@@ -20,29 +20,40 @@ void ClosureTerm::projection()
 
     pcl::KdTreeFLANN<pcl::PointXYZ>& kdtree = Solver::closure_cloud_->getSelfKdtree();
 
-    Solver::IntersectList& intersect_list = Solver::deform_petals_[petal_id_]._intersect_list;
-    for (int intersect_idx : intersect_list)
+    Solver::PetalMatrix& petal_matrix = Solver::deform_petals_[petal_id_]._petal_matrix;
+    
+    for (int i = 0, i_end = petal_matrix.cols(); i < i_end; ++ i)
     {
-        CollidingPoint cp = Solver::getCollidingPoint(petal_id_, intersect_idx);
-        collision_pair_.push_back(CollisionPair(cp.vertex_id_ ,computeProjection(cp)));
+        pcl::PointXYZ search_point(petal_matrix(i, 0), petal_matrix(i, 1), petal_matrix(i, 2));
+        int K = 3;
+
+        std::vector<int> pointIdxNKNSearch(K);
+        std::vector<float> pointNKNSquaredDistance(K);
+
+        if ( kdtree.nearestKSearch (search_point, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+        {
+            Point p;
+            osg::Vec3 cloud_normal;
+            for (int index : pointIdxNKNSearch)
+            {
+                const Point& point = Solver::closure_cloud_->at(index);
+                p = p + point;
+                cloud_normal += osg::Vec3(point.normal_x, point.normal_y, point.normal_z);
+            }
+
+            p = p / pointIdxNKNSearch.size();
+            cloud_normal = cloud_normal / pointIdxNKNSearch.size();
+            cloud_normal.normalize();
+
+            osg::Vec3 p_normal(p.x - search_point.x, p.y - search_point.y, p.z - search_point.z);
+            p_normal.normalize();
+
+            if (p_normal * cloud_normal < 0)
+                collision_pair_.push_back(CollisionPair(i , osg::Vec3(p.x, p.y, p.z)));
+        }
     }
 
     return;
-}
-
-osg::Vec3 ClosureTerm::computeProjection(CollidingPoint cp)
-{
-
-    float k = sqrt(cp.dis2_ / cp.normal_.length2());
-
-    float r = MainWindow::getInstance()->getParameters()->getMovingRatio();
-
-    osg::Vec3 projection;
-    projection.x() = cp.p_.x() - cp.normal_.x() * k * r;
-    projection.y() = cp.p_.y() - cp.normal_.y() * k * r;
-    projection.z() = cp.p_.z() - cp.normal_.z() * k * r;
-
-    return projection;
 }
 
 void ClosureTerm::update()

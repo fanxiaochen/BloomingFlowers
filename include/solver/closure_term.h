@@ -5,7 +5,6 @@
 
 #include <Eigen/Sparse>
 
-struct CollidingPoint;
 struct CollisionPair;
 
 class Flower;
@@ -34,8 +33,6 @@ public:
 protected:
     void buildA();
     void buildb();
-
-    osg::Vec3 computeProjection(CollidingPoint cp);
 
     double zero_correction(double value);
 
