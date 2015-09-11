@@ -77,6 +77,7 @@ private slots:
     bool trajectories_generation();
     bool merge_petals();
     bool petal_sequences();
+	bool save_plys();
 
     bool transfer();
     bool multi_layer();

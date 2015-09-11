@@ -199,6 +199,7 @@ void MainWindow::init(void)
     connect(ui_.actionTrajectoriesGeneration, SIGNAL(triggered()), this, SLOT(trajectories_generation()));
     connect(ui_.actionMergePetals, SIGNAL(triggered()), this, SLOT(merge_petals()));
     connect(ui_.actionPetalSequences, SIGNAL(triggered()), this, SLOT(petal_sequences()));
+	connect(ui_.actionSavePlys, SIGNAL(triggered()), this, SLOT(save_plys()));
 
     connect(ui_.actionTransfer, SIGNAL(triggered()), this, SLOT(transfer()));
     connect(ui_.actionMultiLayer, SIGNAL(triggered()), this, SLOT(multi_layer()));
@@ -382,6 +383,15 @@ bool MainWindow::petal_sequences()
     std::cout << "petal sequences finished" << std::endl;
 
     return true;
+}
+
+
+
+
+bool MainWindow::save_plys()
+{
+
+	return true;
 }
 
 
