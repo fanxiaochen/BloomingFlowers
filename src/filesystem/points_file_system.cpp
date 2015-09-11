@@ -6,6 +6,7 @@
 #include <osgDB/ReadFile>
 
 #include <pcl/io/ply_io.h>
+#include <pcl/surface/mls.h>
 
 
 #include "main_window.h"
@@ -254,11 +255,15 @@ void PointsFileSystem::savePointCloudAsPly(int frame)
     if (folder.empty())
         return;
 
-    PointCloud* point_cloud = getPointCloud(frame);
-    point_cloud->reEstimateNormal();
+	std::string filename = getPointsFilename(frame);
+	// Load input file into a PointCloud<T> with an appropriate type
+	pcl::PointCloud<Point>::Ptr cloud (new pcl::PointCloud<Point> ());
+	// Load bun0.pcd -- should be available with the PCL archive in test 
+	pcl::io::loadPCDFile (filename, *cloud);	
+
 
     std::string save_ply = folder + "/points.ply";
-    pcl::io::savePLYFileASCII (save_ply, *point_cloud); 
+    pcl::io::savePLYFileASCII (save_ply, *cloud); 
 }
 
 void PointsFileSystem::showPointCloud(int frame)
