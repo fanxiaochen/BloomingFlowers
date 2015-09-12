@@ -36,7 +36,7 @@ void ClosureTerm::projection()
     
     for (int i = 0, i_end = petal_matrix.cols(); i < i_end; ++ i)
     {
-        pcl::PointXYZ search_point(petal_matrix(i, 0), petal_matrix(i, 1), petal_matrix(i, 2));
+        pcl::PointXYZ search_point(petal_matrix(0, i), petal_matrix(1, i), petal_matrix(2, i));
         int K = 3;
 
         std::vector<int> pointIdxNKNSearch(K);

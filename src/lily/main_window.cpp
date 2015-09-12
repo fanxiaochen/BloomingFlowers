@@ -200,6 +200,7 @@ void MainWindow::init(void)
     connect(ui_.actionMergePetals, SIGNAL(triggered()), this, SLOT(merge_petals()));
     connect(ui_.actionPetalSequences, SIGNAL(triggered()), this, SLOT(petal_sequences()));
 	connect(ui_.actionSavePlys, SIGNAL(triggered()), this, SLOT(save_plys()));
+    connect(ui_.actionCameraViews, SIGNAL(triggered()), this, SLOT(camera_views()));
 
     connect(ui_.actionTransfer, SIGNAL(triggered()), this, SLOT(transfer()));
     connect(ui_.actionMultiLayer, SIGNAL(triggered()), this, SLOT(multi_layer()));
@@ -398,6 +399,30 @@ bool MainWindow::save_plys()
     }
 
 	return true;
+}
+
+
+bool MainWindow::camera_views()
+{
+    // default, six views
+    const int view_num = 6;
+    double angle = (2 * M_PI) / view_num;
+
+    
+    osg::Camera* camera = scene_widget_->getCamera();
+    osgGA::CameraManipulator* camera_manipulator = scene_widget_->getCameraManipulator();
+    osg::Vec3d eye, center, up;
+    camera_manipulator->getHomePosition(eye, center, up);
+    std::cout << eye.x() << " " << eye.y() << " " << eye.z() << std::endl;
+    for (size_t i = 0; i < view_num; ++ i)
+    {
+        osg::Matrix rotation = registrator_->getRotationMatrix(i * angle);
+        eye = rotation.preMult(eye);
+        std::cout << eye.x() << " " << eye.y() << " " << eye.z() << std::endl;
+ 
+    }
+
+    return true;
 }
 
 

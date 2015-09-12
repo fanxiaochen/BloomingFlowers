@@ -80,6 +80,8 @@
     <addaction name="actionPetalSequences"/>
     <addaction name="separator"/>
     <addaction name="actionSavePlys"/>
+    <addaction name="separator"/>
+    <addaction name="actionCameraViews"/>
    </widget>
    <widget class="QMenu" name="menuApplications">
     <property name="title">
@@ -273,6 +275,11 @@
   <action name="actionSavePlys">
    <property name="text">
     <string>Save Ply</string>
+   </property>
+  </action>
+  <action name="actionCameraViews">
+   <property name="text">
+    <string>Camera Views</string>
    </property>
   </action>
  </widget>
