@@ -10,6 +10,7 @@
 #include <osgDB/ReadFile>
 #include <osg/Texture2D>
 #include <osg/ShadeModel>
+#include <osg/BlendFunc>
 
 #include <pcl/kdtree/kdtree_flann.h>
 
@@ -164,23 +165,44 @@ void MeshModel::visualizeMesh(void)
     }
     else
     {
-        osg::StateSet* stateset = geode->getOrCreateStateSet();
 
-        osg::ref_ptr<osg::Material> mat = new osg::Material;
-        mat->setDiffuse( osg::Material::FRONT_AND_BACK,
-            ColorMap::getInstance().getDiscreteColor(color_id_) );
-        mat->setSpecular( osg::Material::FRONT_AND_BACK,
-            ColorMap::getInstance().getDiscreteColor(color_id_) );
-		mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(color_id_));
-/*		mat->setEmission(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(color_id_));*/
+        if (vertices_->size() < 100000)
+        {
+            osg::StateSet* stateset = geode->getOrCreateStateSet();
+            osg::ref_ptr<osg::Material> mat = new osg::Material;
+            mat->setDiffuse( osg::Material::FRONT_AND_BACK,
+                ColorMap::getInstance().getDiscreteColor(color_id_) );
+            mat->setSpecular( osg::Material::FRONT_AND_BACK,
+                ColorMap::getInstance().getDiscreteColor(color_id_) );
+            mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(color_id_));
 
-        mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );
-		stateset->setAttribute( mat.get());
+            mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );
+            stateset->setAttribute( mat.get());
+        }
+        
+        // for showing visual hull
+        else 
+        {
+            osg::StateSet* stateset = geode->getOrCreateStateSet();
+            osg::ref_ptr<osg::Material> mat = new osg::Material; 
 
-//         osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
-//         colors->push_back(ColorMap::getInstance().getDiscreteColor(color_id_));
-//         geometry->setColorArray(colors);
-//         colors->setBinding(osg::Array::BIND_OVERALL);
+            mat->setDiffuse( osg::Material::FRONT_AND_BACK,
+                ColorMap::getInstance().getDiscreteColor(0) );
+            mat->setSpecular( osg::Material::FRONT_AND_BACK,
+                ColorMap::getInstance().getDiscreteColor(0) );
+            mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(0));
+            mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );
+            // Set alpha to 0.5
+            mat->setAlpha(osg::Material::FRONT_AND_BACK, 0.5); 
+            stateset->setAttributeAndModes( mat.get() , osg::StateAttribute::ON | 
+                osg::StateAttribute::OVERRIDE);
+
+            // Turn on blending 
+            osg::BlendFunc* bf = new osg::BlendFunc(osg::BlendFunc::SRC_ALPHA, 
+                osg::BlendFunc::ONE_MINUS_SRC_ALPHA ); 
+            stateset->setAttributeAndModes(bf);
+        }
+        
     }
 
     /*if (!texcoords_->empty() && !map_Ka_.empty() && !map_Kd_.empty())

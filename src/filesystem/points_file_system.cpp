@@ -255,7 +255,7 @@ void PointsFileSystem::savePointCloudAsPly(int frame)
         return;
 
     PointCloud* point_cloud = getPointCloud(frame);
-    point_cloud->reEstimateNormal();
+    //point_cloud->reEstimateNormal();
 
     std::string save_ply = folder + "/points.ply";
     pcl::io::savePLYFileASCII (save_ply, *point_cloud); 

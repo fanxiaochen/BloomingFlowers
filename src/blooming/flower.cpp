@@ -126,7 +126,7 @@ void Flower::load(const std::string& flower_path)
 
     for (size_t i = 0, i_end = petals_.size(); i < i_end; ++ i)
     {
-        petals_[color_id[i]].getColorId() = i;
+        petals_[color_id[i]].getColorId() = i+1;
         petals_[i].updateNormals();
     }
 }

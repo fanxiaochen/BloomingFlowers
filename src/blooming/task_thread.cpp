@@ -315,26 +315,26 @@ void LATrackThread::run()
     traj_model->show();
 
 
-    flower->show();
-    std::cout << "tracking [frame " << key_frame << "]" << std::endl;
+    //flower->show();
+    //std::cout << "tracking [frame " << key_frame << "]" << std::endl;
 
-    osg::ref_ptr<PointCloud> key_cloud = points_file_system->getPointCloud(key_frame);
-    key_cloud->setClosureCloud(points_file_system->getClosureCloudFilename(key_frame));
+    //osg::ref_ptr<PointCloud> key_cloud = points_file_system->getPointCloud(key_frame);
+    //key_cloud->setClosureCloud(points_file_system->getClosureCloudFilename(key_frame));
 
-    std::cout << "detect flower boundary" << std::endl;
-    tip_detector.setFlower(flower);
-    tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
+    //std::cout << "detect flower boundary" << std::endl;
+    //tip_detector.setFlower(flower);
+    //tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
 
-    std::cout << "detect point cloud boundary" << std::endl;
-    tip_detector.setPointCloud(key_cloud);
-    tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
+    //std::cout << "detect point cloud boundary" << std::endl;
+    //tip_detector.setPointCloud(key_cloud);
+    //tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
 
-    std::cout << "flower segmentation" << std::endl;
-    key_cloud->fitting_region(flower, traj_model);
+    //std::cout << "flower segmentation" << std::endl;
+    //key_cloud->fitting_region(flower, traj_model);
 
-    tracking_system_->la_registration(*key_cloud, *flower, key_frame);
-    flower->save(flowers_folder, key_frame);
-    flower->hide();
+    //tracking_system_->la_registration(*key_cloud, *flower, key_frame);
+    //flower->save(flowers_folder, key_frame);
+    //flower->hide();
 
 
     //Flower* forward_flower = new Flower(*flower);
@@ -350,6 +350,7 @@ void LATrackThread::run()
     //    std::cout << "tracking [frame " << i << "]" << std::endl;
 
     //    forward_cloud = points_file_system->getPointCloud(i);
+    //    forward_cloud->setClosureCloud(points_file_system->getClosureCloudFilename(i));
 
     //    std::cout << "detect flower boundary" << std::endl;
     //    tip_detector.setFlower(forward_flower);
@@ -365,7 +366,7 @@ void LATrackThread::run()
     //    forward_flower->setTransFolder(flowers_folder, i-1);
     //    Solver::is_forward_ = true;
 
-    //    tracking_system_->la_registration(*forward_cloud, *forward_flower);
+    //    tracking_system_->la_registration(*forward_cloud, *forward_flower, i);
     //    forward_flower->save(flowers_folder, i);
     //    forward_flower->update();
 

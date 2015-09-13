@@ -10,6 +10,8 @@
 #include <QCheckBox>
 #include <QApplication>
 
+#include <osgDB/ReadFile>
+
 #include "main_window.h"
 #include "file_viewer_widget.h"
 #include "scene_widget.h"
@@ -205,6 +207,7 @@ void MainWindow::init(void)
     connect(ui_.actionTransfer, SIGNAL(triggered()), this, SLOT(transfer()));
     connect(ui_.actionMultiLayer, SIGNAL(triggered()), this, SLOT(multi_layer()));
     // connect
+
 
     return;
 }
@@ -523,8 +526,6 @@ bool MainWindow::slotLoadPoints(void)
     // load points
     scene_widget_->removeSceneChildren();
     points_widget_->setWorkspace(QString(points_path_.c_str()));
-    
-
     
 
     return true;

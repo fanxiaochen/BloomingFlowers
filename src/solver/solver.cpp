@@ -1082,8 +1082,6 @@ double Solver::m_step()
     double e = 0;
 
     initBuild();
-    /* left_sys();
-    right_sys();*/
 
     do {
         collision_detection();

@@ -169,9 +169,9 @@ Eigen::MatrixXi Parameters::getPetalRelation()
       petal_relation << 
     0, 1, -1, -1, 0,
     -1, 0, -1, 0, -1,
-    1, 1, 0, 0, 0,
-    1, 0, 0, 0 ,0,
-    0, 1, 0, 0, 0;
+    1, 1, 0, 1, 1,
+    1, 0, -1, 0 ,-1,
+    0, 1, -1, 1, 0;
 
     //// golden lily
     //petal_relation << 
