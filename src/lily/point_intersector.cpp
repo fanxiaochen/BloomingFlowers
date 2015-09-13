@@ -92,6 +92,7 @@ void PointIntersector::intersect( osgUtil::IntersectionVisitor& iv, osg::Drawabl
             hit.drawable = drawable;
             hit.matrix = iv.getModelMatrix();
             hit.localIntersectionPoint = (*vertices)[i];
+			hit.primitiveIndex = i;
             insertIntersection( hit );
         }
     }
