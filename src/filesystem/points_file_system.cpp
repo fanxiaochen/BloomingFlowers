@@ -6,6 +6,7 @@
 #include <osgDB/ReadFile>
 
 #include <pcl/io/ply_io.h>
+#include <pcl/surface/mls.h>
 
 
 #include "main_window.h"
@@ -257,8 +258,9 @@ void PointsFileSystem::savePointCloudAsPly(int frame)
     PointCloud* point_cloud = getPointCloud(frame);
     //point_cloud->reEstimateNormal();
 
+
     std::string save_ply = folder + "/points.ply";
-    pcl::io::savePLYFileASCII (save_ply, *point_cloud); 
+    pcl::io::savePLYFileASCII (save_ply, *cloud); 
 }
 
 void PointsFileSystem::showPointCloud(int frame)

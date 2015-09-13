@@ -9,6 +9,7 @@
 #include <QGroupBox>
 #include <QCheckBox>
 #include <QApplication>
+#include <QInputDialog>
 
 #include <osgDB/ReadFile>
 
@@ -289,6 +290,7 @@ bool MainWindow::slotSendCheckBoxRenderState()
 		int start_frame = points_file_system->getStartFrame();
 		int end_frame = points_file_system->getEndFrame();
 
+
 		for (size_t i = start_frame, i_end = end_frame; i <= i_end; ++ i)
 		{
 			osg::ref_ptr<PointCloud> point_cloud = points_file_system->getPointCloud(i);
@@ -407,24 +409,71 @@ bool MainWindow::save_plys()
 
 bool MainWindow::camera_views()
 {
-    // default, six views
-    const int view_num = 6;
-    double angle = (2 * M_PI) / view_num;
+	// default, six views
+	const int view_num = 6;
+	double angle = (2 * M_PI) / view_num;
+	
+// 
+// 	std::string output_file = workspace_ + "\\world2cameraT.txt";
+// 	std::ofstream out(output_file);
+// 	for( int i = 0 ;i!= view_num; ++i )
+// 	{
+// 		if( i== 1)
+// 			continue;
+// 		// the first camera:
+// 		osg::Vec3d eye0(0,0,0);
+// 		osg::Vec3d zDir0(0,0,1);   // center - eye
+// 		osg::Vec3d yDir0(0,-1,0);   // up
+// 		osg::Vec3d xDir0(1,0,0);    
+// 
+// 		osg::Matrix rotation = registrator_->getRotationMatrix(-i * angle);
+// 		osg::Vec3d eyeC = rotation.preMult(eye0); 
+// 		osg::Vec3d zDirC = rotation.preMult(eye0+zDir0)-eyeC;
+// 		osg::Vec3d yDirC = rotation.preMult(eye0+yDir0)-eyeC;
+// 		osg::Vec3d xDirC = rotation.preMult(eye0+xDir0)-eyeC;
+// 
+// 		osg::Vec3d t(-xDirC*eyeC, -yDirC*eyeC, -zDirC*eyeC);
+// 		out << xDirC.x() << " " << xDirC.y() << " " << xDirC.z() << " ";
+// 		out << yDirC.x() << " " << yDirC.y() << " " << yDirC.z() << " ";
+// 		out << zDirC.x() << " " << zDirC.y() << " " << zDirC.z() << " ";
+// 		out << t.x() << " " << t.y() << " " << t.z()  << std::endl;
+// 
+// // 		osg::Vec3d t(-xDirC*eyeC, -yDirC*eyeC, -zDirC*eyeC);
+// // 		out << xDirC.x() << " " << xDirC.y() << " " << xDirC.z() << " " << t.x() << std::endl;
+// // 		out << yDirC.x() << " " << yDirC.y() << " " << yDirC.z() << " " << t.y() << std::endl;
+// // 		out << zDirC.x() << " " << zDirC.y() << " " << zDirC.z() << " " << t.z() << std::endl;
+// // 		out << 0 << " " << 0 << " " << 0 <<" " << 1 << std::endl;
+// 	}
+// 	out.close(;)
 
-    
-    osg::Camera* camera = scene_widget_->getCamera();
-    osgGA::CameraManipulator* camera_manipulator = scene_widget_->getCameraManipulator();
-    osg::Vec3d eye, center, up;
-    camera_manipulator->getHomePosition(eye, center, up);
-    std::cout << eye.x() << " " << eye.y() << " " << eye.z() << std::endl;
-    for (size_t i = 0; i < view_num; ++ i)
-    {
-        osg::Matrix rotation = registrator_->getRotationMatrix(i * angle);
-        eye = rotation.preMult(eye);
-        std::cout << eye.x() << " " << eye.y() << " " << eye.z() << std::endl;
- 
-    }
+	bool ok;
+	int view_idx  = QInputDialog::getInt(this, tr("QInputDialog::getInt()"),
+		tr("View Index:"),  0, 0, 6, 1, &ok);
+	if (ok )
+	{
+		
 
+		// the first camera:
+		osg::Vec3d eye0(0,0,0);
+		osg::Vec3d zDir0(0,0,1);   // center - eye
+		osg::Vec3d yDir0(0,-1,0);   // up
+		osg::Vec3d xDir0(1,0,0);  
+
+		osg::Matrix rotation = registrator_->getRotationMatrix(-view_idx * angle);
+		osg::Vec3d eyeC = rotation.preMult(eye0);
+		osg::Vec3d zDirC = rotation.preMult(eye0+zDir0)-eyeC;
+		osg::Vec3d yDirC = rotation.preMult(eye0+yDir0)-eyeC;
+
+		scene_widget_->getCamera()->setViewMatrixAsLookAt(eyeC, zDirC+eyeC, yDirC);
+
+		osgGA::CameraManipulator* camera_manipulator = scene_widget_->getCameraManipulator();
+		osg::Vec3d e, c, u;
+		camera_manipulator->getHomePosition(e, c, u);
+
+		camera_manipulator->setHomePosition(eyeC, zDirC+eyeC, yDirC);
+		camera_manipulator->home(0);
+	}
+	
     return true;
 }
 

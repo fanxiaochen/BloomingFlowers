@@ -173,7 +173,6 @@ public:
 
   pcl::KdTreeFLANN<pcl::PointXYZ>& getSelfKdtree() { return kdtree_; }
 
-  void reEstimateNormal();
 
 protected:
   virtual void clearData();
