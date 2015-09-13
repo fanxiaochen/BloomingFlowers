@@ -11,7 +11,7 @@
 #include "main_window.h"
 #include "pick_handler.h"
 #include "scene_widget.h"
-#include "vertex_pickup.h"
+// #include "vertex_pickup.h"
 
 
 SceneWidget::SceneWidget(QWidget * parent, const QGLWidget * shareWidget, Qt::WindowFlags f)
@@ -33,8 +33,8 @@ SceneWidget::SceneWidget(QWidget * parent, const QGLWidget * shareWidget, Qt::Wi
     addEventHandler(new PickHandler());
     addEventHandler(new CameraHandler());
     addEventHandler(new NodeHandler(scene_root_));
-//	addEventHandler(new osgViewer::ScreenCaptureHandler(new WriteToFile(QString(""))));	
-	addEventHandler(new PickupVertexHandler(other_root_.get()));
+	addEventHandler(new osgViewer::ScreenCaptureHandler(new WriteToFile(QString(""))));	
+//	addEventHandler(new PickupVertexHandler(other_root_.get()));
 }
 
 SceneWidget::~SceneWidget()
