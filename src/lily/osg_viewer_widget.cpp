@@ -47,7 +47,7 @@ OSGViewerWidget::OSGViewerWidget(QWidget * parent, const QGLWidget * shareWidget
     double w = width();
     double h = height();
     getCamera()->setViewport(new osg::Viewport(0, 0, w, h));
-    getCamera()->setProjectionMatrixAsPerspective(60.0f, w/h, 1.0f, 10000.0f);
+    getCamera()->setProjectionMatrixAsPerspective(20.0f, w/h, 1.0f, 1000.0f);
     getCamera()->setGraphicsContext(getGraphicsWindow());
     getCamera()->setClearColor(osg::Vec4(1, 1, 1, 1.0));
 
@@ -232,7 +232,7 @@ void OSGViewerWidget::centerScene(void)
     if (!center_scene_)
     {
         float z_offset = MainWindow::getInstance()->getParameters()->getCameraZoffset();
-        camera_manipulator->setHomePosition(osg::Vec3(0.0, 0.0, bounding_sphere.center().z()-z_offset*radius), 
+        camera_manipulator->setHomePosition(osg::Vec3(0.0, 0.0, 0/*bounding_sphere.center().z()-z_offset*radius*/), 
             osg::Vec3(0.0, 0.0, bounding_sphere.center().z()), up_vector_);
         camera_manipulator->home(0);
     }
