@@ -32,6 +32,8 @@ public:
     inline Branch& getBranch(int i) { return branches_[i]; }
     inline int getJointNumber(){ return joint_number_; }
 
+    bool loadTransforms(const std::string& filename);
+
 protected:
     virtual void updateImpl(void);
     virtual void visualizeSkeleton(void);

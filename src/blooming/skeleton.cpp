@@ -242,3 +242,8 @@ void Skeleton::hide()
         show_skeleton_ = !show_skeleton_;
     }
 }
+
+bool Skeleton::loadTransforms(const std::string& filename)
+{
+    return true;
+}

@@ -430,9 +430,28 @@ bool MeshModel::load(const std::string& filename)
         std::string bw_file = filename + ".bw";
         if (QFile(bw_file.c_str()).exists())
             loadBiharmonicWeights(bw_file);
+
+        // load transforms
+        std::string bt_file = filename + ".bt";
+        if (QFile(bt_file.c_str()).exists())
+            loadBackwardTransform(bt_file);
+
+        std::string ft_file = filename + ".ft";
+        if (QFile(ft_file.c_str()).exists())
+            loadForwardTransform(ft_file);
     }
 
     return flag;
+}
+
+bool MeshModel::loadBackwardTransform(const std::string& filename)
+{
+    return skeleton_->loadTransforms(filename);
+}
+
+bool MeshModel::loadForwardTransform(const std::string& filename)
+{
+    return skeleton_->loadTransforms(filename);
 }
 
 bool MeshModel::loadBiharmonicWeights(const std::string& filename)

@@ -111,6 +111,10 @@ public:
 
     bool loadBiharmonicWeights(const std::string& filename);
 
+    bool loadBackwardTransform(const std::string& filename);
+
+    bool loadForwardTransform(const std::string& filename);
+
     void showSkeletonState(bool show_skeleton);
 
     void buildSelfKdTree();
