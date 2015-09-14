@@ -199,8 +199,11 @@ void Skeleton::visualizeSkeleton(void)
             osg::Cylinder* cylinder = new osg::Cylinder(center,radius,height);
             cylinder->setRotation(rotation);
             osg::ShapeDrawable* drawable = new osg::ShapeDrawable(cylinder);
-/*            drawable->setColor(ColorMap::getInstance().getDiscreteColor(28));*/
 			drawable->setColor(sklColor);
+// 			if( j== 0)
+// 			{
+// 				drawable->setColor(ColorMap::getInstance().getDiscreteColor(28));
+// 			}
             geode->addDrawable(drawable);
 
         }
