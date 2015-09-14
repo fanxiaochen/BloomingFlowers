@@ -536,7 +536,7 @@ bool NodeHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapte
 
 WriteToFile::WriteToFile(const QString& workspace )
 	:workspace_(workspace),
-	osgViewer::ScreenCaptureHandler::WriteToFile("screen_shot", "jpg")
+	osgViewer::ScreenCaptureHandler::WriteToFile("screen_shot", "png")
 {
 }
 
