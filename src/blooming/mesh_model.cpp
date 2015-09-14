@@ -191,7 +191,7 @@ void MeshModel::visualizeMesh(void)
             mat->setSpecular( osg::Material::FRONT_AND_BACK,
                 ColorMap::getInstance().getDiscreteColor(0) );
             mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(0));
-            mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );
+           /* mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );*/
             // Set alpha to 0.5
             mat->setAlpha(osg::Material::FRONT_AND_BACK, 0.5); 
             stateset->setAttributeAndModes( mat.get() , osg::StateAttribute::ON | 
@@ -201,6 +201,8 @@ void MeshModel::visualizeMesh(void)
             osg::BlendFunc* bf = new osg::BlendFunc(osg::BlendFunc::SRC_ALPHA, 
                 osg::BlendFunc::ONE_MINUS_SRC_ALPHA ); 
             stateset->setAttributeAndModes(bf);
+
+            //stateset->setMode(GL_DEPTH_TEST,osg::StateAttribute::OFF);
         }
         
     }

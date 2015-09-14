@@ -260,7 +260,7 @@ void PointsFileSystem::savePointCloudAsPly(int frame)
 
 
     std::string save_ply = folder + "/points.ply";
-    pcl::io::savePLYFileASCII (save_ply, *cloud); 
+    pcl::io::savePLYFileASCII (save_ply, *point_cloud); 
 }
 
 void PointsFileSystem::showPointCloud(int frame)
