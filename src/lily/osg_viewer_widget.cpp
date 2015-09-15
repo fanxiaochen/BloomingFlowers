@@ -47,7 +47,7 @@ OSGViewerWidget::OSGViewerWidget(QWidget * parent, const QGLWidget * shareWidget
     double w = width();
     double h = height();
     getCamera()->setViewport(new osg::Viewport(0, 0, w, h));
-    getCamera()->setProjectionMatrixAsPerspective(20.0f, w/h, 1.0f, 1000.0f);
+    getCamera()->setProjectionMatrixAsPerspective(20.0f, w/h, 1.0f, 1000.0f);   // change the first parameter to change focus length
     getCamera()->setGraphicsContext(getGraphicsWindow());
     getCamera()->setClearColor(osg::Vec4(1, 1, 1, 1.0));
 
@@ -319,8 +319,10 @@ bool OSGViewerWidget::hasOtherChild(osg::Node *child)
 
 void OSGViewerWidget::writeCameraParameters( const QString& filename )
 {
+	// set up lookDistance, it is set experimentally. 
+	double lookDistance = 700;  
 	osg::Vec3 eye, center, up;
-	getCamera()->getViewMatrixAsLookAt(eye, center, up);
+	getCamera()->getViewMatrixAsLookAt(eye, center, up, lookDistance);
 	QFile txt_file(filename);
 	txt_file.open(QIODevice::WriteOnly | QIODevice::Text);
 	QTextStream txt_file_stream(&txt_file);
@@ -424,6 +426,8 @@ void CameraHandler::reset()
     count_ = 0;
 }
 
+
+// there is a bug
 bool CameraHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapter& aa)
 {
     switch(ea.getEventType())

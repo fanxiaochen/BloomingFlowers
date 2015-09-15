@@ -10,6 +10,7 @@
 #include <QCheckBox>
 #include <QApplication>
 #include <QInputDialog>
+#include <QTextStream>
 
 #include <osgDB/ReadFile>
 
@@ -451,7 +452,7 @@ bool MainWindow::camera_views()
 		tr("View Index:"),  0, 0, 6, 1, &ok);
 	if (ok )
 	{
-		
+		osg::BoundingSphere bounding_sphere = scene_widget_->getBoundingSphere();
 
 		// the first camera:
 		osg::Vec3d eye0(0,0,0);
@@ -472,6 +473,15 @@ bool MainWindow::camera_views()
 
 		camera_manipulator->setHomePosition(eyeC, zDirC+eyeC, yDirC);
 		camera_manipulator->home(0);
+
+
+// 		QFile txt_file(filename);
+// 		txt_file.open(QIODevice::WriteOnly | QIODevice::Text);
+// 		QTextStream txt_file_stream(&txt_file);
+// 		txt_file_stream << eye.x() << " " << eye.y() << " " << eye.z() << "\n";
+// 		txt_file_stream << center.x() << " " << center.y() << " " << center.z() << "\n";
+// 		txt_file_stream << up.x() << " " << up.y() << " " << up.z() << "\n";
+
 	}
 	
     return true;
