@@ -20,6 +20,8 @@ Skeleton::Skeleton(const Skeleton& skeleton)
     this->joints_ = skeleton.joints_;
     this->branches_ = skeleton.branches_;
     this->joint_number_ = skeleton.joint_number_;
+    this->ft_ = skeleton.ft_;
+    this->bt_ = skeleton.bt_;
 }
 
 // do not copy show_skeleton_, it's used in Flower Viewer
@@ -29,6 +31,8 @@ Skeleton Skeleton::operator = (const Skeleton& skeleton)
     this->joints_ = skeleton.joints_;
     this->branches_ = skeleton.branches_;
     this->joint_number_ = skeleton.joint_number_;
+    this->ft_ = skeleton.ft_;
+    this->bt_ = skeleton.bt_;
 
     return *this;
 }
@@ -243,7 +247,52 @@ void Skeleton::hide()
     }
 }
 
-bool Skeleton::loadTransforms(const std::string& filename)
+// load bt_
+bool Skeleton::loadBackwardTransforms(const std::string& filename)
 {
+    std::ifstream infile;
+    infile.open( filename.c_str());
+
+    std::stringstream sem; 
+    sem << infile.rdbuf(); 
+
+    int handle_num;
+    sem >> handle_num;
+
+    double x, y, z;
+    int row_num = 0;
+    while (sem >> x >> y >> z)
+    {
+        bt_.conservativeResize(++row_num, 3);
+        bt_.row(row_num-1) << x, y, z;
+    }
+
+    infile.close();
+
+    return true;
+}
+
+// load ft_
+bool Skeleton::loadForwardTransforms(const std::string& filename)
+{
+    std::ifstream infile;
+    infile.open( filename.c_str());
+
+    std::stringstream sem; 
+    sem << infile.rdbuf(); 
+
+    int handle_num;
+    sem >> handle_num;
+
+    double x, y, z;
+    int row_num = 0;
+    while (sem >> x >> y >> z)
+    {
+        ft_.conservativeResize(++row_num, 3);
+        ft_.row(row_num-1) << x, y, z;
+    }
+
+    infile.close();
+
     return true;
 }

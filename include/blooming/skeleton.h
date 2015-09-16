@@ -32,7 +32,11 @@ public:
     inline Branch& getBranch(int i) { return branches_[i]; }
     inline int getJointNumber(){ return joint_number_; }
 
-    bool loadTransforms(const std::string& filename);
+    bool loadBackwardTransforms(const std::string& filename);
+    bool loadForwardTransforms(const std::string& filename);
+
+    inline Eigen::MatrixXd& getBackwardTransforms() { return bt_; }
+    inline Eigen::MatrixXd& getForwardTransforms() { return ft_; }
 
 protected:
     virtual void updateImpl(void);
@@ -46,6 +50,9 @@ private:
     bool show_skeleton_;
 
     int joint_number_;
+
+    Eigen::MatrixXd bt_;
+    Eigen::MatrixXd ft_;
 
 };
 #endif

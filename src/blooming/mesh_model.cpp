@@ -446,12 +446,12 @@ bool MeshModel::load(const std::string& filename)
 
 bool MeshModel::loadBackwardTransform(const std::string& filename)
 {
-    return skeleton_->loadTransforms(filename);
+    return skeleton_->loadBackwardTransforms(filename);
 }
 
 bool MeshModel::loadForwardTransform(const std::string& filename)
 {
-    return skeleton_->loadTransforms(filename);
+    return skeleton_->loadForwardTransforms(filename);
 }
 
 bool MeshModel::loadBiharmonicWeights(const std::string& filename)

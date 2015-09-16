@@ -24,6 +24,7 @@
 #include "flower.h"
 #include "task_thread.h"
 #include "trajectory_model.h"
+#include "transfer.h"
 
 
 MainWindow::MainWindow(void)
@@ -480,6 +481,13 @@ bool MainWindow::camera_views()
 
 bool MainWindow::transfer()
 {
+    QString directory = QFileDialog::getExistingDirectory(this, tr("Load Points"), "transfer_flowers", QFileDialog::ShowDirsOnly);
+    Transfer t(flowers_viewer_);
+    t.loadFlower("D:\\baidu disk\\WorkSpace\\Projects\\BloomingFlower\\BloomingFlowers\\data\\applications\\transfers\\flowers-best-result\\frame_00029", 29);
+    t.setFlowerFolder(directory.toStdString());
+   // t.transfer(true);
+    t.transfer(false);
+    std::cout << "transfer finished!" << std::endl;
     return true;
 }
 
