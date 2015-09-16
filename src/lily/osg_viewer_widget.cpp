@@ -47,7 +47,7 @@ OSGViewerWidget::OSGViewerWidget(QWidget * parent, const QGLWidget * shareWidget
     double w = width();
     double h = height();
     getCamera()->setViewport(new osg::Viewport(0, 0, w, h));
-    getCamera()->setProjectionMatrixAsPerspective(20.0f, w/h, 1.0f, 1000.0f);   // change the first parameter to change focus length
+    getCamera()->setProjectionMatrixAsPerspective(12.0f, w/h, 1.0f, 1000.0f);   // change the first parameter to change focus length
     getCamera()->setGraphicsContext(getGraphicsWindow());
     getCamera()->setClearColor(osg::Vec4(1, 1, 1, 1.0));
 
@@ -330,6 +330,13 @@ void OSGViewerWidget::writeCameraParameters( const QString& filename )
 	txt_file_stream << center.x() << " " << center.y() << " " << center.z() << "\n";
 	txt_file_stream << up.x() << " " << up.y() << " " << up.z() << "\n";
 
+	double fovy = 0;
+	double aspectRatio = 1;
+	double zNear = 0;
+	double zFar = 1000;
+	getCamera()->getProjectionMatrixAsPerspective(fovy, aspectRatio, zNear, zFar); 
+	txt_file_stream << fovy << "\n";
+
 	// 	QFile inc_file(filename+".inc");
 	// 	inc_file.open(QIODevice::WriteOnly | QIODevice::Text);
 	// 	QTextStream inc_file_stream(&inc_file);
@@ -338,7 +345,7 @@ void OSGViewerWidget::writeCameraParameters( const QString& filename )
 	// 		.arg(QString("   sky <%1, %2, %3>\n").arg(up[0]).arg(up[1]).arg(up[2]))
 	// 		.arg(QString("   look_at <%1, %2, %3>\n").arg(center[0]).arg(center[1]).arg(center[2]));
 
-
+	txt_file.close();
 	return;
 }
 
@@ -362,8 +369,6 @@ void OSGViewerWidget::readCameraParameters( const QString& filename )
 
 	camera_manipulator->setHomePosition(eye, center, up);
 	camera_manipulator->home(0);
-
-	camera_manipulator->setHomePosition(e, c, u);
 	return;
 }
 

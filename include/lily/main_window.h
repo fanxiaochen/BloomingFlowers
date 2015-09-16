@@ -71,6 +71,7 @@ private slots:
     bool slotLoadAxis();
     bool slotLoadFlowers();
     bool slotSendCheckBoxRenderState();
+	bool slotSnapshotAllFrames();
 
     bool region_probability();
 	bool collision_detection();

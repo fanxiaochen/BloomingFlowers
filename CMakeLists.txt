@@ -81,6 +81,7 @@ set(lily_incs       ${lily_inc}/main_window.h
                     ${lily_inc}/point_intersector.h
                     ${lily_inc}/parameters.h
 					${lily_inc}/vertex_pickup.h
+					${lily_inc}/screen_capture.h
             )
 
 set(lily_srcs       ${lily_src}/main.cpp
@@ -98,6 +99,7 @@ set(lily_srcs       ${lily_src}/main.cpp
                     ${lily_src}/point_intersector.cpp
                     ${lily_src}/parameters.cpp
 					${lily_src}/vertex_pickup.cpp
+					${lily_src}/screen_capture.cpp
             )
             
 set(blooming_incs   ${blooming_inc}/point_cloud.h
