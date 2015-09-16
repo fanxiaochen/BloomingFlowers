@@ -91,6 +91,8 @@ public:
 
     void getFlower();
     void getFlower(int frame);
+
+	void first();
     void next();
     void previous();
 

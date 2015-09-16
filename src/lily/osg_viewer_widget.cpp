@@ -47,7 +47,7 @@ OSGViewerWidget::OSGViewerWidget(QWidget * parent, const QGLWidget * shareWidget
     double w = width();
     double h = height();
     getCamera()->setViewport(new osg::Viewport(0, 0, w, h));
-    getCamera()->setProjectionMatrixAsPerspective(60.0f, w/h, 1.0f, 10000.0f);
+    getCamera()->setProjectionMatrixAsPerspective(12.0f, w/h, 1.0f, 1000.0f);   // change the first parameter to change focus length
     getCamera()->setGraphicsContext(getGraphicsWindow());
     getCamera()->setClearColor(osg::Vec4(1, 1, 1, 1.0));
 
@@ -232,7 +232,7 @@ void OSGViewerWidget::centerScene(void)
     if (!center_scene_)
     {
         float z_offset = MainWindow::getInstance()->getParameters()->getCameraZoffset();
-        camera_manipulator->setHomePosition(osg::Vec3(0.0, 0.0, bounding_sphere.center().z()-z_offset*radius), 
+        camera_manipulator->setHomePosition(osg::Vec3(0.0, 0.0, 0/*bounding_sphere.center().z()-z_offset*radius*/), 
             osg::Vec3(0.0, 0.0, bounding_sphere.center().z()), up_vector_);
         camera_manipulator->home(0);
     }
@@ -319,14 +319,23 @@ bool OSGViewerWidget::hasOtherChild(osg::Node *child)
 
 void OSGViewerWidget::writeCameraParameters( const QString& filename )
 {
+	// set up lookDistance, it is set experimentally. 
+	double lookDistance = 700;  
 	osg::Vec3 eye, center, up;
-	getCamera()->getViewMatrixAsLookAt(eye, center, up);
+	getCamera()->getViewMatrixAsLookAt(eye, center, up, lookDistance);
 	QFile txt_file(filename);
 	txt_file.open(QIODevice::WriteOnly | QIODevice::Text);
 	QTextStream txt_file_stream(&txt_file);
 	txt_file_stream << eye.x() << " " << eye.y() << " " << eye.z() << "\n";
 	txt_file_stream << center.x() << " " << center.y() << " " << center.z() << "\n";
 	txt_file_stream << up.x() << " " << up.y() << " " << up.z() << "\n";
+
+	double fovy = 0;
+	double aspectRatio = 1;
+	double zNear = 0;
+	double zFar = 1000;
+	getCamera()->getProjectionMatrixAsPerspective(fovy, aspectRatio, zNear, zFar); 
+	txt_file_stream << fovy << "\n";
 
 	// 	QFile inc_file(filename+".inc");
 	// 	inc_file.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -336,7 +345,7 @@ void OSGViewerWidget::writeCameraParameters( const QString& filename )
 	// 		.arg(QString("   sky <%1, %2, %3>\n").arg(up[0]).arg(up[1]).arg(up[2]))
 	// 		.arg(QString("   look_at <%1, %2, %3>\n").arg(center[0]).arg(center[1]).arg(center[2]));
 
-
+	txt_file.close();
 	return;
 }
 
@@ -360,8 +369,6 @@ void OSGViewerWidget::readCameraParameters( const QString& filename )
 
 	camera_manipulator->setHomePosition(eye, center, up);
 	camera_manipulator->home(0);
-
-	camera_manipulator->setHomePosition(e, c, u);
 	return;
 }
 
@@ -424,6 +431,8 @@ void CameraHandler::reset()
     count_ = 0;
 }
 
+
+// there is a bug
 bool CameraHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapter& aa)
 {
     switch(ea.getEventType())

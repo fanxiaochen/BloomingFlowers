@@ -53,6 +53,7 @@
     <addaction name="actionLoadCamera"/>
     <addaction name="actionSaveCamera"/>
     <addaction name="separator"/>
+    <addaction name="actionSnapshotAllFrames"/>
    </widget>
    <widget class="QMenu" name="menuTracking">
     <property name="title">
@@ -82,6 +83,7 @@
     <addaction name="actionSavePlys"/>
     <addaction name="separator"/>
     <addaction name="actionCameraViews"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuApplications">
     <property name="title">
@@ -280,6 +282,11 @@
   <action name="actionCameraViews">
    <property name="text">
     <string>Camera Views</string>
+   </property>
+  </action>
+  <action name="actionSnapshotAllFrames">
+   <property name="text">
+    <string>Snapshot All Frames</string>
    </property>
   </action>
  </widget>

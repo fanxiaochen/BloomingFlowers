@@ -10,6 +10,7 @@
 #include <QCheckBox>
 #include <QApplication>
 #include <QInputDialog>
+#include <QTextStream>
 
 #include <osgDB/ReadFile>
 
@@ -25,6 +26,7 @@
 #include "task_thread.h"
 #include "trajectory_model.h"
 #include "transfer.h"
+#include "screen_capture.h"
 
 
 MainWindow::MainWindow(void)
@@ -97,33 +99,58 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
     switch(event->key())
     {
-    case(Qt::Key_Up):
-            points_file->navigateToPreviousFrame();
-            break;
-    case(Qt::Key_Down):
-            points_file->navigateToNextFrame();
-            break;
-    case(Qt::Key_Left):
-            flowers_viewer_->previous();
-            flowers_viewer_->update();
-            break;
-    case(Qt::Key_Right):
-            flowers_viewer_->next();
-            flowers_viewer_->update();
-            break;
-    case(Qt::Key_PageUp):
-            points_file->navigateToPreviousFrame();
-            flowers_viewer_->previous();
-            flowers_viewer_->update();
-            break;
-    case (Qt::Key_PageDown):
-            points_file->navigateToNextFrame();
-            flowers_viewer_->next();
-            flowers_viewer_->update();
-            break;
-    default:
-            QMainWindow::keyPressEvent(event);
-            break;
+	case(Qt::Key_Up):
+		if( points_files_ )
+		{
+			points_file->navigateToPreviousFrame();
+		}
+		break;
+	case(Qt::Key_Down):
+		if( points_file )
+		{
+			points_file->navigateToNextFrame();
+		}	
+		break;
+	case(Qt::Key_Left):
+		if( flowers_viewer_ )
+		{
+			flowers_viewer_->previous();
+			flowers_viewer_->update();
+		}		
+		break;
+	case(Qt::Key_Right):
+		if( flowers_viewer_ )
+		{
+			flowers_viewer_->next();
+			flowers_viewer_->update();
+		}
+		break;
+	case(Qt::Key_PageUp):
+		if( points_file )
+		{
+			points_file->navigateToPreviousFrame();
+		}
+		if( flowers_viewer_ )
+		{
+			flowers_viewer_->previous();
+			flowers_viewer_->update();
+		}
+		break;
+	case (Qt::Key_PageDown):
+		if( points_file )
+		{
+			points_file->navigateToNextFrame();
+		}
+		if( flowers_viewer_ )
+		{
+			flowers_viewer_->next();
+			flowers_viewer_->update();
+		}
+		break;
+	default:
+		QMainWindow::keyPressEvent(event);
+		break;
+    
 
     }
 
@@ -205,6 +232,7 @@ void MainWindow::init(void)
     connect(ui_.actionPetalSequences, SIGNAL(triggered()), this, SLOT(petal_sequences()));
 	connect(ui_.actionSavePlys, SIGNAL(triggered()), this, SLOT(save_plys()));
     connect(ui_.actionCameraViews, SIGNAL(triggered()), this, SLOT(camera_views()));
+	connect(ui_.actionSnapshotAllFrames, SIGNAL(triggered()), this, SLOT(slotSnapshotAllFrames()));
 
     connect(ui_.actionTransfer, SIGNAL(triggered()), this, SLOT(transfer()));
     connect(ui_.actionMultiLayer, SIGNAL(triggered()), this, SLOT(multi_layer()));
@@ -452,7 +480,7 @@ bool MainWindow::camera_views()
 		tr("View Index:"),  0, 0, 6, 1, &ok);
 	if (ok )
 	{
-		
+		osg::BoundingSphere bounding_sphere = scene_widget_->getBoundingSphere();
 
 		// the first camera:
 		osg::Vec3d eye0(0,0,0);
@@ -473,6 +501,15 @@ bool MainWindow::camera_views()
 
 		camera_manipulator->setHomePosition(eyeC, zDirC+eyeC, yDirC);
 		camera_manipulator->home(0);
+
+
+// 		QFile txt_file(filename);
+// 		txt_file.open(QIODevice::WriteOnly | QIODevice::Text);
+// 		QTextStream txt_file_stream(&txt_file);
+// 		txt_file_stream << eye.x() << " " << eye.y() << " " << eye.z() << "\n";
+// 		txt_file_stream << center.x() << " " << center.y() << " " << center.z() << "\n";
+// 		txt_file_stream << up.x() << " " << up.y() << " " << up.z() << "\n";
+
 	}
 	
     return true;
@@ -700,4 +737,62 @@ bool MainWindow::slotShowYesNoMessageBox(const std::string& text, const std::str
     int ret = msg_box.exec();
 
     return (ret == QMessageBox::Yes);
+}
+
+bool MainWindow::slotSnapshotAllFrames()
+{
+	QString snapshot_folder = QFileDialog::getExistingDirectory(this, tr("Load Flowers"), workspace_.c_str(), QFileDialog::ShowDirsOnly);
+
+	if (snapshot_folder.isEmpty())
+		return false;
+
+	PointsFileSystem* points_file = dynamic_cast<PointsFileSystem*>(points_files_);
+	if( !points_file && !flowers_viewer_ )
+		return false;
+
+	int frame_num = 0;
+	if( points_file) 
+		frame_num = points_file->getEndFrame() - points_file->getCurrentFrame();
+	else if( flowers_viewer_ )
+	{
+		frame_num = flowers_viewer_->getEndFrame() - points_file->getCurrentFrame();
+	}
+
+	std::string rootName = snapshot_folder.toStdString() + "/cap-";
+	std::string extName = ".png";
+	osg::ref_ptr< osgwTools::ScreenCapture > sc = new osgwTools::ScreenCapture(
+		rootName, extName);
+
+	osg::Camera*  camera = scene_widget_->getCamera();
+	osg::Camera::DrawCallback* old = camera->getPostDrawCallback();
+	camera->setPostDrawCallback( sc.get() );
+
+	// capture current frames
+	{
+		sc->setCapture(true);
+		sc->setUseFrameNumber(true);
+		sc->setNumFramesToCapture(1);
+		Sleep(500);
+	}
+
+	// capture the following frames
+	for( int i =0 ;i!= frame_num; ++i )
+	{
+		if( points_file )
+			points_file->navigateToNextFrame();
+		if( flowers_viewer_ )
+		{
+			flowers_viewer_->next();
+			flowers_viewer_->update();
+		}
+		Sleep(1000);
+
+		sc->setCapture(true);
+		sc->setUseFrameNumber(true);
+		sc->setNumFramesToCapture(1);
+		Sleep(500);
+	}
+	camera->setPostDrawCallback( old );	
+	return true;
+
 }

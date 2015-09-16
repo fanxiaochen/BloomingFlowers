@@ -406,6 +406,22 @@ PointCloud* PointsFileSystem::getDisplayFirstFrame(void)
 }
 
 
+
+
+void PointsFileSystem::navigateToFirstFrame()
+{
+	int current_frame = getDisplayFirstFrame()->getFrame();
+
+	if (current_frame == getStartFrame())
+		return;
+	
+	int start_frame = getStartFrame();
+	hideAndShowPointCloud(current_frame, start_frame);
+
+	return;
+}
+
+
 void PointsFileSystem::navigateToPreviousFrame()
 {
     int current_frame = getDisplayFirstFrame()->getFrame();
@@ -432,4 +448,10 @@ void PointsFileSystem::navigateToNextFrame()
     hideAndShowPointCloud(current_frame, next_frame);
 
     return;
+}
+
+int PointsFileSystem::getCurrentFrame( void )
+{
+	int current_frame = getDisplayFirstFrame()->getFrame(); 
+	return current_frame;
 }

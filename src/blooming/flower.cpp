@@ -441,6 +441,16 @@ void FlowersViewer::getFlower()
     getFlower(start_frame_);
 }
 
+
+
+
+void FlowersViewer::first()
+{
+	current_frame_ = start_frame_;
+	getFlower( current_frame_ );
+}
+
+
 void FlowersViewer::next()
 {
     current_frame_ = current_frame_ + 1;

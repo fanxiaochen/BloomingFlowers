@@ -27,6 +27,7 @@ public:
 
     void getFrameRange(int &start, int &end);
     int getStartFrame(void) const {return start_frame_;}
+	int getCurrentFrame(void); 
     int getEndFrame(void) const {return end_frame_;}
 
     std::string getPointsFolder(int frame);
@@ -54,6 +55,8 @@ public:
 
     PointCloud* getDisplayFirstFrame(void);
 
+	
+	void navigateToFirstFrame();
     void navigateToPreviousFrame();
     void navigateToNextFrame();
 
