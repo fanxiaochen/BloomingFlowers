@@ -91,6 +91,7 @@
     </property>
     <addaction name="actionTransfer"/>
     <addaction name="actionMultiLayer"/>
+    <addaction name="actionInterpolation"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTracking"/>
@@ -287,6 +288,11 @@
   <action name="actionSnapshotAllFrames">
    <property name="text">
     <string>Snapshot All Frames</string>
+   </property>
+  </action>
+  <action name="actionInterpolation">
+   <property name="text">
+    <string>Interpolation</string>
    </property>
   </action>
  </widget>

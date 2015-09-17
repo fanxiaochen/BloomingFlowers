@@ -236,6 +236,7 @@ void MainWindow::init(void)
 
     connect(ui_.actionTransfer, SIGNAL(triggered()), this, SLOT(transfer()));
     connect(ui_.actionMultiLayer, SIGNAL(triggered()), this, SLOT(multi_layer()));
+    connect(ui_.actionInterpolation, SIGNAL(triggered()), this, SLOT(interpolation()));
     // connect
 
 
@@ -519,7 +520,7 @@ bool MainWindow::camera_views()
 bool MainWindow::transfer()
 {
     QString directory = QFileDialog::getExistingDirectory(this, tr("Transfer"), "transfer_flowers", QFileDialog::ShowDirsOnly);
-    std::string transfer_folder = "D:/baidu disk/WorkSpace/Projects/BloomingFlower/BloomingFlowers/data/applications/transfers";
+    std::string transfer_folder = "D:/baidu disk/WorkSpace/Projects/BloomingFlower/BloomingFlowers/data/applications/transfers2";
     std::string transform_folder = transfer_folder + "/petal sequences";
 
     Transfer t(transform_folder);
@@ -534,7 +535,7 @@ bool MainWindow::transfer()
     std::string template_frame = transfer_folder + "/key frame";
     int key_frame = 30;
     int start_frame = 0;
-    int end_frame = 113;
+    int end_frame = 73;
 
     t.loadFlower(template_frame, key_frame, order);
 
@@ -548,6 +549,17 @@ bool MainWindow::transfer()
 
 bool MainWindow::multi_layer()
 {
+    std::cout << "Dacheng Algorithm!" << std::endl;
+    return true;
+}
+
+bool MainWindow::interpolation()
+{
+    QString new_flower_folder = QFileDialog::getExistingDirectory(this, tr("flowers folder"), "flowers folder", QFileDialog::ShowDirsOnly);
+    TrajectoryModel traj_model;
+    traj_model.interpolate(flowers_viewer_, new_flower_folder.toStdString());
+
+    std::cout << "interpolation finished!" << std::endl;
     return true;
 }
 

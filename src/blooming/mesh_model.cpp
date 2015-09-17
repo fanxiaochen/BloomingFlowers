@@ -1087,6 +1087,8 @@ void MeshModel::determineVisibility(PointCloud* aligned_cloud, int petal_id)
 
 }
 
+
+// now use the whole mesh for interpolation
 void MeshModel::sampleTrajsVertices(int ratio)
 {
     std::vector<int> indices;
@@ -1094,17 +1096,18 @@ void MeshModel::sampleTrajsVertices(int ratio)
     {
         indices.push_back(i);
     }
+    trajs_index_ = indices;
 
-    std::random_shuffle (indices.begin(), indices.end());
+    //std::random_shuffle (indices.begin(), indices.end());
 
-    int total_num = vertices_->size();
-    for (int i = 0, i_end = total_num / ratio; i < i_end; ++ i)
-    {
-        trajs_index_.push_back(indices[i]);
-    }
+    //int total_num = vertices_->size();
+    //for (int i = 0, i_end = total_num / ratio; i < i_end; ++ i)
+    //{
+    //    trajs_index_.push_back(indices[i]);
+    //}
 
-    // only edge itself
-    trajs_index_ = edge_index_;
+    //// only edge itself
+    //trajs_index_ = edge_index_;
 
     /*std::unordered_set<int> tmp_set(edge_index_.begin(),edge_index_.end());
     tmp_set.insert(trajs_index_.begin(), trajs_index_.end());

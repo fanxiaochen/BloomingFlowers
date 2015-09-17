@@ -223,3 +223,63 @@ void TrajectoryModel::showState( bool show_traj )
 	else
 		this->setNodeMask(0x0);
 }
+
+
+void TrajectoryModel::recover(FlowersViewer* flower_viewer)
+{
+    int start_frame = flower_viewer->getStartFrame();
+    int end_frame = flower_viewer->getEndFrame();
+
+    this->init(flower_viewer->flower(start_frame));
+    for (int i = start_frame; i <= end_frame; ++ i)
+    {
+        this->addFlowerPosition(flower_viewer->flower(i));
+    }
+}
+
+void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::string& flower_folder)
+{
+    // recover trajs from flowers viewer
+    recover(flower_viewer);
+
+    // fitting nurbs
+    fittingAll();
+
+    // interpolation
+    osg::ref_ptr<Flower> flower = flower_viewer->flower(flower_viewer->getStartFrame());
+
+    std::vector<double> pos_index;
+    Eigen::VectorXd paras = trajs_set_[0][0].getParas(); // get original pos value in nurbs
+    for (size_t i = 0, i_end = paras.size(); i < i_end-1; ++ i)
+    {
+        pos_index.push_back(paras[i]);
+        pos_index.push_back((paras[i] + paras[i+1])/2);
+    }
+
+    for (size_t t = 0, t_end = pos_index.size(); t < t_end; ++ t)
+    {
+        Petals& petals = flower->getPetals();
+        for (int i = 0, i_end = trajs_set_.size(); i < i_end; ++ i)
+        {
+            Petal& petal = petals[i];
+
+            Trajectories& trajs = trajs_set_[i];
+            for (int j = 0, j_end = trajs.size(); j < j_end; ++ j)
+            {
+                ON_NurbsCurve& fitting_curve = trajs[j].getFittingCurve();
+                ON_3dPoint p = fitting_curve.PointAt(pos_index[t]);
+                osg::Vec3 point;
+                point.x() = p.x;
+                point.y() = p.y;
+                point.z() = p.z;
+
+                petal.getVertices()->at(j) = point;
+            }
+
+            petal.updateNormals();
+        }
+
+        flower->save(flower_folder, t);
+    }
+
+}

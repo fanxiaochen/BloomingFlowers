@@ -83,6 +83,7 @@ private slots:
 
     bool transfer();
     bool multi_layer();
+    bool interpolation();
 
 private:
     void loadSettings();
