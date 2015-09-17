@@ -518,12 +518,30 @@ bool MainWindow::camera_views()
 
 bool MainWindow::transfer()
 {
-    QString directory = QFileDialog::getExistingDirectory(this, tr("Load Points"), "transfer_flowers", QFileDialog::ShowDirsOnly);
-    Transfer t(flowers_viewer_);
-    t.loadFlower("D:\\baidu disk\\WorkSpace\\Projects\\BloomingFlower\\BloomingFlowers\\data\\applications\\transfers\\flowers-best-result\\frame_00029", 29);
+    QString directory = QFileDialog::getExistingDirectory(this, tr("Transfer"), "transfer_flowers", QFileDialog::ShowDirsOnly);
+    std::string transfer_folder = "D:/baidu disk/WorkSpace/Projects/BloomingFlower/BloomingFlowers/data/applications/transfers";
+    std::string transform_folder = transfer_folder + "/petal sequences";
+
+    Transfer t(transform_folder);
+
+    std::vector<int> order;
+    order.push_back(0);
+    order.push_back(1);
+    order.push_back(2);
+    order.push_back(3);
+    order.push_back(4);
+
+    std::string template_frame = transfer_folder + "/key frame";
+    int key_frame = 30;
+    int start_frame = 0;
+    int end_frame = 113;
+
+    t.loadFlower(template_frame, key_frame, order);
+
     t.setFlowerFolder(directory.toStdString());
-   // t.transfer(true);
-    t.transfer(false);
+
+    t.transfer(start_frame, end_frame, true);
+   // t.transfer(false);
     std::cout << "transfer finished!" << std::endl;
     return true;
 }

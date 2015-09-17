@@ -35,26 +35,13 @@ void Flower::reorder()
 
     petal_order_.resize(petals_.size());
 
-    std::string str_order = MainWindow::getInstance()->getParameters()->getPetalOrder();
+
+    // remove these for transfer
+    /* std::string str_order = MainWindow::getInstance()->getParameters()->getPetalOrder();
     assert (str_order.size() == petal_order_.size());
 
     for (size_t i = 0, i_end = str_order.size(); i < i_end; ++ i)
-        petal_order_[i] = str_order[i] - '0';
-
-    //// lily 
-    //petal_order_[0] = 0;
-    //petal_order_[1] = 0;
-    //petal_order_[2] = 0;
-    //petal_order_[3] = 1;
-    //petal_order_[4] = 1;
-    //petal_order_[5] = 1;
-
-    //// orchid
-    //petal_order_[0] = 0;
-    //petal_order_[1] = 0;
-    //petal_order_[2] = 1;
-    //petal_order_[3] = 1;
-    //petal_order_[4] = 1;
+    petal_order_[i] = str_order[i] - '0';*/
 
 }
 

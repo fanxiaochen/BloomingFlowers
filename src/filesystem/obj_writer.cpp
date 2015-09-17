@@ -336,13 +336,23 @@ void ObjWriter::copyPetals(const std::string& flower_folder, int frame, const st
         std::string petal_mtl = petal_obj + ".mtl";
         std::string petal_jpg = petal_obj + ".jpg";
 
+        // for transfer
+        std::string petal_bt = petal_obj + ".bt";
+        std::string petal_ft = petal_obj + ".ft";
+
         std::string new_petal_obj = petal_folder + "/" + QString("%1.obj").arg(frame).toStdString();
         std::string new_petal_mtl = petal_folder + "/" + petals_entries.at(i).toStdString() + ".mtl";
         std::string new_petal_jpg = petal_folder + "/" + petals_entries.at(i).toStdString() + ".jpg";
 
+        std::string new_petal_bt = petal_folder + "/" + QString("%1.bt").arg(frame).toStdString();
+        std::string new_petal_ft = petal_folder + "/" + QString("%1.ft").arg(frame).toStdString();
+
         QFile::copy(QString(petal_obj.c_str()), QString(new_petal_obj.c_str()));
         QFile::copy(QString(petal_mtl.c_str()), QString(new_petal_mtl.c_str()));
         QFile::copy(QString(petal_jpg.c_str()), QString(new_petal_jpg.c_str()));
+
+        QFile::copy(QString(petal_bt.c_str()), QString(new_petal_bt.c_str()));
+        QFile::copy(QString(petal_ft.c_str()), QString(new_petal_ft.c_str()));
     }
 }
 
