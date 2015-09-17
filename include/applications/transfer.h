@@ -19,12 +19,14 @@ public:
     Transfer(const std::string& transform_folder);
     void loadFlower(const std::string& template_flower, int key_frame, std::vector<int>& order);
     Eigen::MatrixXd getTransform(int petal_id, int frame, bool is_forward);
-    void transfer(int start_frame, int end_frame, bool is_forward);
+    void transfer(int start_frame, int end_frame);
 
 protected:
     void update(int frame, bool is_forward);
 
-    void updateWithOrder(int frame, bool is_forward);
+    void updateBackward(int frame);
+    void updateForward(int frame);
+
 
 private:
     FlowersViewer* flower_viewer_;

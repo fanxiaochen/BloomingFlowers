@@ -540,7 +540,7 @@ bool MainWindow::transfer()
 
     t.setFlowerFolder(directory.toStdString());
 
-    t.transfer(start_frame, end_frame, true);
+    t.transfer(start_frame, end_frame);
    // t.transfer(false);
     std::cout << "transfer finished!" << std::endl;
     return true;
