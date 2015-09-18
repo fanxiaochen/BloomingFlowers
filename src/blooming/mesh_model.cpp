@@ -167,8 +167,10 @@ void MeshModel::visualizeMesh(void)
     {
         int color_id[] = {0, 2, 4, 5, 3, 1};
 
-        if (vertices_->size() < 100000)
+        if (vertices_->size() < 100000 && (
+            obj_name_ != "0.obj" && obj_name_ != "1.obj" && obj_name_ != "2.obj" && obj_name_ != "3.obj" && obj_name_ != "4.obj" && obj_name_ != "5.obj"))
         {
+
             osg::StateSet* stateset = geode->getOrCreateStateSet();
             osg::ref_ptr<osg::Material> mat = new osg::Material;
             mat->setDiffuse( osg::Material::FRONT_AND_BACK,
@@ -184,14 +186,21 @@ void MeshModel::visualizeMesh(void)
         // for showing visual hull
         else 
         {
+            if (obj_name_ == "0.obj") color_id_ = 0;
+            if (obj_name_ == "1.obj") color_id_ = 1;
+            if (obj_name_ == "2.obj") color_id_ = 2;
+            if (obj_name_ == "3.obj") color_id_ = 3;
+            if (obj_name_ == "4.obj") color_id_ = 4;
+            if (obj_name_ == "5.obj") color_id_ = 5;
+
             osg::StateSet* stateset = geode->getOrCreateStateSet();
             osg::ref_ptr<osg::Material> mat = new osg::Material; 
 
             mat->setDiffuse( osg::Material::FRONT_AND_BACK,
-                ColorMap::getInstance().getDiscreteColor(0) );
+                ColorMap::getInstance().getDiscreteColor(color_id[color_id_]) );
             mat->setSpecular( osg::Material::FRONT_AND_BACK,
-                ColorMap::getInstance().getDiscreteColor(0) );
-            mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(0));
+                ColorMap::getInstance().getDiscreteColor(color_id[color_id_]) );
+            mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(color_id[color_id_]));
            /* mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );*/
             // Set alpha to 0.5
             mat->setAlpha(osg::Material::FRONT_AND_BACK, 0.5); 
@@ -315,30 +324,30 @@ void MeshModel::visualizeMesh(void)
         content_root_->addChild(hc_geo);
     }
 
-    if (show_boundary_ && !detected_boundary_.empty())
-    {
-        osg::ref_ptr<osg::Geode> bd_geo(new osg::Geode);
-        osg::ref_ptr<osg::Geometry> bd_geometry = new osg::Geometry;
-        osg::ref_ptr<osg::Vec3Array> bd_vetices = new osg::Vec3Array;
-        osg::ref_ptr<osg::Vec4Array> bd_colors = new osg::Vec4Array;
-        bd_colors->push_back(osg::Vec4(21.0 / 255, 210.0 / 255, 235.0 / 255, 1));
+    //if (show_boundary_ && !detected_boundary_.empty())
+    //{
+    //    osg::ref_ptr<osg::Geode> bd_geo(new osg::Geode);
+    //    osg::ref_ptr<osg::Geometry> bd_geometry = new osg::Geometry;
+    //    osg::ref_ptr<osg::Vec3Array> bd_vetices = new osg::Vec3Array;
+    //    osg::ref_ptr<osg::Vec4Array> bd_colors = new osg::Vec4Array;
+    //    bd_colors->push_back(osg::Vec4(21.0 / 255, 210.0 / 255, 235.0 / 255, 1));
 
-        for (size_t i = 0, i_end = detected_boundary_.size(); i < i_end; ++ i)
-        {
-            bd_vetices->push_back(vertices_->at(detected_boundary_[i]));
-        }
+    //    for (size_t i = 0, i_end = detected_boundary_.size(); i < i_end; ++ i)
+    //    {
+    //        bd_vetices->push_back(vertices_->at(detected_boundary_[i]));
+    //    }
 
-        bd_geometry->setUseDisplayList(true);
+    //    bd_geometry->setUseDisplayList(true);
 
-        bd_geometry->setVertexArray(bd_vetices);
-        bd_geometry->setColorArray(bd_colors);
-        bd_colors->setBinding(osg::Array::BIND_OVERALL);
-        bd_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bd_vetices->size()));
-        bd_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(12.0f));
-        bd_geo->getOrCreateStateSet()->setMode(GL_LIGHTING,osg::StateAttribute::OFF); // close light for boundary points
-        bd_geo->addDrawable(bd_geometry);
-        content_root_->addChild(bd_geo);
-    }
+    //    bd_geometry->setVertexArray(bd_vetices);
+    //    bd_geometry->setColorArray(bd_colors);
+    //    bd_colors->setBinding(osg::Array::BIND_OVERALL);
+    //    bd_geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, bd_vetices->size()));
+    //    bd_geometry->getOrCreateStateSet()->setAttribute(new osg::Point(12.0f));
+    //    bd_geo->getOrCreateStateSet()->setMode(GL_LIGHTING,osg::StateAttribute::OFF); // close light for boundary points
+    //    bd_geo->addDrawable(bd_geometry);
+    //    content_root_->addChild(bd_geo);
+    //}
 
 	if( show_collision_ && !intersected_vertices_.empty())
 	{

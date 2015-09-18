@@ -336,7 +336,11 @@ void LATrackThread::run()
     flower->save(flowers_folder, key_frame);
     flower->hide();
 
-
+    for (int i = 0; i < flower->getPetals().size(); ++ i)
+    {
+        flower->getPetals()[i].getObjName() = QString("%1.obj").arg(i).toStdString();
+;
+    }
     //Flower* forward_flower = new Flower(*flower);
     //osg::ref_ptr<PointCloud> forward_cloud;
 

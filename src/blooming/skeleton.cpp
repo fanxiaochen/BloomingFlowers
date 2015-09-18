@@ -173,7 +173,7 @@ bool Skeleton::isEmpty()
 
 void Skeleton::updateImpl()
 {
-    visualizeSkeleton();
+  //  visualizeSkeleton();
     return;
 }
 
