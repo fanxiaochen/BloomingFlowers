@@ -36,12 +36,13 @@ void Flower::reorder()
     petal_order_.resize(petals_.size());
 
 
-    // remove these for transfer
-    /* std::string str_order = MainWindow::getInstance()->getParameters()->getPetalOrder();
+    std::string str_order = MainWindow::getInstance()->getParameters()->getPetalOrder();
+    if (str_order.empty()) return;
+
     assert (str_order.size() == petal_order_.size());
 
     for (size_t i = 0, i_end = str_order.size(); i < i_end; ++ i)
-    petal_order_[i] = str_order[i] - '0';*/
+        petal_order_[i] = str_order[i] - '0';
 
 }
 

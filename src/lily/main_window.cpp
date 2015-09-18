@@ -620,7 +620,7 @@ bool MainWindow::trajectories_generation()
     trajectory_model_ = new TrajectoryModel;
     trajectory_model_->show();
     trajectory_model_->recoverFromFlowerViewer(flowers_viewer_);
-    //trajectory_model_->fittingAll();
+    trajectory_model_->fittingAll();
     trajectory_model_->update();
 
     return true;

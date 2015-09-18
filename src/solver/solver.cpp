@@ -75,7 +75,8 @@ void Solver::init()
     flower_->setPetalRelation(MainWindow::getInstance()->getParameters()->getPetalRelation());
 
     closure_cloud_ = point_cloud_->getClosureCloud();
-    closure_cloud_->buildSelfKdtree();
+    if (closure_cloud_ != nullptr)
+        closure_cloud_->buildSelfKdtree();
 }
 
 void Solver::boundary_inner_setting()

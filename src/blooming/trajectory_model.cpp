@@ -48,7 +48,7 @@ void TrajectoryModel::visualizeTrajectory()
 			continue;
 
         Trajectories& trajs = trajs_set_[i];
-        for (int j = 0, j_end = trajs.size(); j < j_end; ++ j)
+        for (int j = 0, j_end = 1/*trajs.size()*/; j < j_end; ++ j)
         {
             Trajectory& traj = trajs[j];
 
@@ -249,12 +249,20 @@ void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::strin
     osg::ref_ptr<Flower> flower = flower_viewer->flower(flower_viewer->getStartFrame());
 
     std::vector<double> pos_index;
-    Eigen::VectorXd paras = trajs_set_[0][0].getParas(); // get original pos value in nurbs
-    for (size_t i = 0, i_end = paras.size(); i < i_end-1; ++ i)
+//    Eigen::VectorXd paras = trajs_set_[0][0].getParas(); // get original pos value in nurbs
+
+    pos_index = uniform_sampling(trajs_set_[0][0]);
+
+    /*for (size_t i = 0, i_end = paras.size(); i < i_end-1; ++ i)
     {
-        pos_index.push_back(paras[i]);
-        pos_index.push_back((paras[i] + paras[i+1])/2);
-    }
+    pos_index.push_back(paras[i]);
+    pos_index.push_back((paras[i] + paras[i+1])/2);
+    }*/
+
+    /*for (size_t i = 0, i_end = pos_index.size(); i < i_end; ++ i)
+    {
+    std::cout << pos_index[i] << " ";
+    }*/
 
     for (size_t t = 0, t_end = pos_index.size(); t < t_end; ++ t)
     {
@@ -282,4 +290,52 @@ void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::strin
         flower->save(flower_folder, t);
     }
 
+}
+
+
+std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj)
+{
+    // default parameter domain is [0, 1]
+    int sample_points = 10000;
+    int paras_num = 500;
+
+    std::vector<ON_3dPoint> samples;
+    ON_NurbsCurve& fitting_curve = traj.getFittingCurve();
+    for (int i = 0; i < sample_points; ++ i)
+    {
+        double t = double(i) / (sample_points-1);
+        ON_3dPoint point = fitting_curve.PointAt(t);
+        samples.push_back(point);
+    }
+
+    double curve_length = fitting_curve.ControlPolygonLength();
+    double segment_length = curve_length / paras_num;
+
+    std::vector<double> paras;
+
+    int start_point = 0;
+    paras.push_back(0);
+
+    while (start_point < sample_points)
+    {
+        for (int i = start_point; i < sample_points-1; ++ i)
+        {
+            double dist1 = (samples[start_point] - samples[i]).Length();
+            double dist2 = (samples[start_point] - samples[i+1]).Length();
+            if (dist1 < segment_length && dist2 > segment_length)
+            {
+                paras.push_back(double(i)/(sample_points-1));
+                start_point = i;
+                break;
+            }
+        }
+
+        start_point ++;
+    }
+
+    paras.push_back(1);
+
+    //std::cout << paras.size() << std::endl;
+
+    return paras;
 }

@@ -137,6 +137,7 @@ public:
 
     void recover(FlowersViewer* flower_viewer);
     void interpolate(FlowersViewer* flower_viewer, const std::string& flower_folder);
+    std::vector<double> uniform_sampling(Trajectory& traj);
 
     inline std::vector<Trajectories>& getTrajsSet() { return trajs_set_; }
 

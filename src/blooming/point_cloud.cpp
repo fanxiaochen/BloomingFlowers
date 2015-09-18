@@ -53,7 +53,10 @@ void PointCloud::setClosureCloud(const std::string& closure_cloud)
 {
     // read obj file to closure_cloud_
     MeshModel mm;
-    mm.load(closure_cloud);
+    bool flag = mm.load(closure_cloud);
+
+    if (flag == false)
+        return;
 
     // convert mesh model to point cloud
     closure_cloud_ = new PointCloud;
@@ -137,10 +140,12 @@ void PointCloud::visualizePoints()
                 }
                 else 
                 {
+                    int color_id[] = {0, 2, 4, 5, 3, 1};
+
                     const Point& point = at(i);
                     vertices->push_back(osg::Vec3(point.x, point.y, point.z));
                     normals->push_back(osg::Vec3(point.normal_x, point.normal_y, point.normal_z));
-                    colors->push_back(ColorMap::getInstance().getDiscreteColor(segment_flags_[i]));
+                    colors->push_back(ColorMap::getInstance().getDiscreteColor(color_id[segment_flags_[i]]));
                 }
             }
         }
@@ -668,6 +673,7 @@ bool PointCloud::flower_segmentation(Flower* flower)
 
 void PointCloud::indicateSegmentFlags(Flower* flower)
 {
+
     segment_flags_ = std::vector<int>(this->size(), -1);
 
     PetalOrder& petal_order = flower->getPetalOrder();

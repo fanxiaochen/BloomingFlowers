@@ -165,16 +165,17 @@ void MeshModel::visualizeMesh(void)
     }
     else
     {
+        int color_id[] = {0, 2, 4, 5, 3, 1};
 
         if (vertices_->size() < 100000)
         {
             osg::StateSet* stateset = geode->getOrCreateStateSet();
             osg::ref_ptr<osg::Material> mat = new osg::Material;
             mat->setDiffuse( osg::Material::FRONT_AND_BACK,
-                ColorMap::getInstance().getDiscreteColor(color_id_) );
+                ColorMap::getInstance().getDiscreteColor(color_id[color_id_]) );
             mat->setSpecular( osg::Material::FRONT_AND_BACK,
-                ColorMap::getInstance().getDiscreteColor(color_id_) );
-            mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(color_id_));
+                ColorMap::getInstance().getDiscreteColor(color_id[color_id_]) );
+            mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(color_id[color_id_]));
 
             mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );
             stateset->setAttribute( mat.get());
