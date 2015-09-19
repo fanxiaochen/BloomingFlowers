@@ -50,7 +50,7 @@ typedef struct
     void curve_fitting()
     {
         int dims = 3;         // dimension of points & B-spline curve
-        int cps = 10;         // number of control points
+        int cps = 4;         // number of control points
         int order = 4;        // polynomial order of B-spline curve
         bool clamp = false;   // clamp curve at ends, or leave them open
 

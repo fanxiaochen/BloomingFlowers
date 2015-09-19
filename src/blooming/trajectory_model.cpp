@@ -163,11 +163,13 @@ void TrajectoryModel::addFlowerPosition(Flower* flower)
     Petals& petals = flower->getPetals();
     for (int i = 0, i_end = petals.size(); i < i_end; ++ i)
     {
+        if (i != 0) break;
         Trajectories& trajs = trajs_set_[i];
         std::vector<int>& trajs_indice = trajs_indices_[i];
         osg::ref_ptr<osg::Vec3Array> vertices = petals[i].getVertices();
         for (int j = 0, j_end = trajs_indice.size(); j < j_end; ++ j)
         {
+            if (j != 0) break;
             Trajectory& traj = trajs[j];
             osg::Vec3& vertice = vertices->at(trajs_indice[j]);
             Point traj_point;
@@ -233,6 +235,7 @@ void TrajectoryModel::recover(FlowersViewer* flower_viewer)
     this->init(flower_viewer->flower(start_frame));
     for (int i = start_frame; i <= end_frame; ++ i)
     {
+        std::cout << "frame " << i << std::endl;
         this->addFlowerPosition(flower_viewer->flower(i));
     }
 }
@@ -243,7 +246,8 @@ void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::strin
     recover(flower_viewer);
 
     // fitting nurbs
-    fittingAll();
+    //fittingAll();
+    trajs_set_[0][0].curve_fitting();
 
     // interpolation
     osg::ref_ptr<Flower> flower = flower_viewer->flower(flower_viewer->getStartFrame());
@@ -297,10 +301,11 @@ std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj)
 {
     // default parameter domain is [0, 1]
     int sample_points = 10000;
-    int paras_num = 500;
+    int paras_num = 200;
 
     std::vector<ON_3dPoint> samples;
     ON_NurbsCurve& fitting_curve = traj.getFittingCurve();
+
     for (int i = 0; i < sample_points; ++ i)
     {
         double t = double(i) / (sample_points-1);
@@ -311,6 +316,9 @@ std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj)
     double curve_length = fitting_curve.ControlPolygonLength();
     double segment_length = curve_length / paras_num;
 
+    /*std::cout << "curve length " << curve_length << std::endl;
+    std::cout << "segment length " << segment_length << std::endl;*/
+
     std::vector<double> paras;
 
     int start_point = 0;
@@ -318,24 +326,29 @@ std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj)
 
     while (start_point < sample_points)
     {
-        for (int i = start_point; i < sample_points-1; ++ i)
+        double dist = 0;
+        for (int i = start_point+1; i < sample_points; ++ i)
         {
-            double dist1 = (samples[start_point] - samples[i]).Length();
-            double dist2 = (samples[start_point] - samples[i+1]).Length();
-            if (dist1 < segment_length && dist2 > segment_length)
+            dist += (samples[i] - samples[i-1]).Length();
+            if (dist >= segment_length)
             {
+                std::cout << start_point << std::endl;
                 paras.push_back(double(i)/(sample_points-1));
                 start_point = i;
                 break;
             }
-        }
 
-        start_point ++;
+            if (i == sample_points - 1)
+            {
+                start_point = i + 1;
+                break;
+            }
+        }
     }
 
     paras.push_back(1);
 
-    //std::cout << paras.size() << std::endl;
+    std::cout << paras.size() << std::endl;
 
     return paras;
 }
