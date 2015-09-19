@@ -246,12 +246,15 @@ void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::strin
     fittingAll();
 
     // interpolation
-    osg::ref_ptr<Flower> flower = flower_viewer->flower(flower_viewer->getStartFrame());
+    int start_frame = flower_viewer->getStartFrame();
+    int interpolate_frame = start_frame + 8;
+
+    osg::ref_ptr<Flower> flower = flower_viewer->flower(start_frame);
 
     std::vector<double> pos_index;
 //    Eigen::VectorXd paras = trajs_set_[0][0].getParas(); // get original pos value in nurbs
 
-    pos_index = uniform_sampling(trajs_set_[0][0]);
+    pos_index = uniform_sampling(trajs_set_[0][0], interpolate_frame-start_frame);
 
     /*for (size_t i = 0, i_end = paras.size(); i < i_end-1; ++ i)
     {
@@ -264,8 +267,14 @@ void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::strin
     std::cout << pos_index[i] << " ";
     }*/
 
+    // Don't interpolate before start frame
+    for (size_t i = start_frame; i < interpolate_frame; ++ i)
+    {
+        osg::ref_ptr<Flower> f = flower_viewer->flower(i);
+        f->save(flower_folder, i);
+    }
 
-
+    // interpolate after start frame
     for (size_t t = 0, t_end = pos_index.size(); t < t_end; ++ t)
     {
         Petals& petals = flower->getPetals();
@@ -289,7 +298,7 @@ void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::strin
             petal.updateNormals();
         }
 
-        flower->save(flower_folder, t);
+        flower->save(flower_folder, interpolate_frame + t);
     }
 
 }
@@ -329,8 +338,6 @@ std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj, int star
 
     std::vector<double> paras;
 
-    paras.push_back(0);
-
     double length = 0;
     int segment_count = 1;
     int i = 1;
@@ -339,8 +346,9 @@ std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj, int star
         length += (samples[i] - samples[i-1]).Length();
         if (length >= segment_length*segment_count)
         {
-            /*std::cout << "length " << length << std::endl;*/
-            paras.push_back(double(i-1)/(sample_points-1));
+            double current_t = double(i-1)/(sample_points-1);
+            if (start_t <= current_t)
+                paras.push_back(current_t);
             segment_count ++;
         }
         i ++;
