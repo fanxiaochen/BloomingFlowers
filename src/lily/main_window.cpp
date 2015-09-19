@@ -549,6 +549,26 @@ bool MainWindow::transfer()
 
 bool MainWindow::multi_layer()
 {
+    QString new_flower_folder = QFileDialog::getExistingDirectory(this, tr("flowers folder"), "flowers folder", QFileDialog::ShowDirsOnly);
+    int time_interval = 3;
+
+    int start_frame = flowers_viewer_->getStartFrame();
+    int end_frame = flowers_viewer_->getEndFrame();
+
+    for (size_t i = start_frame; i <= end_frame; ++ i)
+    {
+       if ((i - start_frame) < time_interval)
+       {
+           osg::ref_ptr<Flower> flower = flowers_viewer_->flower(start_frame);
+           flower->save(new_flower_folder.toStdString(), i);
+       }
+       else 
+       {
+           osg::ref_ptr<Flower> flower = flowers_viewer_->flower(i-time_interval+1);
+           flower->save(new_flower_folder.toStdString(), i);
+       }
+    }
+
     std::cout << "Dacheng Algorithm!" << std::endl;
     return true;
 }
