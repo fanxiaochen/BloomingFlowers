@@ -163,13 +163,11 @@ void TrajectoryModel::addFlowerPosition(Flower* flower)
     Petals& petals = flower->getPetals();
     for (int i = 0, i_end = petals.size(); i < i_end; ++ i)
     {
-        if (i != 0) break;
         Trajectories& trajs = trajs_set_[i];
         std::vector<int>& trajs_indice = trajs_indices_[i];
         osg::ref_ptr<osg::Vec3Array> vertices = petals[i].getVertices();
         for (int j = 0, j_end = trajs_indice.size(); j < j_end; ++ j)
         {
-            if (j != 0) break;
             Trajectory& traj = trajs[j];
             osg::Vec3& vertice = vertices->at(trajs_indice[j]);
             Point traj_point;
@@ -235,7 +233,6 @@ void TrajectoryModel::recover(FlowersViewer* flower_viewer)
     this->init(flower_viewer->flower(start_frame));
     for (int i = start_frame; i <= end_frame; ++ i)
     {
-        std::cout << "frame " << i << std::endl;
         this->addFlowerPosition(flower_viewer->flower(i));
     }
 }
@@ -246,8 +243,7 @@ void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::strin
     recover(flower_viewer);
 
     // fitting nurbs
-    //fittingAll();
-    trajs_set_[0][0].curve_fitting();
+    fittingAll();
 
     // interpolation
     osg::ref_ptr<Flower> flower = flower_viewer->flower(flower_viewer->getStartFrame());
@@ -267,6 +263,8 @@ void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::strin
     {
     std::cout << pos_index[i] << " ";
     }*/
+
+
 
     for (size_t t = 0, t_end = pos_index.size(); t < t_end; ++ t)
     {
@@ -297,14 +295,18 @@ void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::strin
 }
 
 
-std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj)
+std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj, int start_frame)
 {
     // default parameter domain is [0, 1]
+
     int sample_points = 10000;
-    int paras_num = 200;
+    int paras_num = 150;
 
     std::vector<ON_3dPoint> samples;
     ON_NurbsCurve& fitting_curve = traj.getFittingCurve();
+    Eigen::VectorXd& ts = traj.getParas();
+
+    double start_t = ts[start_frame];
 
     for (int i = 0; i < sample_points; ++ i)
     {
@@ -313,7 +315,13 @@ std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj)
         samples.push_back(point);
     }
 
-    double curve_length = fitting_curve.ControlPolygonLength();
+    double curve_length = 0;
+
+    for (int i = 1; i < sample_points; ++ i)
+    {
+        curve_length += (samples[i] - samples[i-1]).Length();
+    }
+    
     double segment_length = curve_length / paras_num;
 
     /*std::cout << "curve length " << curve_length << std::endl;
@@ -321,34 +329,24 @@ std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj)
 
     std::vector<double> paras;
 
-    int start_point = 0;
     paras.push_back(0);
 
-    while (start_point < sample_points)
+    double length = 0;
+    int segment_count = 1;
+    int i = 1;
+    while (i < sample_points)
     {
-        double dist = 0;
-        for (int i = start_point+1; i < sample_points; ++ i)
+        length += (samples[i] - samples[i-1]).Length();
+        if (length >= segment_length*segment_count)
         {
-            dist += (samples[i] - samples[i-1]).Length();
-            if (dist >= segment_length)
-            {
-                std::cout << start_point << std::endl;
-                paras.push_back(double(i)/(sample_points-1));
-                start_point = i;
-                break;
-            }
-
-            if (i == sample_points - 1)
-            {
-                start_point = i + 1;
-                break;
-            }
+            /*std::cout << "length " << length << std::endl;*/
+            paras.push_back(double(i-1)/(sample_points-1));
+            segment_count ++;
         }
+        i ++;
     }
 
     paras.push_back(1);
-
-    std::cout << paras.size() << std::endl;
 
     return paras;
 }
