@@ -84,6 +84,7 @@
     <addaction name="separator"/>
     <addaction name="actionCameraViews"/>
     <addaction name="separator"/>
+    <addaction name="actionSequenceSmoothing"/>
    </widget>
    <widget class="QMenu" name="menuApplications">
     <property name="title">
@@ -293,6 +294,11 @@
   <action name="actionInterpolation">
    <property name="text">
     <string>Interpolation</string>
+   </property>
+  </action>
+  <action name="actionSequenceSmoothing">
+   <property name="text">
+    <string>Sequence Smoothing</string>
    </property>
   </action>
  </widget>

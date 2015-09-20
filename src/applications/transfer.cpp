@@ -339,7 +339,7 @@ void Transfer::updateBackward(int frame)
         {
             auto& joint = joints[i];
             Eigen::MatrixXd t = T.block<4,4>(i*4,0);
-            Eigen::Vector4d np = t * Eigen::Vector4d(joint.x, joint.y, joint.z, 1);
+            Eigen::Vector4d np = t.inverse() * Eigen::Vector4d(joint.x, joint.y, joint.z, 1);
             joint.x = np(0);
             joint.y = np(1);
             joint.z = np(2);

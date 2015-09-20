@@ -215,7 +215,7 @@ void MainWindow::init(void)
     connect(ui_.actionLoadFlowers, SIGNAL(triggered()), this, SLOT(slotLoadFlowers()));
 	connect(ui_.actionLoadCamera, SIGNAL( triggered () ),this, SLOT( loadCamera()) );
 	connect(ui_.actionSaveCamera, SIGNAL( triggered () ),this, SLOT( saveCamera()) );
-
+    connect(ui_.actionSnapshotAllFrames, SIGNAL(triggered()), this, SLOT(slotSnapshotAllFrames()));
 
     connect(ui_.actionEMARAP, SIGNAL(triggered()), tracking_system_, SLOT(em_arap()));
     connect(ui_.actionWEMARAP, SIGNAL(triggered()), tracking_system_, SLOT(wem_arap()));
@@ -232,7 +232,7 @@ void MainWindow::init(void)
     connect(ui_.actionPetalSequences, SIGNAL(triggered()), this, SLOT(petal_sequences()));
 	connect(ui_.actionSavePlys, SIGNAL(triggered()), this, SLOT(save_plys()));
     connect(ui_.actionCameraViews, SIGNAL(triggered()), this, SLOT(camera_views()));
-	connect(ui_.actionSnapshotAllFrames, SIGNAL(triggered()), this, SLOT(slotSnapshotAllFrames()));
+	connect(ui_.actionSequenceSmoothing, SIGNAL(triggered()), this, SLOT(sequence_smoothing()));
 
     connect(ui_.actionTransfer, SIGNAL(triggered()), this, SLOT(transfer()));
     connect(ui_.actionMultiLayer, SIGNAL(triggered()), this, SLOT(multi_layer()));
@@ -421,6 +421,50 @@ bool MainWindow::petal_sequences()
     return true;
 }
 
+// overwrite basic flower sequence
+bool MainWindow::sequence_smoothing()
+{
+    int start_frame = flowers_viewer_->getStartFrame();
+    int end_frame = flowers_viewer_->getEndFrame();
+
+    std::string flower_folder = flowers_viewer_->getFlowerFolder();
+
+    float sigma = 0.5;
+
+    for (int i = start_frame; i <= end_frame; ++ i)
+    {
+        osg::ref_ptr<Flower> f_i = flowers_viewer_->flower(i);
+        if (i == start_frame || i == end_frame)
+            continue;
+        else
+        {
+            osg::ref_ptr<Flower> _f_i = flowers_viewer_->flower(i-1);
+            osg::ref_ptr<Flower> f_i_ = flowers_viewer_->flower(i+1);
+
+            for (int j = 0, j_end = f_i->getPetals().size(); j < j_end; ++ j)
+            {
+                Petal& p_i_j = f_i->getPetals()[j];
+                Petal& _p_i_j = _f_i->getPetals()[j];
+                Petal& p_i_j_ = f_i_->getPetals()[j];
+
+                for (int k = 0, k_end = p_i_j.getVertices()->size(); k < k_end; ++ k)
+                {
+                    osg::Vec3& p_i_j_k = p_i_j.getVertices()->at(k);
+                    osg::Vec3& _p_i_j_k = _p_i_j.getVertices()->at(k);
+                    osg::Vec3& p_i_j_k_ = p_i_j_.getVertices()->at(k);
+
+                    p_i_j_k += (_p_i_j_k-p_i_j_k*2+p_i_j_k_)/4.0 * exp(-((p_i_j_k-_p_i_j_k).length2() + (p_i_j_k-p_i_j_k_).length2()) / (sigma*sigma));
+                }
+            }
+         }
+        f_i->save(flower_folder, i);
+    }
+
+    std::cout << "sequence smoothing finished!" << std::endl;
+
+    return true;
+}
+
 
 bool MainWindow::save_plys()
 {
@@ -520,7 +564,7 @@ bool MainWindow::camera_views()
 bool MainWindow::transfer()
 {
     QString directory = QFileDialog::getExistingDirectory(this, tr("Transfer"), "transfer_flowers", QFileDialog::ShowDirsOnly);
-    std::string transfer_folder = "D:/baidu disk/WorkSpace/Projects/BloomingFlower/BloomingFlowers/data/applications/transfers2";
+    std::string transfer_folder = "D:/baidu disk/WorkSpace/Projects/BloomingFlower/BloomingFlowers/data/applications/transfers-orchid";
     std::string transform_folder = transfer_folder + "/petal sequences";
 
     Transfer t(transform_folder);
@@ -532,10 +576,10 @@ bool MainWindow::transfer()
     order.push_back(3);
     order.push_back(4);
 
-    std::string template_frame = transfer_folder + "/key frame";
+    std::string template_frame = transfer_folder + "/key frame - flower";
     int key_frame = 30;
     int start_frame = 0;
-    int end_frame = 73;
+    int end_frame = 113;
 
     t.loadFlower(template_frame, key_frame, order);
 
@@ -550,7 +594,7 @@ bool MainWindow::transfer()
 bool MainWindow::multi_layer()
 {
     QString new_flower_folder = QFileDialog::getExistingDirectory(this, tr("flowers folder"), "flowers folder", QFileDialog::ShowDirsOnly);
-    int time_interval = 3;
+    int time_interval = 10;
 
     int start_frame = flowers_viewer_->getStartFrame();
     int end_frame = flowers_viewer_->getEndFrame();

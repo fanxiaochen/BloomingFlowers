@@ -80,6 +80,7 @@ private slots:
     bool petal_sequences();
 	bool save_plys();
     bool camera_views();
+    bool sequence_smoothing();
 
     bool transfer();
     bool multi_layer();
