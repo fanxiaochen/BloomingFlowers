@@ -112,6 +112,8 @@ void PointCloud::visualizePoints()
     osg::ref_ptr<osg::Vec3Array>  normals = new osg::Vec3Array;
     osg::ref_ptr<osg::Vec4Array>  colors = new osg::Vec4Array;
 
+    segmented_ = false;
+
     for (size_t i = 0, i_end = size(); i < i_end; i ++)
     {
         if (show_probs_)
@@ -127,7 +129,8 @@ void PointCloud::visualizePoints()
                 const Point& point = at(i);
                 vertices->push_back(osg::Vec3(point.x, point.y, point.z));
                 normals->push_back(osg::Vec3(point.normal_x, point.normal_y, point.normal_z));
-                colors->push_back(osg::Vec4(point.r / 255.0, point.g / 255.0, point.b / 255.0, 0));
+                /*colors->push_back(osg::Vec4(point.r / 255.0, point.g / 255.0, point.b / 255.0, 0));*/
+                colors->push_back(osg::Vec4(0.6, 0.6, 0.6, 0));
             }
             else
             {
@@ -158,7 +161,7 @@ void PointCloud::visualizePoints()
    // geometry->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
     geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
     geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, size()));
-    geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
+    geometry->getOrCreateStateSet()->setAttribute(new osg::Point(4.5f));
 
     osg::Geode* geode = new osg::Geode;
     geode->getOrCreateStateSet()->setMode(GL_LIGHTING,osg::StateAttribute::OFF); // close light for point cloud
@@ -469,7 +472,7 @@ void PointCloud::fitting_region(Flower* flower, TrajectoryModel* traj_model)
     // second mode
     std::cout << "trajectory guided mode" << std::endl;
     Solver::has_point_cloud_ = false; // global switch for solver
-    MainWindow::getInstance()->getParameters()->getEps() = 0.05;
+    MainWindow::getInstance()->getParameters()->getEps() = 0.01;
 }
 
 
