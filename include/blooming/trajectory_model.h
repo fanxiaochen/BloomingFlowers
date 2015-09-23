@@ -50,7 +50,7 @@ typedef struct
     void curve_fitting()
     {
         int dims = 3;         // dimension of points & B-spline curve
-        int cps = 4;         // number of control points
+        int cps = 15;         // number of control points
         int order = 4;        // polynomial order of B-spline curve
         bool clamp = false;   // clamp curve at ends, or leave them open
 
@@ -144,6 +144,8 @@ public:
     inline std::vector<int>& getPetalOrder() { return petal_order_; }
 
     void setShowTrajState(bool traj_state);
+
+    std::vector<double> uniform_sampling(Trajectory& traj);
 
 protected:
     virtual void updateImpl(void);

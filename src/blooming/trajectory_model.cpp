@@ -1,5 +1,6 @@
 #include <osg/ShapeDrawable>
 #include <osg/Point>
+#include <osg/LineWidth>
 
 #include "main_window.h"
 #include "flower.h"
@@ -42,36 +43,44 @@ void TrajectoryModel::visualizeTrajectory()
 {
     osg::ref_ptr<osg::Geode> geode(new osg::Geode);
 
+
     for (int i = 0, i_end = trajs_set_.size(); i < i_end ; ++ i)
     {
-		if( i<2 )
-			continue;
-
+        std::vector<double> inter_paras = uniform_sampling(trajs_set_[i][0]);
         Trajectories& trajs = trajs_set_[i];
-        for (int j = 0, j_end = 1/*trajs.size()*/; j < j_end; ++ j)
+        for (int j = 0, j_end = trajs.size(); j < j_end; ++ j)
         {
             Trajectory& traj = trajs[j];
 
-            // for trajectory
-            for (int k = 0, k_end = traj.size()-1; k < k_end; ++ k)
+            //// for trajectory
+            //for (int k = 0, k_end = traj.size()-1; k < k_end; ++ k)
+            //{
+            //    osg::Vec3 start(traj[k].x, traj[k].y, traj[k].z);
+            //    osg::Vec3 end(traj[k+1].x, traj[k+1].y, traj[k+1].z);
+            //    double height = (start-end).length();
+            //    osg::Vec3 center = (start+end) / 2;
+            //    double radius = 0.4;
+
+            //    osg::Vec3 z_axis(0.0, 0.0, 1.0);
+            //    osg::Quat rotation;
+            //    rotation.makeRotate(z_axis, end-start);
+
+            //    //	Create a cylinder between the two points with the given radius
+            //    osg::Cylinder* cylinder = new osg::Cylinder(center,radius,height);
+            //    cylinder->setRotation(rotation);
+            //    osg::ShapeDrawable* drawable = new osg::ShapeDrawable(cylinder);
+            //    drawable->setColor(ColorMap::getInstance().getDiscreteColor(i));
+            //    geode->addDrawable(drawable);
+            //}
+
+            /*osg::ref_ptr<osg::Vec3Array>  vertices = new osg::Vec3Array;
+            osg::ref_ptr<osg::Vec4Array>  colors = new osg::Vec4Array;
+            for (int k = 0, k_end = traj.size(); k < k_end; ++ k)
             {
-                osg::Vec3 start(traj[k].x, traj[k].y, traj[k].z);
-                osg::Vec3 end(traj[k+1].x, traj[k+1].y, traj[k+1].z);
-                double height = (start-end).length();
-                osg::Vec3 center = (start+end) / 2;
-                double radius = 0.4;
-
-                osg::Vec3 z_axis(0.0, 0.0, 1.0);
-                osg::Quat rotation;
-                rotation.makeRotate(z_axis, end-start);
-
-                //	Create a cylinder between the two points with the given radius
-                osg::Cylinder* cylinder = new osg::Cylinder(center,radius,height);
-                cylinder->setRotation(rotation);
-                osg::ShapeDrawable* drawable = new osg::ShapeDrawable(cylinder);
-                drawable->setColor(ColorMap::getInstance().getDiscreteColor(i));
-                geode->addDrawable(drawable);
-            }
+            Point p = traj[k];
+            vertices->push_back(osg::Vec3(p.x, p.y, p.z));
+            colors->push_back(ColorMap::getInstance().getDiscreteColor(i));
+            }*/
 
             ON_NurbsCurve& fitting_curve = traj.getFittingCurve();
             Eigen::VectorXd& t = traj.getParas();
@@ -79,11 +88,11 @@ void TrajectoryModel::visualizeTrajectory()
             // for fitting curve
             osg::ref_ptr<osg::Vec3Array>  vertices = new osg::Vec3Array;
             osg::ref_ptr<osg::Vec4Array>  colors = new osg::Vec4Array;
-            for (int i = 0, i_end = t.size(); i < i_end; ++ i)
+            for (int k = 0, k_end = t.size(); k < k_end; ++ k)
             {
-                ON_3dPoint p = fitting_curve.PointAt(t(i));
+                ON_3dPoint p = fitting_curve.PointAt(t(k));
                 vertices->push_back(osg::Vec3(p.x, p.y, p.z));
-                colors->push_back(osg::Vec4(1.0, 0.0, 0.0, 1.0));
+                colors->push_back(ColorMap::getInstance().getDiscreteColor(i));
             }
 
             /* for (int i = 0, i_end = 100; i <= i_end; ++ i)
@@ -106,9 +115,26 @@ void TrajectoryModel::visualizeTrajectory()
             geometry->setVertexArray(vertices);
             geometry->setColorArray(colors);
             geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-            geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices->size()));
-            geometry->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f));
+            geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, vertices->size()));
+            osg::LineWidth* linewidth = new osg::LineWidth(); 
+            linewidth->setWidth(10.0f); 
+            geometry->getOrCreateStateSet()->setAttribute(linewidth, osg::StateAttribute::ON);
+            geode->getOrCreateStateSet()->setMode(GL_LIGHTING,osg::StateAttribute::OFF);
             geode->addDrawable(geometry);
+
+
+            
+            // create a sphere for each point
+            for (auto& pa : inter_paras)
+            {
+                ON_3dPoint p = fitting_curve.PointAt(pa);
+                osg::Vec3 point(p.x, p.y, p.z);
+                osg::Sphere* sphere = new osg::Sphere(point, 1.5);
+                osg::ShapeDrawable* drawable = new osg::ShapeDrawable(sphere);
+                drawable->setColor(osg::Vec4(0.0, 0.0, 0.0, 1.0));
+                geode->addDrawable(drawable);
+            }
+
         }
     }
 
@@ -206,7 +232,7 @@ void TrajectoryModel::fittingAll()
 
 void TrajectoryModel::recoverFromFlowerViewer(FlowersViewer* flower_viewer)
 {
-    int start_frame = flower_viewer->getStartFrame();
+    int start_frame = flower_viewer->getStartFrame() + 8;
     int current_frame = flower_viewer->getCurrentFrame();
 
     this->init(flower_viewer->flower(start_frame));
@@ -251,10 +277,22 @@ void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::strin
 
     osg::ref_ptr<Flower> flower = flower_viewer->flower(start_frame);
 
-    std::vector<double> pos_index;
-//    Eigen::VectorXd paras = trajs_set_[0][0].getParas(); // get original pos value in nurbs
+//    std::vector<double> pos_index;
+////    Eigen::VectorXd paras = trajs_set_[0][0].getParas(); // get original pos value in nurbs
+//
+//    pos_index = uniform_sampling(trajs_set_[0][0], interpolate_frame-start_frame);
 
-    pos_index = uniform_sampling(trajs_set_[0][0], interpolate_frame-start_frame);
+    std::vector<std::vector<double>> pos_index;
+    int min_idx = 1000;
+    for (int i = 0; i < trajs_set_.size(); ++ i)
+    {
+        std::vector<double> pidx;
+        Trajectories& trajs = trajs_set_[i];
+        pidx = uniform_sampling(trajs_set_[i][0], interpolate_frame-start_frame);
+        pos_index.push_back(pidx);
+
+        if (pidx.size() < min_idx) min_idx = pidx.size(); 
+    }
 
     /*for (size_t i = 0, i_end = paras.size(); i < i_end-1; ++ i)
     {
@@ -275,7 +313,7 @@ void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::strin
     }
 
     // interpolate after start frame
-    for (size_t t = 0, t_end = pos_index.size(); t < t_end; ++ t)
+    for (size_t t = 0, t_end = min_idx/*pos_index.size()*/; t < t_end; ++ t)
     {
         Petals& petals = flower->getPetals();
         for (int i = 0, i_end = trajs_set_.size(); i < i_end; ++ i)
@@ -286,7 +324,7 @@ void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::strin
             for (int j = 0, j_end = trajs.size(); j < j_end; ++ j)
             {
                 ON_NurbsCurve& fitting_curve = trajs[j].getFittingCurve();
-                ON_3dPoint p = fitting_curve.PointAt(pos_index[t]);
+                ON_3dPoint p = fitting_curve.PointAt(pos_index[i][t]);
                 osg::Vec3 point;
                 point.x() = p.x;
                 point.y() = p.y;
@@ -319,6 +357,61 @@ std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj, int star
 
     for (int i = 0; i < sample_points; ++ i)
     {
+        double t = (double(i) / (sample_points-1)) * (1.0 - start_t);
+        ON_3dPoint point = fitting_curve.PointAt(start_t + t);
+        samples.push_back(point);
+
+    }
+
+    double curve_length = 0;
+
+    for (int i = 1; i < sample_points; ++ i)
+    {
+        curve_length += (samples[i] - samples[i-1]).Length();
+    }
+    
+    double segment_length = curve_length / paras_num;
+
+    /*std::cout << "curve length " << curve_length << std::endl;
+    std::cout << "segment length " << segment_length << std::endl;*/
+
+    std::vector<double> paras;
+
+    double length = 0;
+    int segment_count = 1;
+    int i = 1;
+    while (i < sample_points)
+    {
+        length += (samples[i] - samples[i-1]).Length();
+        if (length >= segment_length*segment_count)
+        {
+            double current_t = double(i-1)/(sample_points-1) * (1.0 - start_t);
+            paras.push_back(start_t + current_t);
+            segment_count ++;
+        }
+        i ++;
+    }
+
+    paras.push_back(1);
+
+    std::cout << paras.size() << std::endl;
+
+    return paras;
+}
+
+std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj)
+{
+    // default parameter domain is [0, 1]
+
+    int sample_points = 10000;
+    int paras_num = 5;
+
+    std::vector<ON_3dPoint> samples;
+    ON_NurbsCurve& fitting_curve = traj.getFittingCurve();
+    Eigen::VectorXd& ts = traj.getParas();
+
+    for (int i = 0; i < sample_points; ++ i)
+    {
         double t = double(i) / (sample_points-1);
         ON_3dPoint point = fitting_curve.PointAt(t);
         samples.push_back(point);
@@ -347,14 +440,16 @@ std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj, int star
         if (length >= segment_length*segment_count)
         {
             double current_t = double(i-1)/(sample_points-1);
-            if (start_t <= current_t)
-                paras.push_back(current_t);
+            paras.push_back(current_t);
             segment_count ++;
         }
         i ++;
     }
 
-    paras.push_back(1);
+    if (paras.size() == 5)
+        paras.pop_back();
+
+    std::cout << paras.size() << std::endl;
 
     return paras;
 }

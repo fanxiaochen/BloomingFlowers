@@ -112,7 +112,6 @@ void PointCloud::visualizePoints()
     osg::ref_ptr<osg::Vec3Array>  normals = new osg::Vec3Array;
     osg::ref_ptr<osg::Vec4Array>  colors = new osg::Vec4Array;
 
-    segmented_ = false;
 
     for (size_t i = 0, i_end = size(); i < i_end; i ++)
     {
