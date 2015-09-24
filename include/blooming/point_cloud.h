@@ -173,6 +173,11 @@ public:
 
   pcl::KdTreeFLANN<pcl::PointXYZ>& getSelfKdtree() { return kdtree_; }
 
+  void savePovrayFiles(const QString& povray_files);
+  void saveLightFile(const QString& light_filename);
+  void saveTextureFile(const QString& texture_filename);
+  void saveCameraFile(const QString& camera_filename);
+  void saveDataFile(const QString& data_filename);
 
 protected:
   virtual void clearData();

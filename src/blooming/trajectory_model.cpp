@@ -23,7 +23,7 @@ void TrajectoryModel::init(Flower* flower)
 
     for (int i = 0; i < petals.size(); i ++)
     {
-        petals[i].sampleTrajsVertices(sample_ratio);
+        tips_.push_back(petals[i].sampleTrajsVertices(sample_ratio));
         int trajs_num = petals[i].getTrajsVertices().size();
         Trajectories& trajs = trajs_set_[i];
         trajs.resize(trajs_num);
@@ -288,7 +288,7 @@ void TrajectoryModel::interpolate(FlowersViewer* flower_viewer, const std::strin
     {
         std::vector<double> pidx;
         Trajectories& trajs = trajs_set_[i];
-        pidx = uniform_sampling(trajs_set_[i][0], interpolate_frame-start_frame);
+        pidx = uniform_sampling(trajs_set_[i][tips_[i]], interpolate_frame-start_frame);
         pos_index.push_back(pidx);
 
         if (pidx.size() < min_idx) min_idx = pidx.size(); 
@@ -346,7 +346,7 @@ std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj, int star
 {
     // default parameter domain is [0, 1]
 
-    int sample_points = 10000;
+    int sample_points = 100000;
     int paras_num = 150;
 
     std::vector<ON_3dPoint> samples;
@@ -403,7 +403,7 @@ std::vector<double> TrajectoryModel::uniform_sampling(Trajectory& traj)
 {
     // default parameter domain is [0, 1]
 
-    int sample_points = 10000;
+    int sample_points = 100000;
     int paras_num = 5;
 
     std::vector<ON_3dPoint> samples;

@@ -47,7 +47,7 @@ OSGViewerWidget::OSGViewerWidget(QWidget * parent, const QGLWidget * shareWidget
     double w = width();
     double h = height();
     getCamera()->setViewport(new osg::Viewport(0, 0, w, h));
-    getCamera()->setProjectionMatrixAsPerspective(60.0f, w/h, 1.0f, 1000.0f);   // change the first parameter to change focus length
+    getCamera()->setProjectionMatrixAsPerspective(50.0f, w/h, 1.0f, 1000.0f);   // change the first parameter to change focus length
     getCamera()->setGraphicsContext(getGraphicsWindow());
     getCamera()->setClearColor(osg::Vec4(1, 1, 1, 1.0));
 

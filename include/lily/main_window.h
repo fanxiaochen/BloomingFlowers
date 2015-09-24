@@ -72,6 +72,7 @@ private slots:
     bool slotLoadFlowers();
     bool slotSendCheckBoxRenderState();
 	bool slotSnapshotAllFrames();
+    bool export_pv_files();
 
     bool region_probability();
 	bool collision_detection();
@@ -81,6 +82,7 @@ private slots:
 	bool save_plys();
     bool camera_views();
     bool sequence_smoothing();
+    bool solve_collision();
 
     bool transfer();
     bool multi_layer();

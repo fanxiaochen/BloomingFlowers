@@ -129,7 +129,7 @@ public:
     bool onDetectedBoundary(int index);
 
     // including edges
-    void sampleTrajsVertices(int ratio);
+    int sampleTrajsVertices(int ratio);
 
 protected:
     virtual void updateImpl(void);

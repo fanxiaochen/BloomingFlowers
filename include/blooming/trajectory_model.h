@@ -160,6 +160,8 @@ private:
 
     std::vector<int>    petal_order_; // based on flower
 
+    std::vector<int>    tips_;
+
 };
 
 #endif

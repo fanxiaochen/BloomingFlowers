@@ -27,6 +27,7 @@
 #include "trajectory_model.h"
 #include "transfer.h"
 #include "screen_capture.h"
+#include "collision_detector.h"
 
 
 MainWindow::MainWindow(void)
@@ -216,6 +217,7 @@ void MainWindow::init(void)
 	connect(ui_.actionLoadCamera, SIGNAL( triggered () ),this, SLOT( loadCamera()) );
 	connect(ui_.actionSaveCamera, SIGNAL( triggered () ),this, SLOT( saveCamera()) );
     connect(ui_.actionSnapshotAllFrames, SIGNAL(triggered()), this, SLOT(slotSnapshotAllFrames()));
+    connect(ui_.actionExportPovRayFiles, SIGNAL(triggered()), this, SLOT(export_pv_files()));
 
     connect(ui_.actionEMARAP, SIGNAL(triggered()), tracking_system_, SLOT(em_arap()));
     connect(ui_.actionWEMARAP, SIGNAL(triggered()), tracking_system_, SLOT(wem_arap()));
@@ -233,6 +235,7 @@ void MainWindow::init(void)
 	connect(ui_.actionSavePlys, SIGNAL(triggered()), this, SLOT(save_plys()));
     connect(ui_.actionCameraViews, SIGNAL(triggered()), this, SLOT(camera_views()));
 	connect(ui_.actionSequenceSmoothing, SIGNAL(triggered()), this, SLOT(sequence_smoothing()));
+	connect(ui_.actionSolveCollision, SIGNAL(triggered()), this, SLOT(solve_collision()));
 
     connect(ui_.actionTransfer, SIGNAL(triggered()), this, SLOT(transfer()));
     connect(ui_.actionMultiLayer, SIGNAL(triggered()), this, SLOT(multi_layer()));
@@ -576,7 +579,7 @@ bool MainWindow::transfer()
     order.push_back(3);
     order.push_back(4);
 
-    std::string template_frame = transfer_folder + "/key frame-2";
+    std::string template_frame = transfer_folder + "/key frame-3";
     int key_frame = 30;
     int start_frame = 0;
     int end_frame = 113;
@@ -889,4 +892,227 @@ bool MainWindow::slotSnapshotAllFrames()
 	camera->setPostDrawCallback( old );	
 	return true;
 
+}
+
+
+bool MainWindow::solve_collision()
+{
+    QString directory = QFileDialog::getExistingDirectory(this, tr("flowers folder"), workspace_.c_str(), QFileDialog::ShowDirsOnly);
+
+
+    std::vector<std::pair<int, int>> col_pairs; // inside, outside
+    /*col_pairs.push_back(std::make_pair<int, int>(3, 1));
+    col_pairs.push_back(std::make_pair<int, int>(1, 2));*/
+    col_pairs.push_back(std::make_pair<int, int>(3, 4));
+    //col_pairs.push_back(std::make_pair<int, int>(1, 5));
+
+    int start_frame = 70;
+    int end_frame = 100;
+
+    for (int i = start_frame; i <= end_frame; ++ i)
+    {
+        osg::ref_ptr<Flower> flower = flowers_viewer_->flower(i);
+
+        for (int j = 0; j < col_pairs.size(); j ++)
+        {
+            int inside_id = col_pairs[j].first;
+            int outside_id = col_pairs[j].second;
+
+            Petal& inside_petal = flower->getPetals()[inside_id];
+            Petal& outside_petal = flower->getPetals()[outside_id];
+
+            // build kdtree
+            pcl::KdTreeFLANN<Point>     kdtree;
+            
+            pcl::PointCloud<Point>::Ptr cloud (new pcl::PointCloud<Point>);
+            
+            for (int t = 0, t_end = outside_petal.getVertices()->size(); t < t_end; ++ t)
+            {
+                const osg::Vec3& point = outside_petal.getVertices()->at(t);
+                const osg::Vec3& normal = outside_petal.getVertexNormals()->at(t);
+                Point pcl_point;
+                pcl_point.x = point.x(); 
+                pcl_point.y = point.y();
+                pcl_point.z = point.z();
+                pcl_point.normal_x = normal.x();
+                pcl_point.normal_y = normal.y();
+                pcl_point.normal_z = normal.z();
+            
+                cloud->push_back(pcl_point);
+            }
+            
+            kdtree.setInputCloud (cloud);
+
+            // for each vertex in inside petal
+            for (int t = 0, t_end = inside_petal.getVertices()->size(); t < t_end; ++ t)
+            {
+                osg::Vec3& point = inside_petal.getVertices()->at(t);
+                Point search_point;
+                search_point.x = point.x(); 
+                search_point.y = point.y();
+                search_point.z = point.z();
+
+                int K = 1;
+
+                std::vector<int> pointIdxNKNSearch(K);
+                std::vector<float> pointNKNSquaredDistance(K);
+                std::vector<int> face_idx;
+
+                if ( kdtree.nearestKSearch (search_point, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+                {
+                    for (int i : pointIdxNKNSearch)
+                    {
+                        for (int j = 0, j_end = outside_petal.getFaces().size(); j < j_end; ++ j)
+                        {
+                            std::vector<int> face = outside_petal.getFaces()[j];
+                            for (int k = 0; k < face.size(); ++ k)
+                            {
+                                if (face[k] == i)
+                                    face_idx.push_back(j);
+                            }
+                        }
+                    }
+
+
+                }
+
+                int min_k = -1;
+                CollidingPoint min_cp;
+                min_cp.dis2_ = 1000;
+                for (int k = 0, k_end = face_idx.size(); k < k_end; ++ k)
+                {
+                    CollidingPoint cp;
+                    cp.p_ = point;
+                    if (outside_petal.computeProjectionInsideTri(face_idx[k], cp))
+                    {
+                        if (cp.dis2_ < min_cp.dis2_)
+                        {
+                            min_k = k;
+                            min_cp = cp;
+                        }
+                    }
+
+                }
+                if (min_k != -1)
+                {
+                    osg::Vec3 normal = (min_cp.closest_p_ - point);
+                    normal.normalize();
+                    point = min_cp.closest_p_ + normal * 0.5;
+                }
+
+            }
+
+//            // build kdtree
+//            pcl::KdTreeFLANN<Point>     kdtree;
+//
+//            pcl::PointCloud<Point>::Ptr cloud (new pcl::PointCloud<Point>);
+//
+//            for (int t = 0, t_end = outside_petal.getVertices()->size(); t < t_end; ++ t)
+//            {
+//                const osg::Vec3& point = outside_petal.getVertices()->at(i);
+//                const osg::Vec3& normal = outside_petal.getVertexNormals()->at(i);
+//                Point pcl_point;
+//                pcl_point.x = point.x(); 
+//                pcl_point.y = point.y();
+//                pcl_point.z = point.z();
+//                pcl_point.normal_x = normal.x();
+//                pcl_point.normal_y = normal.y();
+//                pcl_point.normal_z = normal.z();
+//
+//                cloud->push_back(pcl_point);
+//            }
+//
+//            kdtree.setInputCloud (cloud);
+//
+//
+//            // for each vertex in inside petal
+//            for (int t = 0, t_end = inside_petal.getVertices()->size(); t < t_end; ++ t)
+//            {
+//                osg::Vec3& point = inside_petal.getVertices()->at(t);
+//                Point search_point;
+//                search_point.x = point.x(); 
+//                search_point.y = point.y();
+//                search_point.z = point.z();
+//
+//                int K = 3;
+//
+//                std::vector<int> pointIdxNKNSearch(K);
+//                std::vector<float> pointNKNSquaredDistance(K);
+//
+//                if ( kdtree.nearestKSearch (search_point, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
+//                {
+//                    Point p;
+//                    osg::Vec3 cloud_normal;
+//                    float dist = 0;
+//                    for (int w = 0; w < pointIdxNKNSearch.size(); w ++)
+//                    {
+//                        const Point& point = cloud->at(pointIdxNKNSearch[w]);
+//                        p = p + point;
+//                        cloud_normal += osg::Vec3(point.normal_x, point.normal_y, point.normal_z);
+//                        dist += sqrt(pointNKNSquaredDistance[w]);
+//                    }
+//
+//                    p = p / pointIdxNKNSearch.size();
+//                    cloud_normal = cloud_normal / pointIdxNKNSearch.size();
+//                    dist = dist / pointIdxNKNSearch.size();
+//
+//                    cloud_normal.normalize();
+//
+//                    osg::Vec3 p_normal(p.x - search_point.x, p.y - search_point.y, p.z - search_point.z);
+//                    p_normal.normalize();
+//
+///*                    if (p_normal * cloud_normal < 0)*/
+//                    {
+//                        double min_dist = 1000000;
+//                        osg::Vec3 proj;
+//                        for (int k = 0, k_end = outside_petal.getFaces().size(); k < k_end; ++ k)
+//                        {
+//                            osg::Vec3 cp;
+//                            double dist = outside_petal.disancePoint3Tri3(point, k, cp);
+//                            if (dist < min_dist)
+//                            {
+//                                min_dist = dist;
+//                                proj = cp;
+//                            }
+//                        }
+//
+//                        osg::Vec3 normal = point - proj;
+//                        normal.normalize();
+//                        point = proj - normal * 0;
+//                    }
+//                }
+//            }
+
+            inside_petal.updateNormals();
+        }
+
+        flower->save(directory.toStdString(), i);
+    }
+
+    std::cout << "solve collision!" << std::endl;
+
+    return true;
+}
+
+
+bool MainWindow::export_pv_files()
+{
+    QString directory = QFileDialog::getExistingDirectory(this, tr("Export Pov-Ray Files"), workspace_.c_str(), QFileDialog::ShowDirsOnly);
+
+    PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
+
+    int start_frame = points_file_system->getStartFrame();
+    int end_frame = points_file_system->getEndFrame();
+
+    for (int i = start_frame; i <= end_frame; ++ i)
+    {
+        QDir pv_dir(directory);
+        pv_dir.mkdir(QString("frame_%1").arg(i));
+        QString frame_folder = pv_dir.absolutePath() + QString("/frame_%1").arg(i);
+        points_file_system->getPointCloud(i)->savePovrayFiles(frame_folder);
+    }
+
+    std::cout << "Pov Ray Files Finished " << std::endl;
+
+    return true;
 }

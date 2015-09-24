@@ -4,6 +4,9 @@
 #include <QDockWidget>
 #include <QFileDialog>
 
+#include <QFile>
+#include <QTextStream>
+
 #include <osg/Geometry>
 #include <osg/ShapeDrawable>
 #include <osg/Point>
@@ -1228,3 +1231,108 @@ void PointCloud::region_growing(std::vector<int>& segment_index, int petal_id)
     }
 }
 
+
+void PointCloud::savePovrayFiles(const QString& folder)
+{
+
+    QString data_file(folder+"/data.inc");
+    saveDataFile(data_file);
+
+    QString texture_filename(folder+"/texture.inc");
+    saveTextureFile(texture_filename);
+
+    QString camera_filename(folder+"/camera.inc");
+    saveCameraFile(camera_filename);
+
+    QString light_filename(folder+"/light.inc");
+    saveLightFile(light_filename);
+
+    QFile povray_file(folder+"/scene.pov");
+    povray_file.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream povray_file_stream(&povray_file);
+    povray_file_stream << "#version 3.7;\n\n";
+    povray_file_stream << "global_settings { assumed_gamma 1.0 }\n\n";
+    povray_file_stream << "#include \"camera.inc\"\n";
+    povray_file_stream << "#include \"texture.inc\"\n";
+    povray_file_stream << "#include \"light.inc\"\n";
+    povray_file_stream << "#include \"data.inc\"\n";
+
+    QFile ini_file(folder+"/scene.ini");
+    ini_file.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream ini_file_stream(&ini_file);
+    ini_file_stream << "Input_File_Name = \"scene.pov\"\nOutput_File_Name = scene_\n\n";
+    ini_file_stream << "Antialias = On\nAntialias_Threshold = 0.3\nAntialias_Depth = 2\n\n";
+    ini_file_stream << "Output_Alpha = On\n\n";
+    ini_file_stream << QString("Height = %1\nWidth = %2\n\n").arg(
+        MainWindow::getInstance()->getSceneWidget()->height()).arg(MainWindow::getInstance()->getSceneWidget()->width());
+
+    return;
+}
+
+void PointCloud::saveCameraFile(const QString& camera_filename)
+{
+    QFile camera_file(camera_filename);
+    camera_file.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream camera_file_stream(&camera_file);
+
+    osg::Vec3 eye, center, up;
+    double fovy, aspect_ratio, z_near, z_far;
+
+    osg::Matrix matrix;
+
+     
+    matrix = MainWindow::getInstance()->getSceneWidget()->getCamera()->getViewMatrix();
+
+    matrix.getLookAt(eye, center, up);
+    matrix.getPerspective(fovy, aspect_ratio, z_near, z_far);
+    camera_file_stream << QString("\tcamera\n\t{\n\t    perspective\n\t    up -y\n\t    right x*image_width/image_height\n\t %1\t %2\t %3\t}\n")
+        .arg(QString("   location <%1, %2, %3>\n").arg(eye[0]).arg(eye[1]).arg(eye[2]))
+        .arg(QString("   sky <%1, %2, %3>\n").arg(up[0]).arg(up[1]).arg(up[2]))
+        .arg(QString("   look_at <%1, %2, %3>\n").arg(center[0]).arg(center[1]).arg(center[2]));
+
+    return;
+}
+
+void PointCloud::saveTextureFile(const QString& texture_filename)
+{
+    QFile texture_file(texture_filename);
+    texture_file.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream texture_file_stream(&texture_file);
+    texture_file_stream << QString("#declare ambient_value = 0.5;\n");
+    texture_file_stream << QString("#declare diffuse_value = 0.5;\n");
+    texture_file_stream << QString("#declare phong_value = 0.5;\n");
+    texture_file_stream << QString("background {rgbft<0.0, 0.0, 0.0, 1.0, 1.0>}\n");
+    QString finish_string("finish { ambient ambient_value diffuse diffuse_value phong phong_value}");
+
+    texture_file_stream << QString("#declare %1 = texture { pigment { rgb <%2, %3, %4> filter %5 } %6};\n")
+        .arg("texture_identifier_000").arg(0.6).arg(0.6).arg(0.6).arg(0).arg(finish_string);
+
+    return;
+}
+
+void PointCloud::saveDataFile(const QString& data_filename)
+{
+    QFile data_file(data_filename);
+    data_file.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream data_file_stream(&data_file);
+
+    for (int i = 0 ; i < this->size(); i ++)
+    {
+        const Point& point = this->at(i);
+        data_file_stream << QString("sphere{<%1, %2, %3>, 0.3 texture{texture_identifier_000}}\n").arg(point.x).arg(point.y).arg(point.z);
+    }
+
+    return;
+}
+
+void PointCloud::saveLightFile(const QString& light_filename)
+{
+    QFile light_file(light_filename);
+    light_file.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream light_file_stream(&light_file);
+    
+    light_file_stream << QString("#declare C_Sun= rgb <1.0,1.0,1.0>; light_source{ <8,8,-10>*100000, color C_Sun*1.5 rotate < 0,120,0>}");
+
+    return;
+}
+ 
