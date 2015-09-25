@@ -1275,20 +1275,37 @@ void PointCloud::saveCameraFile(const QString& camera_filename)
     camera_file.open(QIODevice::WriteOnly | QIODevice::Text);
     QTextStream camera_file_stream(&camera_file);
 
+
+    double lookDistance = 700;  
     osg::Vec3 eye, center, up;
-    double fovy, aspect_ratio, z_near, z_far;
+    MainWindow::getInstance()->getSceneWidget()->getCamera()->getViewMatrixAsLookAt(eye, center, up, lookDistance);
 
-    osg::Matrix matrix;
+    double fovy = 0;
+    double aspectRatio = 1;
+    double zNear = 0;
+    double zFar = 1000;
+    MainWindow::getInstance()->getSceneWidget()->getCamera()->getProjectionMatrixAsPerspective(fovy, aspectRatio, zNear, zFar); 
 
-     
-    matrix = MainWindow::getInstance()->getSceneWidget()->getCamera()->getViewMatrix();
+    float width = MainWindow::getInstance()->getSceneWidget()->width();
+    float height = MainWindow::getInstance()->getSceneWidget()->height();
 
-    matrix.getLookAt(eye, center, up);
-    matrix.getPerspective(fovy, aspect_ratio, z_near, z_far);
-    camera_file_stream << QString("\tcamera\n\t{\n\t    perspective\n\t    up -y\n\t    right x*image_width/image_height\n\t %1\t %2\t %3\t}\n")
+    float angle = atan(width/height * tan((fovy/2 * 3.14 / 180))) * 2 *  180 / 3.14;
+
+    //osg::Vec3 eye, center, up;
+    //double fovy, aspect_ratio, z_near, z_far;
+
+    //osg::Matrix matrix;
+
+    // 
+    //matrix = MainWindow::getInstance()->getSceneWidget()->getCamera()->getViewMatrix();
+
+    //matrix.getLookAt(eye, center, up);
+    //matrix.getPerspective(fovy, aspect_ratio, z_near, z_far);
+    camera_file_stream << QString("\tcamera\n\t{\n\t    perspective\n\t    up -y\n\t    right x*image_width/image_height\n\t %1\t %2\t %3\t %4\t}\n")
         .arg(QString("   location <%1, %2, %3>\n").arg(eye[0]).arg(eye[1]).arg(eye[2]))
+        .arg(QString("   look_at <%1, %2, %3>\n").arg(center[0]).arg(center[1]).arg(center[2]))
         .arg(QString("   sky <%1, %2, %3>\n").arg(up[0]).arg(up[1]).arg(up[2]))
-        .arg(QString("   look_at <%1, %2, %3>\n").arg(center[0]).arg(center[1]).arg(center[2]));
+        .arg(QString("   angle %1\n").arg(angle));
 
     return;
 }
@@ -1319,7 +1336,7 @@ void PointCloud::saveDataFile(const QString& data_filename)
     for (int i = 0 ; i < this->size(); i ++)
     {
         const Point& point = this->at(i);
-        data_file_stream << QString("sphere{<%1, %2, %3>, 0.3 texture{texture_identifier_000}}\n").arg(point.x).arg(point.y).arg(point.z);
+        data_file_stream << QString("sphere{<%1, %2, %3>, 0.4 texture{texture_identifier_000}}\n").arg(point.x).arg(point.y).arg(point.z);
     }
 
     return;

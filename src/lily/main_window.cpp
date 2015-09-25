@@ -236,6 +236,7 @@ void MainWindow::init(void)
     connect(ui_.actionCameraViews, SIGNAL(triggered()), this, SLOT(camera_views()));
 	connect(ui_.actionSequenceSmoothing, SIGNAL(triggered()), this, SLOT(sequence_smoothing()));
 	connect(ui_.actionSolveCollision, SIGNAL(triggered()), this, SLOT(solve_collision()));
+    connect(ui_.actionUpdateNormals, SIGNAL(triggered()), this, SLOT(update_normals()));
 
     connect(ui_.actionTransfer, SIGNAL(triggered()), this, SLOT(transfer()));
     connect(ui_.actionMultiLayer, SIGNAL(triggered()), this, SLOT(multi_layer()));
@@ -567,7 +568,7 @@ bool MainWindow::camera_views()
 bool MainWindow::transfer()
 {
     QString directory = QFileDialog::getExistingDirectory(this, tr("Transfer"), "transfer_flowers", QFileDialog::ShowDirsOnly);
-    std::string transfer_folder = "D:/baidu disk/WorkSpace/Projects/BloomingFlower/BloomingFlowers/data/applications/transfers-orchid";
+    std::string transfer_folder = "D:/baidu disk/WorkSpace/Projects/BloomingFlower/BloomingFlowers/data/applications/transfers-lily";
     std::string transform_folder = transfer_folder + "/petal sequences";
 
     Transfer t(transform_folder);
@@ -575,14 +576,14 @@ bool MainWindow::transfer()
     std::vector<int> order;
    /* order.push_back(0);
     order.push_back(1);*/
-    order.push_back(2);
     order.push_back(3);
     order.push_back(4);
+    order.push_back(5);
 
-    std::string template_frame = transfer_folder + "/key frame-3";
-    int key_frame = 30;
+    std::string template_frame = transfer_folder + "/key frame";
+    int key_frame = 32;
     int start_frame = 0;
-    int end_frame = 113;
+    int end_frame = 127;
 
     t.loadFlower(template_frame, key_frame, order);
 
@@ -1113,6 +1114,21 @@ bool MainWindow::export_pv_files()
     }
 
     std::cout << "Pov Ray Files Finished " << std::endl;
+
+    return true;
+}
+
+bool MainWindow::update_normals()
+{
+    MeshFileSystem* mesh_file_system = dynamic_cast<MeshFileSystem*>(mesh_files_);
+    PointsFileSystem* points_file_system = dynamic_cast<PointsFileSystem*>(points_files_);
+    QSet<QPersistentModelIndex> mesh_indexes = mesh_file_system->getCheckedIndexes();
+    for (size_t i = 0, i_end = mesh_indexes.size(); i < i_end; ++ i)
+    {
+        osg::ref_ptr<MeshModel> mesh_model = mesh_file_system->getMeshModel(mesh_indexes.values().at(i));
+        mesh_model->updateNormals();
+        mesh_model->save(mesh_model->getObjFile());
+    }
 
     return true;
 }

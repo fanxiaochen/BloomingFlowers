@@ -83,6 +83,7 @@ private slots:
     bool camera_views();
     bool sequence_smoothing();
     bool solve_collision();
+    bool update_normals();
 
     bool transfer();
     bool multi_layer();
