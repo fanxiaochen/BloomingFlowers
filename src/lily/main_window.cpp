@@ -233,6 +233,7 @@ void MainWindow::init(void)
 	connect(ui_.actionSavePlys, SIGNAL(triggered()), this, SLOT(save_plys()));
     connect(ui_.actionCameraViews, SIGNAL(triggered()), this, SLOT(camera_views()));
 	connect(ui_.actionSnapshotAllFrames, SIGNAL(triggered()), this, SLOT(slotSnapshotAllFrames()));
+	connect(ui_.actionSnapshotSpin, SIGNAL(triggered()), this, SLOT(slotSnapshotSpin()));
 
     connect(ui_.actionTransfer, SIGNAL(triggered()), this, SLOT(transfer()));
     connect(ui_.actionMultiLayer, SIGNAL(triggered()), this, SLOT(multi_layer()));
@@ -791,7 +792,7 @@ bool MainWindow::slotShowYesNoMessageBox(const std::string& text, const std::str
 
 bool MainWindow::slotSnapshotAllFrames()
 {
-	QString snapshot_folder = QFileDialog::getExistingDirectory(this, tr("Load Flowers"), workspace_.c_str(), QFileDialog::ShowDirsOnly);
+	QString snapshot_folder = QFileDialog::getExistingDirectory(this, tr("Save all snapshots"), workspace_.c_str(), QFileDialog::ShowDirsOnly);
 
 	if (snapshot_folder.isEmpty())
 		return false;
@@ -835,7 +836,7 @@ bool MainWindow::slotSnapshotAllFrames()
 			flowers_viewer_->next();
 			flowers_viewer_->update();
 		}
-		Sleep(1000);
+		Sleep(500);
 
 		sc->setCapture(true);
 		sc->setUseFrameNumber(true);
@@ -845,4 +846,57 @@ bool MainWindow::slotSnapshotAllFrames()
 	camera->setPostDrawCallback( old );	
 	return true;
 
+}
+
+
+
+bool MainWindow::slotSnapshotSpin()
+{
+	QString snapshot_folder = QFileDialog::getExistingDirectory(this, tr("Save spin snapshots"), workspace_.c_str(), QFileDialog::ShowDirsOnly);
+
+	if (snapshot_folder.isEmpty())
+		return false;
+
+	// get current camera
+	std::string rootName = snapshot_folder.toStdString() + "/cap-";
+	std::string extName = ".png";
+	osg::ref_ptr< osgwTools::ScreenCapture > sc = new osgwTools::ScreenCapture(
+		rootName, extName);
+
+
+	osg::Camera*  camera = scene_widget_->getCamera();
+	double lookDistance = 700;  
+	osg::Vec3 eye, center, up;
+	camera->getViewMatrixAsLookAt(eye, center, up, lookDistance);
+
+
+	osg::Camera::DrawCallback* old = camera->getPostDrawCallback();
+	camera->setPostDrawCallback( sc.get() );
+
+
+	int view_num = 180;
+	double angle = (2 * M_PI) / view_num;
+	for( int i = 0; i!= 180; ++i )
+	{
+		osg::Matrix rotation = registrator_->getRotationMatrix( i*angle );
+		osg::Vec3d eyeC = rotation.preMult(eye);
+		osg::Vec3d centerC = rotation.preMult(center);
+		osg::Vec3d upC = rotation.preMult(eye+up)-eyeC;
+
+		camera->setViewMatrixAsLookAt(eyeC, centerC, upC);
+		osgGA::CameraManipulator* camera_manipulator = scene_widget_->getCameraManipulator();
+		camera_manipulator->setHomePosition(eyeC, centerC, upC);
+		camera_manipulator->home(0);
+
+		Sleep(500);
+		sc->setCapture(true);
+		sc->setUseFrameNumber(true);
+		sc->setNumFramesToCapture(1);
+		Sleep(500);
+
+	}
+	camera->setPostDrawCallback( old );	
+	return true;
+	
+	
 }

@@ -54,6 +54,7 @@
     <addaction name="actionSaveCamera"/>
     <addaction name="separator"/>
     <addaction name="actionSnapshotAllFrames"/>
+    <addaction name="actionSnapshotSpin"/>
    </widget>
    <widget class="QMenu" name="menuTracking">
     <property name="title">
@@ -293,6 +294,11 @@
   <action name="actionInterpolation">
    <property name="text">
     <string>Interpolation</string>
+   </property>
+  </action>
+  <action name="actionSnapshotSpin">
+   <property name="text">
+    <string>Snapshot Spin</string>
    </property>
   </action>
  </widget>

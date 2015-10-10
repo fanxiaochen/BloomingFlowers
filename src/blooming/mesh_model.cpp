@@ -165,42 +165,54 @@ void MeshModel::visualizeMesh(void)
     }
     else
     {
-        int color_id[] = {0, 2, 4, 5, 3, 1};
+        //int color_id[] = {0, 2, 4, 5, 3, 1};
 
         if (vertices_->size() < 100000 && (
             obj_name_ != "0.obj" && obj_name_ != "1.obj" && obj_name_ != "2.obj" && obj_name_ != "3.obj" && obj_name_ != "4.obj" && obj_name_ != "5.obj"))
         {
 
-            osg::StateSet* stateset = geode->getOrCreateStateSet();
-            osg::ref_ptr<osg::Material> mat = new osg::Material;
-            mat->setDiffuse( osg::Material::FRONT_AND_BACK,
-                ColorMap::getInstance().getDiscreteColor(color_id[color_id_]) );
-            mat->setSpecular( osg::Material::FRONT_AND_BACK,
-                ColorMap::getInstance().getDiscreteColor(color_id[color_id_]) );
-            mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(color_id[color_id_]));
+			/*osg::StateSet* stateset = geode->getOrCreateStateSet();
+			osg::ref_ptr<osg::Material> mat = new osg::Material;
+			mat->setDiffuse( osg::Material::FRONT_AND_BACK,
+			ColorMap::getInstance().getDiscreteColor(color_id[color_id_]) );
+			mat->setSpecular( osg::Material::FRONT_AND_BACK,
+			ColorMap::getInstance().getDiscreteColor(color_id[color_id_]) );
+			mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(color_id[color_id_]));
 
-            mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );
-            stateset->setAttribute( mat.get());
+			mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );
+			stateset->setAttribute( mat.get());*/
+
+			osg::StateSet* stateset = geode->getOrCreateStateSet();
+			osg::ref_ptr<osg::Material> mat = new osg::Material;
+			mat->setDiffuse( osg::Material::FRONT_AND_BACK,
+			ColorMap::getInstance().getDiscreteColor(color_id_) );
+			mat->setSpecular( osg::Material::FRONT_AND_BACK,
+			ColorMap::getInstance().getDiscreteColor(color_id_) );
+			mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(color_id_));
+
+			mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );
+			stateset->setAttribute( mat.get());
+			
         }
         
         // for showing visual hull
         else 
         {
-            if (obj_name_ == "0.obj") color_id_ = 0;
-            if (obj_name_ == "1.obj") color_id_ = 1;
-            if (obj_name_ == "2.obj") color_id_ = 2;
-            if (obj_name_ == "3.obj") color_id_ = 3;
-            if (obj_name_ == "4.obj") color_id_ = 4;
-            if (obj_name_ == "5.obj") color_id_ = 5;
+			/*if (obj_name_ == "0.obj") color_id_ = 0;
+			if (obj_name_ == "1.obj") color_id_ = 1;
+			if (obj_name_ == "2.obj") color_id_ = 2;
+			if (obj_name_ == "3.obj") color_id_ = 3;
+			if (obj_name_ == "4.obj") color_id_ = 4;
+			if (obj_name_ == "5.obj") color_id_ = 5;*/
 
             osg::StateSet* stateset = geode->getOrCreateStateSet();
             osg::ref_ptr<osg::Material> mat = new osg::Material; 
 
             mat->setDiffuse( osg::Material::FRONT_AND_BACK,
-                ColorMap::getInstance().getDiscreteColor(color_id[color_id_]) );
+                ColorMap::getInstance().getDiscreteColor(color_id_) );
             mat->setSpecular( osg::Material::FRONT_AND_BACK,
-                ColorMap::getInstance().getDiscreteColor(color_id[color_id_]) );
-            mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(color_id[color_id_]));
+                ColorMap::getInstance().getDiscreteColor(color_id_) );
+            mat->setAmbient(osg::Material::FRONT_AND_BACK, ColorMap::getInstance().getDiscreteColor(color_id_));
            /* mat->setShininess( osg::Material::FRONT_AND_BACK, 96.f );*/
             // Set alpha to 0.5
             mat->setAlpha(osg::Material::FRONT_AND_BACK, 0.5); 

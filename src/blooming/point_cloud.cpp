@@ -127,7 +127,11 @@ void PointCloud::visualizePoints()
                 const Point& point = at(i);
                 vertices->push_back(osg::Vec3(point.x, point.y, point.z));
                 normals->push_back(osg::Vec3(point.normal_x, point.normal_y, point.normal_z));
-                colors->push_back(osg::Vec4(point.r / 255.0, point.g / 255.0, point.b / 255.0, 0));
+				// original color
+                // colors->push_back(osg::Vec4(point.r / 255.0, point.g / 255.0, point.b / 255.0, 0));
+				osg::Vec4 grey(0.6,0.6,0.6,0);
+				colors->push_back( osg::Vec4(grey.r(), grey.g(), grey.b(), grey.a()));
+
             }
             else
             {
@@ -158,7 +162,8 @@ void PointCloud::visualizePoints()
    // geometry->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
     geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
     geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, size()));
-    geometry->getOrCreateStateSet()->setAttribute(new osg::Point(5.0f));
+    geometry->getOrCreateStateSet()->setAttribute(new osg::Point(4.50f));  // default
+/*	geometry->getOrCreateStateSet()->setAttribute(new osg::Point(10.0f));    // orchid top view*/
 
     osg::Geode* geode = new osg::Geode;
     geode->getOrCreateStateSet()->setMode(GL_LIGHTING,osg::StateAttribute::OFF); // close light for point cloud

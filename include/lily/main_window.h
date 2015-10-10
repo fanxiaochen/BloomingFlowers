@@ -72,6 +72,7 @@ private slots:
     bool slotLoadFlowers();
     bool slotSendCheckBoxRenderState();
 	bool slotSnapshotAllFrames();
+	bool slotSnapshotSpin();    // take snapshot while camera rotate around the center of the scene.
 
     bool region_probability();
 	bool collision_detection();
