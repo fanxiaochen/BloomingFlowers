@@ -55,6 +55,8 @@
     <addaction name="separator"/>
     <addaction name="actionSnapshotAllFrames"/>
     <addaction name="actionSnapshotSpin"/>
+    <addaction name="separator"/>
+    <addaction name="actionExportPovRayFiles"/>
    </widget>
    <widget class="QMenu" name="menuTracking">
     <property name="title">
@@ -85,6 +87,11 @@
     <addaction name="separator"/>
     <addaction name="actionCameraViews"/>
     <addaction name="separator"/>
+    <addaction name="actionSequenceSmoothing"/>
+    <addaction name="separator"/>
+    <addaction name="actionSolveCollision"/>
+    <addaction name="separator"/>
+    <addaction name="actionUpdateNormals"/>
    </widget>
    <widget class="QMenu" name="menuApplications">
     <property name="title">
@@ -299,6 +306,26 @@
   <action name="actionSnapshotSpin">
    <property name="text">
     <string>Snapshot Spin</string>
+	</property>
+  </action>
+  <action name="actionSequenceSmoothing">
+   <property name="text">
+    <string>Sequence Smoothing</string>
+   </property>
+  </action>
+  <action name="actionSolveCollision">
+   <property name="text">
+    <string>Solve Collision</string>
+   </property>
+  </action>
+  <action name="actionExportPovRayFiles">
+   <property name="text">
+    <string>Export Pov-Ray Files</string>
+   </property>
+  </action>
+  <action name="actionUpdateNormals">
+   <property name="text">
+    <string>Update Normals</string>
    </property>
   </action>
  </widget>

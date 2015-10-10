@@ -1111,15 +1111,46 @@ void MeshModel::determineVisibility(PointCloud* aligned_cloud, int petal_id)
 
 
 // now use the whole mesh for interpolation
-void MeshModel::sampleTrajsVertices(int ratio)
+int MeshModel::sampleTrajsVertices(int ratio)
 {
-    std::vector<int> indices;
+    int K = 1;
+
+    Point t = skeleton_->getJoints()[0];
+
+    pcl::PointCloud<Point>::Ptr cloud (new pcl::PointCloud<Point>);
+
+    for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
+    {
+        const osg::Vec3& point = vertices_->at(i);
+        Point p;
+        p.x = point.x();
+        p.y = point.y();
+        p.z = point.z();
+        cloud->push_back(p);
+    }
+
+    pcl::KdTreeFLANN<Point> kdtree;
+
+    kdtree.setInputCloud (cloud);
+
+    // Neighbors within k search
+
+    std::vector<int> pointIdxKSearch;
+    std::vector<float> pointKSquaredDistance;
+
+    if ( kdtree.nearestKSearch (t, K, pointIdxKSearch, pointKSquaredDistance) > 0 )
+    {
+        trajs_index_ = pointIdxKSearch;
+    }
+
+    /*std::vector<int> indices;
     for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
     {
         indices.push_back(i);
     }
-    trajs_index_ = indices;
+    trajs_index_ = indices;*/
 
+    return pointIdxKSearch[0];
     //std::random_shuffle (indices.begin(), indices.end());
 
     //int total_num = vertices_->size();

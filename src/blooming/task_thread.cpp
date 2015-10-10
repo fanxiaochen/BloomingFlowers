@@ -336,11 +336,11 @@ void LATrackThread::run()
     flower->save(flowers_folder, key_frame);
     flower->hide();
 
-    for (int i = 0; i < flower->getPetals().size(); ++ i)
+    /*for (int i = 0; i < flower->getPetals().size(); ++ i)
     {
-        flower->getPetals()[i].getObjName() = QString("%1.obj").arg(i).toStdString();
-;
-    }
+    flower->getPetals()[i].getObjName() = QString("%1.obj").arg(i).toStdString();
+    }*/
+
     //Flower* forward_flower = new Flower(*flower);
     //osg::ref_ptr<PointCloud> forward_cloud;
 
@@ -499,7 +499,7 @@ void BoundaryThread::run()
     int end_frame = points_file_system->getEndFrame();
     
     TipDetector tip_detector;
-    for (int i = 93; i <= end_frame; ++ i)
+    for (int i = 93; i <= 100; ++ i)
     {
         std::cout << "frame " << i << std::endl;
 

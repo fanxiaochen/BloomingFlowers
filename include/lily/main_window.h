@@ -73,6 +73,7 @@ private slots:
     bool slotSendCheckBoxRenderState();
 	bool slotSnapshotAllFrames();
 	bool slotSnapshotSpin();    // take snapshot while camera rotate around the center of the scene.
+    bool export_pv_files();
 
     bool region_probability();
 	bool collision_detection();
@@ -81,6 +82,9 @@ private slots:
     bool petal_sequences();
 	bool save_plys();
     bool camera_views();
+    bool sequence_smoothing();
+    bool solve_collision();
+    bool update_normals();
 
     bool transfer();
     bool multi_layer();
