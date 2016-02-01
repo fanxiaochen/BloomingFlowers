@@ -14,9 +14,11 @@ include(cotire)
 find_package(OpenSceneGraph REQUIRED osgViewer osgText osgDB osgGA osgQt osgManipulator osgUtil)
 include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
 
-find_package(PCL REQUIRED common io search features kdtree)
+#find_package(PCL REQUIRED common io search features kdtree surface)
+find_package(PCL 1.7 REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -216,8 +218,9 @@ ENDIF (${CMAKE_BUILD_TOOL} MATCHES "devenv")
 set(link_libraies	${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
   ${OPENSCENEGRAPH_LIBRARIES}
   Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent Qt5::Xml
-  ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_KDTREE_LIBRARIES} 
-  ${OPENNURBS_LIBRARY} ${SUITESPARSE_LIBRARIES})
+  ${PCL_LIBRARIES}
+#  ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_KDTREE_LIBRARIES} ${PCL_SURFACE_LIBRARIES}
+  ${SUITESPARSE_LIBRARIES})
 
 set(exe_name BloomingFlower)
 add_executable(${exe_name} ${prelily_src} ${prelily_inc} ${ui_srcs} ${moc_srcs} ${resource_srcs} ${srcs} ${incs} ${svd_src} ${curve_fitting_src})

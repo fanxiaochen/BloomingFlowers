@@ -511,7 +511,8 @@ void PointCloud::trajectory_prediction(TrajectoryModel* traj_model)
             ON_NurbsCurve& nurbs = traj.getFittingCurve();
             Eigen::VectorXd& t = traj.getParas();
 
-            ON_3dVector tangent_vector = nurbs.TangentAt(1.0); // default t = 1.0, which is end point
+			ON_3dVector tangent_vector = nurbs.TangentAt(1.0);
+/*            ON_3dVector tangent_vector = nurbs.TangentAt(1.0); // default t = 1.0, which is end point*/
             ON_3dPoint origin_point = nurbs.PointAtEnd();
 
             const int traj_fragment = 3;
