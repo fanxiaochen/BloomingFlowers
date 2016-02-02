@@ -35,9 +35,7 @@
 #ifndef NURBS_FIT_CURVE_H
 #define NURBS_FIT_CURVE_H
 
-#include <pcl/surface/on_nurbs/nurbs_tools.h>
-#include <pcl/surface/on_nurbs/nurbs_data.h>
-#include <pcl/surface/3rdparty/opennurbs/opennurbs_nurbscurve.h>
+#include <opennurbs.h>
 
 #undef Success
 #include <Eigen/SparseQR>

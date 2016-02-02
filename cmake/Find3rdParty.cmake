@@ -7,6 +7,11 @@ set(CURVE_FITTING_INCLUDE ${3RD_PARTY_DIR}/opencurvefitting)
 set(curve_fitting_src	${CURVE_FITTING_INCLUDE}/curve.cpp
 						${CURVE_FITTING_INCLUDE}/open_curve.cpp)
 					  
+set(OPENNURBS_DIR "$ENV{OPENNURBS_DIR}")
+set(OPENNURBS_INCLUDE_DIR ${OPENNURBS_DIR}/include)
+set(OPENNURBS_LIBRARY optimized ${OPENNURBS_DIR}/lib/release/opennurbs.lib
+					  debug ${OPENNURBS_DIR}/lib/debug/opennurbs.lib)
+
 					  
 set(SUITESPARSE_DIR "$ENV{SUITESPARSE_DIR}")
 set(SUITESPARSE_INCLUDE_DIR ${SUITESPARSE_DIR}/include/suitesparse)
@@ -19,8 +24,8 @@ set(SUITESPARSE_LIBRARIES_LIBLAPACK "liblapack.lib")
 set(SUITESPARSE_LIBRARIES_LIBSPQR debug "libspqrd.lib" optimized "libspqr.lib") 
 set(SUITESPARSE_LIBRARIES_LIBAMD debug "libamdd.lib" optimized "libamd.lib")
 set(SUITESPARSE_LIBRARIES_LIBBTF debug "libbtfd.lib" optimized "libbtf.lib")
-set(SUITESPARSE_LIBRARIES_LIBCAMD debug "libcamdd.lib" optimized "libcam.lib")
-set(SUITESPARSE_LIBRARIES_LIBCCOLAMD debug "libccolamdd.lib" optimized "libccolam.lib")
+set(SUITESPARSE_LIBRARIES_LIBCAMD debug "libcamdd.lib" optimized "libcamd.lib")
+set(SUITESPARSE_LIBRARIES_LIBCCOLAMD debug "libccolamdd.lib" optimized "libccolamd.lib")
 set(SUITESPARSE_LIBRARIES_LIBCHOlMOD debug "libcholmodd.lib" optimized "libcholmod.lib")
 set(SUITESPARSE_LIBRARIES_LIBCOLAMD debug "libcolamdd.lib" optimized "libcolamd.lib")
 set(SUITESPARSE_LIBRARIES_LIBCXSPARSE debug "libcxsparsed.lib" optimized "libcxsparse.lib")

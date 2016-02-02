@@ -14,8 +14,7 @@ include(cotire)
 find_package(OpenSceneGraph REQUIRED osgViewer osgText osgDB osgGA osgQt osgManipulator osgUtil)
 include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
 
-#find_package(PCL REQUIRED common io search features kdtree surface)
-find_package(PCL 1.7 REQUIRED)
+find_package(PCL REQUIRED common io search features kdtree surface)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
@@ -117,6 +116,7 @@ set(blooming_incs   ${blooming_inc}/point_cloud.h
 					${blooming_inc}/trajectory_model.h
 					${blooming_inc}/tip_detector.h
 					${blooming_inc}/collision_detector.h
+					${blooming_inc}/fitting_error_measurer.h
                     )
 
 set(blooming_srcs	${blooming_src}/point_cloud.cpp
@@ -131,6 +131,7 @@ set(blooming_srcs	${blooming_src}/point_cloud.cpp
 					${blooming_src}/trajectory_model.cpp
 					${blooming_src}/tip_detector.cpp
 					${blooming_src}/collision_detector.cpp
+					${blooming_src}/fitting_error_measurer.cpp
                     )
                     
 set(filesystem_incs	${filesystem_inc}/file_system_model.h
@@ -217,9 +218,9 @@ ENDIF (${CMAKE_BUILD_TOOL} MATCHES "devenv")
 
 set(link_libraies	${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
   ${OPENSCENEGRAPH_LIBRARIES}
+  ${OPENNURBS_LIBRARY}
   Qt5::Core Qt5::Widgets Qt5::OpenGL Qt5::Concurrent Qt5::Xml
-  ${PCL_LIBRARIES}
-#  ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_KDTREE_LIBRARIES} ${PCL_SURFACE_LIBRARIES}
+  ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_KDTREE_LIBRARIES} ${PCL_SURFACE_LIBRARIES}
   ${SUITESPARSE_LIBRARIES})
 
 set(exe_name BloomingFlower)
