@@ -85,6 +85,7 @@ private slots:
     bool sequence_smoothing();
     bool solve_collision();
     bool update_normals();
+	void measure_fitting_error();
 
     bool transfer();
     bool multi_layer();

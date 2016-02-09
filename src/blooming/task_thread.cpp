@@ -16,6 +16,7 @@
 #include "collision_detector.h"
 #include "trajectory_model.h"
 #include "solver.h"
+#include "fitting_error_measurer.h"
 
 
 
@@ -516,6 +517,56 @@ void BoundaryThread::run()
     std::cout << "Boundary Detection Finished!" << std::endl;
 }
 
+FittingErrorThread::FittingErrorThread(PointsFileSystem* points_file_system, 
+	FlowersViewer* flower_viewer)
+	:QThread()
+{
+	points_file_system_  = points_file_system;
+	flower_viewer_ = flower_viewer;
+}
+
+
+FittingErrorThread::~FittingErrorThread()
+{
+
+}
+
+void FittingErrorThread::run()
+{
+	std::string file_name = flower_viewer_->getFlowerFolder () + "/fitting_err.txt";
+	std::cout << "Measure fitting error starts..." << std::endl;
+
+	int start_frame = flower_viewer_->getStartFrame();
+	int end_frame = flower_viewer_->getEndFrame();
+
+	FittingErrorMeasurer error_measurer;
+	points_file_system_->navigateToAFrame(start_frame);
+	flower_viewer_->getFlower(start_frame);
+	flower_viewer_->update();
+
+	Eigen::VectorXd fitting_err(end_frame - start_frame + 1);
+
+	for (size_t i = start_frame , i_end = end_frame;
+		i <= i_end; ++i)
+	{
+		osg::ref_ptr<PointCloud> cloud = points_file_system_->getPointCloud(i);
+		Flower& flower = flower_viewer_->getCurrentFlower();
+
+		error_measurer.setFlowerAndPointCloud(&flower, cloud);
+		error_measurer.computeDisFromCloud2Flower();
+		fitting_err[i-start_frame] = error_measurer.getMeanDis();
+
+		points_file_system_->navigateToNextFrame();
+		flower_viewer_->next();
+		flower_viewer_->update();
+	}
+	// write the results
+	std::cout << "Measure fitting error ends!" << std::endl;
+
+	std::ofstream out(file_name.c_str());
+	out << fitting_err << std::endl;
+	out.close();
+}
 
 RegionMatchingThread::RegionMatchingThread(PointCloud* point_cloud, Flower* flower)
 {
@@ -554,4 +605,3 @@ void CollisionDetectionThread::run()
 	collision_detector.resolveCollision();
 	flower_->update();
 }
-

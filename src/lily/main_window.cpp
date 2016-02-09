@@ -54,6 +54,8 @@ MainWindow::~MainWindow()
 {
     saveSettings();
 
+	// remove the current flower from scene ( to avoid error of deconstruction);
+
     delete points_files_;
     delete mesh_files_;
     delete points_widget_;
@@ -234,6 +236,7 @@ void MainWindow::init(void)
     connect(ui_.actionPetalSequences, SIGNAL(triggered()), this, SLOT(petal_sequences()));
 	connect(ui_.actionSavePlys, SIGNAL(triggered()), this, SLOT(save_plys()));
     connect(ui_.actionCameraViews, SIGNAL(triggered()), this, SLOT(camera_views()));
+	connect(ui_.actionMeasure_Fittign_Error, SIGNAL(triggered()), this, SLOT(measure_fitting_error()));
 
 	connect(ui_.actionSnapshotAllFrames, SIGNAL(triggered()), this, SLOT(slotSnapshotAllFrames()));
 	connect(ui_.actionSnapshotSpin, SIGNAL(triggered()), this, SLOT(slotSnapshotSpin()));
@@ -1189,4 +1192,15 @@ bool MainWindow::update_normals()
 
     return true;
 
+}
+
+void MainWindow::measure_fitting_error()
+{
+	FittingErrorThread* fe_thread = new FittingErrorThread(
+		dynamic_cast<PointsFileSystem*>(points_files_), flowers_viewer_ );
+
+	connect(fe_thread, SIGNAL(finished()), fe_thread, SLOT(quit()));
+
+	fe_thread->start();
+	return;
 }

@@ -6,6 +6,9 @@
 
 class TrackingSystem;
 
+class FileSystemModel;
+class FlowerViewer;
+
 // EM + ARAP Tracking
 class EATrackThread: public QThread
 {
@@ -92,6 +95,23 @@ protected:
 protected:
     TrackingSystem*	tracking_system_;
 };
+
+
+class FittingErrorThread : public QThread
+{
+public:
+	FittingErrorThread(PointsFileSystem* points_file_system, FlowersViewer* flower_viewer);
+	virtual ~FittingErrorThread();
+
+protected:
+	void run();
+
+protected:
+	PointsFileSystem*	points_file_system_;
+	FlowersViewer*		flower_viewer_;
+};
+
+
 
 // region matching
 class RegionMatchingThread: public QThread

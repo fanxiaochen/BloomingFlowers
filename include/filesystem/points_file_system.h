@@ -56,6 +56,7 @@ public:
     PointCloud* getDisplayFirstFrame(void);
 
 	
+	void navigateToAFrame(int frame);
 	void navigateToFirstFrame();
     void navigateToPreviousFrame();
     void navigateToNextFrame();

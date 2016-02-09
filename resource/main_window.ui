@@ -33,7 +33,7 @@
      <x>0</x>
      <y>0</y>
      <width>864</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -92,6 +92,8 @@
     <addaction name="actionSolveCollision"/>
     <addaction name="separator"/>
     <addaction name="actionUpdateNormals"/>
+    <addaction name="separator"/>
+    <addaction name="actionMeasure_Fittign_Error"/>
    </widget>
    <widget class="QMenu" name="menuApplications">
     <property name="title">
@@ -306,7 +308,7 @@
   <action name="actionSnapshotSpin">
    <property name="text">
     <string>Snapshot Spin</string>
-	</property>
+   </property>
   </action>
   <action name="actionSequenceSmoothing">
    <property name="text">
@@ -326,6 +328,11 @@
   <action name="actionUpdateNormals">
    <property name="text">
     <string>Update Normals</string>
+   </property>
+  </action>
+  <action name="actionMeasure_Fittign_Error">
+   <property name="text">
+    <string>Measure Fittign Error</string>
    </property>
   </action>
  </widget>
