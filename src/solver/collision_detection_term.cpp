@@ -3,7 +3,7 @@
 #include "main_window.h"
 #include "parameters.h"
 
-CollisionDetectionTerm::CollisionDetectionTerm(int petal_id)
+CollisionDetectionTerm::CollisionDetectionTerm(int petal_id )
     :petal_id_(petal_id)
 {
 }

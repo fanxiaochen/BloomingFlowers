@@ -153,7 +153,7 @@ public:
 
     static int iter_num_;
     static double eps_;
-
+	static double lambda_interpolation_;
     static double lambda_tip_fitting_;
     static double lambda_boundary_fitting_;
     static double lambda_inner_fitting_;
@@ -181,7 +181,7 @@ public:
     void deform();
 
     // deform as a whole
-    void full_deform();
+    void virtual full_deform();
 
     // in order to program more easily, inner part also have boundary part...
     // not restrict as method described
@@ -191,7 +191,7 @@ public:
     void trajectory_guided_setting();
 
     // init setting: two cases
-    void init_setting();
+    void virtual init_setting();
 
 
 protected:
@@ -222,14 +222,14 @@ protected:
     void e_step();
     double m_step();
 
-    void initBuild();
+    void virtual initBuild();
     void left_sys();
     void right_sys();
 
     double solve();
     double energy();
 
-    void projection();
+    void virtual projection();
     void update();
 
     void collision_detection();
@@ -250,10 +250,10 @@ protected:
     void initFittingParas_early_stage();
     void initMeshParas();
     void initSkelParas();
-    void initTerms();
+    void virtual initTerms();
     double zero_correction(double value);
 
-private:
+protected:
     Flower* flower_;
     PointCloud* point_cloud_;
 

@@ -9,7 +9,7 @@ class PointCloud;
 class BoundaryFittingTerm
 {
 public:
-    BoundaryFittingTerm(int petal_id);
+    BoundaryFittingTerm(int petal_id );
     inline std::vector<Eigen::MatrixXd>& A() { return A_; }
     inline Eigen::Matrix3Xd& b(){ return b_; }
     
@@ -30,5 +30,6 @@ private:
     std::vector<Eigen::SparseMatrix<double>> L_;
     std::vector<Eigen::MatrixXd> A_;
     Eigen::Matrix3Xd b_;
+
 };
 #endif

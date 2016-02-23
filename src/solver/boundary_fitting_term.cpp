@@ -1,7 +1,7 @@
 #include "boundary_fitting_term.h"
 #include "solver.h"
 
-BoundaryFittingTerm::BoundaryFittingTerm(int petal_id)
+BoundaryFittingTerm::BoundaryFittingTerm(int petal_id )
     :petal_id_(petal_id)
 {
 }
@@ -62,10 +62,11 @@ void BoundaryFittingTerm::buildA()
     L_[1] = diag_coeff_y;
     L_[2] = diag_coeff_z;
 
-    // A for Affine Transform Variables
-    A_[0] = convert_affine.transpose() * (L_[0] * convert_affine);
-    A_[1] = convert_affine.transpose() * (L_[1] * convert_affine);
-    A_[2] = convert_affine.transpose() * (L_[2] * convert_affine);
+	// A for Affine Transform Variables
+	A_[0] = convert_affine.transpose() * (L_[0] * convert_affine);
+	A_[1] = convert_affine.transpose() * (L_[1] * convert_affine);
+	A_[2] = convert_affine.transpose() * (L_[2] * convert_affine);
+		
 
 }
 
@@ -94,8 +95,10 @@ void BoundaryFittingTerm::buildb()
         b_.col(i) = Solver::lambda_boundary_fitting_*2*cov_matrix.col(i).asDiagonal().inverse()*weight_cloud;
     }
 
-    // for Affine Transform Variables
-    b_ = b_ * convert_affine;
+
+	// for Affine Transform Variables
+	b_ = b_ * convert_affine;
+
 }
 
 double BoundaryFittingTerm::zero_correction(double value)

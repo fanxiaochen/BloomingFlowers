@@ -21,6 +21,7 @@ public:
     Eigen::MatrixXd getTransform(int petal_id, int frame, bool is_forward);
     void transfer(int start_frame, int end_frame);
 
+
 protected:
     void update(int frame, bool is_forward);
 
@@ -29,12 +30,13 @@ protected:
 
 
 private:
-    FlowersViewer* flower_viewer_;
+    FlowersViewer* flower_viewer_;     // to get the flower sequence
 
-    Flower* current_flower_;
-    int current_frame_;
+    Flower* current_flower_;  // the new flower which have similar pose as key flower
+	std::vector<Eigen::MatrixXd>  petal_transformations_;  //each petal of the new flower may need a global transform
+    int current_frame_;	
 
-    Flower* key_flower_;
+    Flower* key_flower_;      // the old flower
     int key_frame_;
 
     std::string flower_folder_;

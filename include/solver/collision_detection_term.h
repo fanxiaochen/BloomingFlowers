@@ -18,7 +18,7 @@ struct CollisionPair
 class CollisionDetectionTerm
 {
 public:
-    CollisionDetectionTerm(int petal_id);
+	CollisionDetectionTerm(int petal_id );
     inline std::vector<Eigen::MatrixXd>& A() { return A_; }
     inline Eigen::Matrix3Xd& b(){ return b_; }
 

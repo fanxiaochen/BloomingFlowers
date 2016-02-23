@@ -31,5 +31,6 @@ private:
     std::vector<Eigen::SparseMatrix<double>> L_;
     std::vector<Eigen::MatrixXd> A_;
     Eigen::Matrix3Xd b_;
+
 };
 #endif

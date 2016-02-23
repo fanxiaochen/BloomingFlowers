@@ -4,6 +4,8 @@
 #include "main_window.h"
 #include "parameters.h"
 
+double Solver::lambda_interpolation_ = 1;
+
 int Solver::iter_num_ = 50;
 double Solver::eps_ = 1e-3;
 double Solver::lambda_tip_fitting_ = 0.02;

@@ -157,7 +157,9 @@ set(solver_incs 	${solver_inc}/data_fitting_term.h
 					${solver_inc}/skel_smooth_term.h
 					${solver_inc}/collision_detection_term.h
 					${solver_inc}/closure_term.h
-					${solver_inc}/solver.h)
+					${solver_inc}/solver.h
+					${solver_inc}/application_solver.h
+					${solver_inc}/interpolation_term.h)
 
 set(solver_srcs		${solver_src}/data_fitting_term.cpp
                     ${solver_src}/boundary_fitting_term.cpp
@@ -166,7 +168,9 @@ set(solver_srcs		${solver_src}/data_fitting_term.cpp
 					${solver_src}/skel_smooth_term.cpp
 					${solver_src}/collision_detection_term.cpp
 					${solver_src}/closure_term.cpp
-					${solver_src}/solver.cpp)
+					${solver_src}/solver.cpp
+					${solver_src}/application_solver.cpp
+					${solver_src}/interpolation_term.cpp)
 
 set(app_incs	${app_inc}/transfer.h)
 set(app_srcs	${app_src}/transfer.cpp)

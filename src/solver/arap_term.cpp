@@ -92,10 +92,13 @@ void ARAPTerm::buildA()
         }
     }
 
-    // A for Affine Transforms Variables
-    A_[0] = convert_affine.transpose() * (L_[0] * convert_affine);
-    A_[1] = convert_affine.transpose() * (L_[1] * convert_affine);
-    A_[2] = convert_affine.transpose() * (L_[2] * convert_affine);
+	// A for Affine Transforms Variables
+	A_[0] = convert_affine.transpose() * (L_[0] * convert_affine);
+	A_[1] = convert_affine.transpose() * (L_[1] * convert_affine);
+	A_[2] = convert_affine.transpose() * (L_[2] * convert_affine);
+
+		
+
 }
 
 void ARAPTerm::buildb()
@@ -128,8 +131,10 @@ void ARAPTerm::buildb()
         b_.col(idx) << origin_petal.col(idx);
     }
 
-    //for Affine Transform Variables
-    b_ = b_ * convert_affine;
+	//for Affine Transform Variables
+	b_ = b_ * convert_affine;
+		
+	
 }
 
 void ARAPTerm::initRotation()
