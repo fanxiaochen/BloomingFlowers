@@ -23,6 +23,7 @@ public:
     inline Eigen::Matrix3Xd& b(){ return b_; }
 
     inline std::vector<Eigen::SparseMatrix<double>>& L() { return L_; }
+	inline Eigen::Matrix3Xd& b_L(){ return b_L_; }
 
     void build();
     void projection();
@@ -41,6 +42,7 @@ private:
     std::vector<Eigen::SparseMatrix<double>> L_;
     std::vector<Eigen::MatrixXd> A_;
     Eigen::Matrix3Xd b_;
+	Eigen::Matrix3Xd b_L_;
 
     std::vector<CollisionPair>  collision_pair_;
 };

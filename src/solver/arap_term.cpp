@@ -131,6 +131,8 @@ void ARAPTerm::buildb()
         b_.col(idx) << origin_petal.col(idx);
     }
 
+	b_L_ = b_;
+
 	//for Affine Transform Variables
 	b_ = b_ * convert_affine;
 		

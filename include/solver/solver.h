@@ -203,14 +203,14 @@ protected:
     double m_step(int petal_id);
 
     void initBuild(int petal_id);
-    void left_sys(int petal_id);
-    void right_sys(int petal_id);
+    void virtual left_sys(int petal_id);
+    void virtual right_sys(int petal_id);
 
     double solve(int petal_id);
     double energy(int petal_id);
 
-    void projection(int petal_id);
-    void update(int petal_id);
+    void  projection(int petal_id);
+    void  update(int petal_id);
 
     double boundary_gaussian(int petal_id, int m_id, int c_id); // m_id bases on original petal, c_id is current cloud's index
     double inner_gaussian(int petal_id, int m_id, int c_id);// m_id bases on original petal, c_id is current cloud's index
@@ -223,14 +223,14 @@ protected:
     double m_step();
 
     void virtual initBuild();
-    void left_sys();
-    void right_sys();
+    void virtual left_sys();
+    void virtual right_sys();
 
-    double solve();
-    double energy();
+    double virtual solve();
+    double virtual energy();
 
     void virtual projection();
-    void update();
+    void virtual update();
 
     void collision_detection();
     void PetalMatrix_to_Flower();

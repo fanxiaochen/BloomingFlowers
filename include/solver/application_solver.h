@@ -18,9 +18,18 @@ public:
 protected:
 	void initTerms();    // rewrite the virtual function
 	void initBuild();    // rewrite the init build function
+	void left_sys();
+	void right_sys();
+
+	void projection();
+	void update();
+	double solve();
+	double energy();
 
 protected:
 	std::vector<InterpolationTerm> interpolation_term_;
+	std::vector<std::vector<Eigen::SparseMatrix<double>>> L_;  // for each petal
+	std::vector<Eigen::Matrix3Xd> Fb_L_; // for each petal
 };
 
 #endif 

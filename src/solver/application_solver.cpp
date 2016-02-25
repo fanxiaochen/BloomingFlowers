@@ -1,4 +1,5 @@
 #include "application_solver.h"
+#include <Eigen/SparseQR>
 
 ApplicationSolver::ApplicationSolver(Flower* flower, int flower_frame)
 	:Solver(NULL, flower, flower_frame)
@@ -27,7 +28,7 @@ void ApplicationSolver::full_deform()
 	do {
 		collision_detection();
 		projection();
-		update();
+		update(); 
 		left_sys();
 		right_sys();
 
@@ -68,4 +69,55 @@ void ApplicationSolver::initBuild()
 		collision_term_[i].build();
 		interpolation_term_[i].build();
 	}
+}
+
+void ApplicationSolver::left_sys()
+{
+	for (size_t i = 0, i_end = petal_num_; i < i_end; ++i )
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			L_[i][j] = arap_term_[i].L()[j] +
+				collision_term_[i].L()[j] + interpolation_term_[i].L()[j];
+		}
+	}
+}
+
+void ApplicationSolver::right_sys()
+{
+	for (size_t i = 0, i_end = petal_num_; i < i_end; ++i)
+	{
+		Fb_L_[i] = arap_term_[i].b_L() +
+			collision_term_[i].b_L() + interpolation_term_[i].b_L();
+	}
+}
+
+void ApplicationSolver::projection()
+{
+	for (size_t j = 0; j < petal_num_; ++j)
+	{
+		arap_term_[j].projection();
+		collision_term_[j].projection();
+		interpolation_term_[j].update();
+	}
+}
+
+void ApplicationSolver::update()
+{
+	for (size_t j = 0; j < petal_num_; ++j)
+	{
+		collision_term_[j].update();
+		arap_term_[j].update();
+		interpolation_term_[j].update();
+	}
+}
+
+double ApplicationSolver::solve()
+{
+	return 0;
+}
+
+double ApplicationSolver::energy()
+{
+	return 0;
 }
