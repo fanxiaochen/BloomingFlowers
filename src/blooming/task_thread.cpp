@@ -455,39 +455,52 @@ void MotionTransferThread::run()
     }
     flower->reorder();
 
-    Flower* forward_flower = new Flower(*flower);
-    Flower* backward_flower = new Flower(*flower);
-
     std::string workspace = MainWindow::getInstance()->getWorkspace();
     QDir flowers_dir(QString(workspace.c_str()));
     flowers_dir.mkdir("transfered_flowers");
     std::string flowers_folder = flowers_dir.absolutePath().toStdString() + "/transfered_flowers";
 
-
+    flower->show();
+    osg::ref_ptr<PointCloud> key_cloud = points_file_system->getPointCloud(key_frame);
+    key_cloud->setClosureCloud(points_file_system->getClosureCloudFilename(key_frame));
+    tracking_system_->mt_registration(*key_cloud, *flower, key_frame);
     flower->save(flowers_folder, key_frame);
+    flower->update();
+    flower->hide();
 
-    std::cout << "Forward Tracking..." << std::endl;
+    Flower* forward_flower = new Flower(*flower);
+    Flower* backward_flower = new Flower(*flower);
+
+    /*std::cout << "Forward Tracking..." << std::endl;
+    osg::ref_ptr<PointCloud> forward_cloud;
     forward_flower->show();
-    for (size_t i = key_frame + 1, i_end = end_frame;
-        i < i_end; ++ i)
+    for (size_t i = key_frame, i_end = end_frame;
+    i < i_end; ++ i)
     {
-        std::cout << "tracking [frame " << i << "]" << std::endl;
+    std::cout << "tracking [frame " << i << "]" << std::endl;
 
-        tracking_system_->mt_registration(*forward_flower, i);
-        forward_flower->save(flowers_folder, i);
-        forward_flower->update();
+    forward_cloud = points_file_system->getPointCloud(i+1);
+    forward_cloud->setClosureCloud(points_file_system->getClosureCloudFilename(i+1));
+
+    tracking_system_->mt_registration(*forward_cloud,*forward_flower, i);
+    forward_flower->save(flowers_folder, i+1);
+    forward_flower->update();
     }
-    forward_flower->hide();
+    forward_flower->hide();*/
 
     std::cout << "Backward Tracking..." << std::endl;
+    osg::ref_ptr<PointCloud> backward_cloud;
     backward_flower->show();
-    for (int i = key_frame-1, i_end = start_frame;
+    for (int i = key_frame, i_end = start_frame;
         i > i_end; -- i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
 
-        tracking_system_->mt_registration(*backward_flower, i);
-        backward_flower->save(flowers_folder, i);
+        backward_cloud = points_file_system->getPointCloud(i-1);
+        backward_cloud->setClosureCloud(points_file_system->getClosureCloudFilename(i-1));
+
+        tracking_system_->mt_registration(*backward_cloud, *backward_flower, i);
+        backward_flower->save(flowers_folder, i-1);
         backward_flower->update();
     }
     backward_flower->hide();

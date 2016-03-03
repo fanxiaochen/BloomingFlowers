@@ -136,9 +136,9 @@ void TrackingSystem::la_registration( PointCloud& tracked_frame, Flower& trackin
 }
 
 // motion transfer
-void TrackingSystem::mt_registration(Flower& tracking_template, int current_frame)
+void TrackingSystem::mt_registration(PointCloud& tracked_frame, Flower& tracking_template, int current_frame)
 {
-    ApplicationSolver app_solver(&tracking_template, current_frame);
+    ApplicationSolver app_solver(&tracked_frame, &tracking_template, current_frame);
 
     app_solver.init_setting();
     app_solver.full_deform();

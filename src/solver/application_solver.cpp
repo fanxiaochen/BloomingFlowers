@@ -1,10 +1,11 @@
 #include <Eigen/SparseQR>
 #include "application_solver.h"
 #include "transfer.h"
+#include "main_window.h"
 
 
-ApplicationSolver::ApplicationSolver(Flower* flower, int flower_frame)
-    :Solver(NULL, flower, flower_frame)
+ApplicationSolver::ApplicationSolver(PointCloud* point_cloud, Flower* flower, int flower_frame)
+    :Solver(point_cloud, flower, flower_frame)
 {
     ref_flower_frame_ = flower_frame;
 
@@ -198,6 +199,10 @@ void ApplicationSolver::initTerms()
     {
         interpolation_term_.push_back(InterpolationTerm(i));
     }
+    for (size_t i = 0, i_end = petal_num_; i < i_end; ++i)
+    {
+        closure_term_.push_back(ClosureTerm(i));
+    }
 }
 
 void ApplicationSolver::initBuild()
@@ -207,6 +212,7 @@ void ApplicationSolver::initBuild()
         arap_term_[i].build();
         collision_term_[i].build();
         interpolation_term_[i].build();
+        closure_term_[i].build();
     }
 }
 
@@ -231,7 +237,8 @@ void ApplicationSolver::left_sys()
         int row_idx = 0, col_idx = 0;
         for (size_t j = 0; j < petal_num_; ++ j)
         {
-            L_[j][i] = Eigen::MatrixXd(arap_term_[j].L()[i] + collision_term_[j].L()[i] + interpolation_term_[j].L()[i]);
+            L_[j][i] = Eigen::MatrixXd(arap_term_[j].L()[i] + collision_term_[j].L()[i] + 
+                interpolation_term_[j].L()[i] + closure_term_[j].L()[i]);
 
            // assignSparseMatrix(L_[j][i], FL_[i].block(row_idx, col_idx, L_[j][i].rows(), L_[j][i].cols()));
             FL_[i].block(row_idx, col_idx, L_[j][i].rows(), L_[j][i].cols()) = L_[j][i];
@@ -257,7 +264,7 @@ void ApplicationSolver::right_sys()
     int col_idx = 0;
     for (size_t j = 0; j < petal_num_; ++ j)
     {
-        b_L_[j] = arap_term_[j].b_L() + collision_term_[j].b_L() + interpolation_term_[j].b_L();
+        b_L_[j] = arap_term_[j].b_L() + collision_term_[j].b_L() + interpolation_term_[j].b_L() + closure_term_[j].b_L();
 
         Fb_L_.block(0, col_idx, b_L_[j].rows(), b_L_[j].cols()) = b_L_[j];
         col_idx += b_L_[j].cols();
@@ -271,6 +278,7 @@ void ApplicationSolver::projection()
         arap_term_[j].projection();
         collision_term_[j].projection();
         interpolation_term_[j].projection();
+        closure_term_[j].projection();
     }
 }
 
@@ -281,6 +289,7 @@ void ApplicationSolver::update()
         collision_term_[j].update();
         arap_term_[j].update();
         interpolation_term_[j].update();
+        closure_term_[j].update();
     }
 }
 

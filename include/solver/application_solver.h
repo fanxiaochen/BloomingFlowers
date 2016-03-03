@@ -12,7 +12,7 @@
 class ApplicationSolver : public Solver
 {
 public:
-    ApplicationSolver(Flower* flower, int flower_frame);
+    ApplicationSolver(PointCloud* point_cloud, Flower* flower, int flower_frame);
     void init_setting();   // rewrite the init setting function
     void full_deform();    // rewrite the full deform function
     void loadRefFrames();   // hard code file folder

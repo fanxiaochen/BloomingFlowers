@@ -399,7 +399,7 @@ Flower* Transfer::updateBackward()
 {
     Petals& petals = current_flower_->getPetals();
 
-    assert(petals.size() == order_.size());
+    //assert(petals.size() == order_.size());
 
     for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
     {
@@ -468,7 +468,7 @@ Flower* Transfer::updateForward()
 {
     Petals& petals = current_flower_->getPetals();
 
-    assert(petals.size() == order_.size());
+    //assert(petals.size() == order_.size());
 
     for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
     {

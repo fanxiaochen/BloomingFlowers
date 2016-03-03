@@ -143,6 +143,8 @@ void ClosureTerm::buildb()
             Solver::lambda_closure_ * collision.projection_.z();
     }
 
+    b_L_ = b_;
+
     // for Affine Transform Variables
     b_ = b_ * convert_affine;
 }
