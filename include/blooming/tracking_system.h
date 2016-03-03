@@ -41,7 +41,7 @@ public:
     void detectTip();
     void detectBoundary();
 
-
+    void motion_transfer();
 
 
 public:
@@ -49,6 +49,7 @@ public:
 	void ee_registration(PointCloud& tracked_frame, Flower& tracking_template);
     void wea_registration(PointCloud& tracked_frame, Flower& tracking_template);
     void la_registration(PointCloud& tracked_frame, Flower& tracking_template, int current_frame);
+    void mt_registration(Flower& tracking_template, int current_frame);
 
 private:
     PointsFileSystem*   points_file_system_;

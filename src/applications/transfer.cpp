@@ -1,4 +1,5 @@
-
+#include "main_window.h"
+#include "parameters.h"
 #include "transfer.h"
 #include "flower.h"
 
@@ -185,7 +186,29 @@ Eigen::MatrixXd Transfer::getTransform(int petal_id, int frame, bool is_forward)
 }
 
 
-// hide backward process, all is in order
+//// hide backward process, all is in order from start frame
+//void Transfer::transfer(int start_frame, int end_frame)
+//{
+//    if (key_frame_ < start_frame || key_frame_ > end_frame)
+//    {
+//        std::cout << "frame number should be right!!" << std::endl;
+//        return;
+//    }
+//    
+//    // backward
+//    for (int i = start_frame+1; i <= key_frame_; ++ i)
+//    {
+//        updateBackward(i);
+//    }
+//
+//    // forward
+//    for (int i = key_frame_; i < end_frame; ++ i)
+//    {
+//        updateForward(i);
+//    }
+//}
+
+// hide backward process, from key frame
 void Transfer::transfer(int start_frame, int end_frame)
 {
     if (key_frame_ < start_frame || key_frame_ > end_frame)
@@ -193,14 +216,18 @@ void Transfer::transfer(int start_frame, int end_frame)
         std::cout << "frame number should be right!!" << std::endl;
         return;
     }
-    
+
+    key_flower_->save(flower_folder_, key_frame_);
+
     // backward
-    for (int i = start_frame+1; i <= key_frame_; ++ i)
+    *current_flower_ = *key_flower_; // deep copy
+    for (int i = key_frame_; i > start_frame; -- i)
     {
         updateBackward(i);
     }
 
     // forward
+    *current_flower_ = *key_flower_; // deep copy
     for (int i = key_frame_; i < end_frame; ++ i)
     {
         updateForward(i);
@@ -320,7 +347,7 @@ void Transfer::updateBackward(int frame)
 
             Eigen::MatrixXd M_i = W_i * T;
 
-            new_V.col(i) = M_i.inverse() * V.col(i);
+            new_V.col(i) = M_i/*.inverse()*/ * V.col(i);    // no inverse here for key frame, not from start frame
         }
 
         // write back to petal
@@ -339,15 +366,173 @@ void Transfer::updateBackward(int frame)
         {
             auto& joint = joints[i];
             Eigen::MatrixXd t = T.block<4,4>(i*4,0);
-            Eigen::Vector4d np = t.inverse() * Eigen::Vector4d(joint.x, joint.y, joint.z, 1);
+            Eigen::Vector4d np = t/*.inverse()*/ * Eigen::Vector4d(joint.x, joint.y, joint.z, 1); // no inverse here for key frame, not from start frame
             joint.x = np(0);
             joint.y = np(1);
             joint.z = np(2);
         }
 
-        current_flower_->save(flower_folder_, frame);
+        current_flower_->save(flower_folder_, frame-1);
 
     }
+}
+
+Transfer::Transfer(const std::string& transform_folder, Flower* current_flower, int current_frame)
+{
+    transform_folder_ = transform_folder;
+    current_flower_ = current_flower;
+    current_frame_ = current_frame;
+}
+
+Flower* Transfer::update()
+{
+    key_frame_ = MainWindow::getInstance()->getParameters()->getKeyFrame();
+    if (key_frame_ < current_frame_)
+        return updateForward();
+    else if (key_frame_ > current_frame_)
+        return updateBackward();
+    else
+        return current_flower_;
+}
+
+Flower* Transfer::updateBackward()
+{
+    Petals& petals = current_flower_->getPetals();
+
+    assert(petals.size() == order_.size());
+
+    for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
+    {
+        Petal& petal = petals[i];
+        int handle_num = petal.getSkeleton()->getJointNumber();
+
+        // get T
+        Eigen::MatrixXd T;
+        T = getTransform(i, current_frame_, false);
+
+
+        // get biharmonic weights
+        Eigen::MatrixXd W = petal.getBiharmonicWeights();
+
+        // get current vertices
+        int petal_size = petal.getVertices()->size();
+        Eigen::MatrixXd V(4, petal_size);
+
+        for (size_t j = 0, j_end = petal_size; j < j_end; ++ j)
+        {
+            V.col(j) << petal.getVertices()->at(j).x(), petal.getVertices()->at(j).y(), petal.getVertices()->at(j).z(), 1;
+        }
+
+        // update new vertices
+        Eigen::MatrixXd new_V(4, petal_size);
+
+        for (size_t i = 0, i_end = V.cols(); i < i_end; ++ i)
+        {
+            Eigen::MatrixXd W_i(4, 4*handle_num);
+            for (size_t j = 0; j < handle_num; ++ j)
+            {
+                W_i.block(0, j*4, 4, 4) = W(i, j) * Eigen::MatrixXd::Identity(4, 4);
+            }
+
+            Eigen::MatrixXd M_i = W_i * T;
+
+            new_V.col(i) = M_i/*.inverse()*/ * V.col(i);    // no inverse here for key frame, not from start frame
+        }
+
+        // write back to petal
+        for (size_t j = 0, j_end = petal.getVertices()->size(); j < j_end; ++ j)
+        {
+            petal.getVertices()->at(j).x() = new_V(0, j);
+            petal.getVertices()->at(j).y() = new_V(1, j);
+            petal.getVertices()->at(j).z() = new_V(2, j);
+        }
+        petal.updateNormals();
+
+        // update new skeleton
+        osg::ref_ptr<Skeleton> skeleton = petal.getSkeleton();
+        Skeleton::Joints& joints = skeleton->getJoints();
+        for (size_t i = 0; i < skeleton->getJointNumber(); ++ i)
+        {
+            auto& joint = joints[i];
+            Eigen::MatrixXd t = T.block<4,4>(i*4,0);
+            Eigen::Vector4d np = t/*.inverse()*/ * Eigen::Vector4d(joint.x, joint.y, joint.z, 1); // no inverse here for key frame, not from start frame
+            joint.x = np(0);
+            joint.y = np(1);
+            joint.z = np(2);
+        }
+    }
+    return current_flower_;
+}
+
+Flower* Transfer::updateForward()
+{
+    Petals& petals = current_flower_->getPetals();
+
+    assert(petals.size() == order_.size());
+
+    for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
+    {
+        Petal& petal = petals[i];
+        int handle_num = petal.getSkeleton()->getJointNumber();
+
+        // get T
+        Eigen::MatrixXd T;
+        T = getTransform(i, current_frame_, true);
+
+
+        // get biharmonic weights
+        Eigen::MatrixXd W = petal.getBiharmonicWeights();
+
+        // get current vertices
+        int petal_size = petal.getVertices()->size();
+        Eigen::MatrixXd V(4, petal_size);
+
+        for (size_t j = 0, j_end = petal_size; j < j_end; ++ j)
+        {
+            V.col(j) << petal.getVertices()->at(j).x(), petal.getVertices()->at(j).y(), petal.getVertices()->at(j).z(), 1;
+        }
+
+        // update new vertices
+        Eigen::MatrixXd new_V(4, petal_size);
+
+        for (size_t i = 0, i_end = V.cols(); i < i_end; ++ i)
+        {
+            Eigen::MatrixXd W_i(4, 4*handle_num);
+            for (size_t j = 0; j < handle_num; ++ j)
+            {
+                W_i.block(0, j*4, 4, 4) = W(i, j) * Eigen::MatrixXd::Identity(4, 4);
+            }
+
+            Eigen::MatrixXd M_i = W_i * T;
+
+            new_V.col(i) = M_i * V.col(i);
+        }
+
+        // write back to petal
+        for (size_t j = 0, j_end = petal.getVertices()->size(); j < j_end; ++ j)
+        {
+            petal.getVertices()->at(j).x() = new_V(0, j);
+            petal.getVertices()->at(j).y() = new_V(1, j);
+            petal.getVertices()->at(j).z() = new_V(2, j);
+        }
+        petal.updateNormals();
+
+        // update new skeleton
+        osg::ref_ptr<Skeleton> skeleton = petal.getSkeleton();
+        Skeleton::Joints& joints = skeleton->getJoints();
+        for (size_t i = 0; i < skeleton->getJointNumber(); ++ i)
+        {
+            auto& joint = joints[i];
+            Eigen::MatrixXd t = T.block<4,4>(i*4,0);
+            Eigen::Vector4d np = t * Eigen::Vector4d(joint.x, joint.y, joint.z, 1);
+            joint.x = np(0);
+            joint.y = np(1);
+            joint.z = np(2);
+        }
+
+    }
+
+    return current_flower_;
 }
 
 

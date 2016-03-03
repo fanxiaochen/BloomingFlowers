@@ -248,6 +248,7 @@ void MainWindow::init(void)
     connect(ui_.actionTransfer, SIGNAL(triggered()), this, SLOT(transfer()));
     connect(ui_.actionMultiLayer, SIGNAL(triggered()), this, SLOT(multi_layer()));
     connect(ui_.actionInterpolation, SIGNAL(triggered()), this, SLOT(interpolation()));
+    connect(ui_.actionMotionTransfer, SIGNAL(triggered()), tracking_system_, SLOT(motion_transfer()));
     // connect
 
 
@@ -575,14 +576,16 @@ bool MainWindow::camera_views()
 bool MainWindow::transfer()
 {
     QString directory = QFileDialog::getExistingDirectory(this, tr("Transfer"), "transfer_flowers", QFileDialog::ShowDirsOnly);
-    std::string transfer_folder = "D:/baidu disk/WorkSpace/Projects/BloomingFlower/BloomingFlowers/data/applications/transfers-lily";
+//    std::string transfer_folder = "D:/baidu disk/WorkSpace/Projects/BloomingFlower/BloomingFlowers/data/applications/transfers-lily";
+    std::string transfer_folder = "D:/baidu disk/WorkSpace/Projects/BloomingFlower/BloomingFlowers/data/applications/new-transfer";
     std::string transform_folder = transfer_folder + "/petal sequences";
 
     Transfer t(transform_folder);
 
     std::vector<int> order;
-   /* order.push_back(0);
-    order.push_back(1);*/
+    order.push_back(0);
+    order.push_back(1);
+    order.push_back(2);
     order.push_back(3);
     order.push_back(4);
     order.push_back(5);

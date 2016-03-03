@@ -44,6 +44,9 @@ public:
 public:
     typedef struct 
     {
+        // reference petal
+        PetalMatrix         _ref_matrix;
+
         // original petal and cloud data
         PetalMatrix         _origin_petal;
         PetalMatrix         _petal_matrix;
@@ -98,6 +101,8 @@ public:
             }
             if (share_vertex.size() > 2) {
                 std::cout << "share vertices number warning: " << share_vertex.size() << std::endl;
+                for (auto i : share_vertex)
+                    std::cout << "share vertex id: " << i << std::endl;
             }
         }
 
@@ -153,7 +158,7 @@ public:
 
     static int iter_num_;
     static double eps_;
-	static double lambda_interpolation_;
+    static double lambda_interpolation_;
     static double lambda_tip_fitting_;
     static double lambda_boundary_fitting_;
     static double lambda_inner_fitting_;
@@ -181,7 +186,7 @@ public:
     void deform();
 
     // deform as a whole
-    void virtual full_deform();
+    void full_deform();
 
     // in order to program more easily, inner part also have boundary part...
     // not restrict as method described
@@ -191,7 +196,7 @@ public:
     void trajectory_guided_setting();
 
     // init setting: two cases
-    void virtual init_setting();
+    void init_setting();
 
 
 protected:
@@ -203,8 +208,8 @@ protected:
     double m_step(int petal_id);
 
     void initBuild(int petal_id);
-    void virtual left_sys(int petal_id);
-    void virtual right_sys(int petal_id);
+    void left_sys(int petal_id);
+    void right_sys(int petal_id);
 
     double solve(int petal_id);
     double energy(int petal_id);
@@ -222,15 +227,15 @@ protected:
     void e_step();
     double m_step();
 
-    void virtual initBuild();
-    void virtual left_sys();
-    void virtual right_sys();
+    void initBuild();
+    void left_sys();
+    void right_sys();
 
-    double virtual solve();
-    double virtual energy();
+    double solve();
+    double energy();
 
-    void virtual projection();
-    void virtual update();
+    void projection();
+    void update();
 
     void collision_detection();
     void PetalMatrix_to_Flower();

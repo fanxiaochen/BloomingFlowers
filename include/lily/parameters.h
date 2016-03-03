@@ -25,6 +25,7 @@ public:
     inline double& getCollision() { return collision_; }
     inline double& getARAP() { return arap_; }
     inline double& getClosure() { return closure_; }
+    inline double& getInterpolate() { return interpolate_; }
     inline double& getNoiseP() { return noise_p_; }
     inline float& getMovingRatio() { return moving_ratio_; }
     inline std::string& getClosureIds() { return closure_ids_; }
@@ -64,6 +65,7 @@ private:
     double collision_;
     double arap_;
     double closure_;
+    double interpolate_;
     double noise_p_;
     float moving_ratio_;
     std::string closure_ids_;

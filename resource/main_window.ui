@@ -33,7 +33,7 @@
      <x>0</x>
      <y>0</y>
      <width>864</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -99,9 +99,11 @@
     <property name="title">
      <string>Applications</string>
     </property>
-    <addaction name="actionTransfer"/>
     <addaction name="actionMultiLayer"/>
     <addaction name="actionInterpolation"/>
+    <addaction name="separator"/>
+    <addaction name="actionTransfer"/>
+    <addaction name="actionMotionTransfer"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTracking"/>
@@ -277,7 +279,7 @@
   </action>
   <action name="actionTransfer">
    <property name="text">
-    <string>Transfer</string>
+    <string>Init Transfer</string>
    </property>
   </action>
   <action name="actionMultiLayer">
@@ -333,6 +335,11 @@
   <action name="actionMeasure_Fittign_Error">
    <property name="text">
     <string>Measure Fittign Error</string>
+   </property>
+  </action>
+  <action name="actionMotionTransfer">
+   <property name="text">
+    <string>Motion Transfer</string>
    </property>
   </action>
  </widget>

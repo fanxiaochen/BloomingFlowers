@@ -8,6 +8,7 @@
 #include "elastic_model.h"
 #include "weighted_model.h"
 #include "solver.h"
+#include "application_solver.h"
 
 TrackingSystem::TrackingSystem(PointsFileSystem* points_file_system)
     :key_frame_(-1)
@@ -86,6 +87,15 @@ void TrackingSystem::detectBoundary()
     return;
 }
 
+void TrackingSystem::motion_transfer()
+{
+    MotionTransferThread* track_thread = new MotionTransferThread(this);
+    connect(track_thread, SIGNAL(finished()), track_thread, SLOT(quit()));
+
+    track_thread->start();
+    return;
+}
+
 
 // em + arap registration
 void TrackingSystem::ea_registration(PointCloud& tracked_frame, Flower& tracking_template)
@@ -123,4 +133,13 @@ void TrackingSystem::la_registration( PointCloud& tracked_frame, Flower& trackin
 
     solver.init_setting();
     solver.full_deform();
+}
+
+// motion transfer
+void TrackingSystem::mt_registration(Flower& tracking_template, int current_frame)
+{
+    ApplicationSolver app_solver(&tracking_template, current_frame);
+
+    app_solver.init_setting();
+    app_solver.full_deform();
 }

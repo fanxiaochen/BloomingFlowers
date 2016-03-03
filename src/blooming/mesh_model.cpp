@@ -705,9 +705,14 @@ void MeshModel::findSharedVertices(int pi, int pj, std::vector<int>& shared_vert
             shared_vertices.push_back(vertices[i]);
     }
 
-    if (shared_vertices.size() > 2) {
-        std::cout << "share vertices number warning: " << shared_vertices.size() << std::endl;
-    }
+    /*if (shared_vertices.size() > 2) {
+    std::cout << "share vertices number warning: " << shared_vertices.size() << std::endl;
+    std::cout << "pi index: " << pi << std::endl;
+    std::cout << "pi pos: " << vertices_->at(pi).x() << ", " << vertices_->at(pi).y() << ", " << vertices_->at(pi).z() << std::endl;
+    std::cout << "pj index: " << pj << std::endl;
+    std::cout << "pj pos: " << vertices_->at(pj).x() << ", " << vertices_->at(pj).y() << ", " << vertices_->at(pj).z() << std::endl;
+    std::cout << std::endl;
+    }*/
 }
 
 void MeshModel::searchNearestIdx(PointCloud* point_cloud, std::vector<int>& knn_idx)

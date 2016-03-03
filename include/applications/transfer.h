@@ -21,6 +21,11 @@ public:
     Eigen::MatrixXd getTransform(int petal_id, int frame, bool is_forward);
     void transfer(int start_frame, int end_frame);
 
+    // motion transfer
+    Transfer(const std::string& transform_folder, Flower* current_flower, int current_frame);
+    Flower* update();
+    Flower* updateBackward();
+    Flower* updateForward();
 
 protected:
     void update(int frame, bool is_forward);

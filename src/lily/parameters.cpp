@@ -40,6 +40,7 @@ bool Parameters::load(const std::string& filename)
     collision_ = solverElement.attribute("collision").toDouble();
     closure_ = solverElement.attribute("closure").toDouble();
     arap_ = solverElement.attribute("arap").toDouble();
+    interpolate_ = solverElement.attribute("interpolate").toDouble();
     noise_p_ = solverElement.attribute("noise_p").toDouble();
     moving_ratio_ = solverElement.attribute("moving_ratio").toFloat();
     closure_ids_ = solverElement.attribute("closure_ids").toStdString();
@@ -104,6 +105,7 @@ bool Parameters::save(const std::string& filename)
     solverElement.setAttribute("collision", collision_);
     solverElement.setAttribute("closure", closure_);
     solverElement.setAttribute("arap", arap_);
+    solverElement.setAttribute("interpolate", interpolate_);
     solverElement.setAttribute("noise_p", noise_p_);
     solverElement.setAttribute("moving_ratio", moving_ratio_);
     solverElement.setAttribute("closure_ids", QString(closure_ids_.c_str()));
@@ -156,14 +158,24 @@ Eigen::MatrixXi Parameters::getPetalRelation()
 
     // not convenient to store, have to indicate manually here...
 
-    // lily
+
+    // motion transfer for heart lily
     petal_relation << 
         0, 1, -1, -1, -1, -1,
         -1, 0, -1, -1, -1, -1,
         1, 1, 0, -1, -1, -1,
-        1, 1, 1, 0, 0 ,0,
-        1, 1, 1, 0, 0, 0,
-        1, 1, 0, 0, 0, 0;
+        1, 1, 1, 0, 1 ,-1,
+        1, 1, 1, -1, 0, -1,
+        1, 1, 1, 1, 1, 0;
+
+    //// lily
+    //petal_relation << 
+    //    0, 1, -1, -1, -1, -1,
+    //    -1, 0, -1, -1, -1, -1,
+    //    1, 1, 0, -1, -1, -1,
+    //    1, 1, 1, 0, 0 ,0,
+    //    1, 1, 1, 0, 0, 0,
+    //    1, 1, 0, 0, 0, 0;
 
     //  // orchid
     //  petal_relation << 

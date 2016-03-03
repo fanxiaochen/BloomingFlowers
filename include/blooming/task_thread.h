@@ -68,6 +68,21 @@ protected:
 };
 
 
+// Motion Transfer
+class MotionTransferThread: public QThread
+{
+public:
+    MotionTransferThread(TrackingSystem* tracking_system);
+    virtual ~MotionTransferThread();
+
+protected:
+    void run();
+
+protected:
+    TrackingSystem*	tracking_system_;
+};
+
+
 // Tip Detection
 class TipThread: public QThread
 {

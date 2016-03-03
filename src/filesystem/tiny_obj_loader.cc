@@ -707,7 +707,22 @@ std::string LoadObj(
     // Ignore unknown command.
   }
 
-  bool ret = exportFaceGroupToShape(shape, vertexCache, v, vn, vt, faceGroup, material, name, true);
+
+  // original one
+  shape.mesh.positions = v;
+  shape.mesh.normals = vn;
+  shape.mesh.texcoords = vt;
+  for (decltype(faceGroup.size()) i = 0; i < faceGroup.size(); ++i)
+  {
+      shape.mesh.indices.push_back(faceGroup[i][0].v_idx);
+      shape.mesh.indices.push_back(faceGroup[i][1].v_idx);
+      shape.mesh.indices.push_back(faceGroup[i][2].v_idx);
+  }
+  shape.mesh.material_ids.push_back(material);
+
+  // Don't change vertex index
+  bool ret = true;
+ // bool ret = exportFaceGroupToShape(shape, vertexCache, v, vn, vt, faceGroup, material, name, true);
   if (ret) {
     shapes.push_back(shape);
   }

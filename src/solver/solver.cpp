@@ -69,6 +69,7 @@ void Solver::init()
     lambda_skel_smooth_ = MainWindow::getInstance()->getParameters()->getSkelSmooth();
     lambda_collision_ = MainWindow::getInstance()->getParameters()->getCollision();
     lambda_arap_ = MainWindow::getInstance()->getParameters()->getARAP();
+    lambda_interpolation_ = MainWindow::getInstance()->getParameters()->getInterpolate();
     lambda_closure_ = MainWindow::getInstance()->getParameters()->getClosure();
     noise_p_ = MainWindow::getInstance()->getParameters()->getNoiseP();
     closure_ids_ = MainWindow::getInstance()->getParameters()->getClosureIds();
@@ -76,9 +77,12 @@ void Solver::init()
 
     flower_->setPetalRelation(MainWindow::getInstance()->getParameters()->getPetalRelation());
 
-    closure_cloud_ = point_cloud_->getClosureCloud();
-    if (closure_cloud_ != nullptr)
-        closure_cloud_->buildSelfKdtree();
+    if (point_cloud_)
+    {
+        closure_cloud_ = point_cloud_->getClosureCloud();
+        if (closure_cloud_ != nullptr)
+            closure_cloud_->buildSelfKdtree();
+    }
 }
 
 void Solver::boundary_inner_setting()
