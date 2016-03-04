@@ -471,36 +471,36 @@ void MotionTransferThread::run()
     Flower* forward_flower = new Flower(*flower);
     Flower* backward_flower = new Flower(*flower);
 
-    /*std::cout << "Forward Tracking..." << std::endl;
+    std::cout << "Forward Tracking..." << std::endl;
     osg::ref_ptr<PointCloud> forward_cloud;
     forward_flower->show();
-    for (size_t i = key_frame, i_end = end_frame;
-    i < i_end; ++ i)
+    for (size_t i = key_frame+1, i_end = end_frame;
+        i <= i_end; ++ i)
     {
-    std::cout << "tracking [frame " << i << "]" << std::endl;
+        std::cout << "tracking [frame " << i << "]" << std::endl;
 
-    forward_cloud = points_file_system->getPointCloud(i+1);
-    forward_cloud->setClosureCloud(points_file_system->getClosureCloudFilename(i+1));
+        forward_cloud = points_file_system->getPointCloud(i);
+        forward_cloud->setClosureCloud(points_file_system->getClosureCloudFilename(i));
 
-    tracking_system_->mt_registration(*forward_cloud,*forward_flower, i);
-    forward_flower->save(flowers_folder, i+1);
-    forward_flower->update();
+        tracking_system_->mt_registration(*forward_cloud,*forward_flower, i);
+        forward_flower->save(flowers_folder, i);
+        forward_flower->update();
     }
-    forward_flower->hide();*/
+    forward_flower->hide();
 
     std::cout << "Backward Tracking..." << std::endl;
     osg::ref_ptr<PointCloud> backward_cloud;
     backward_flower->show();
-    for (int i = key_frame, i_end = start_frame;
-        i > i_end; -- i)
+    for (int i = key_frame-1, i_end = start_frame;
+        i >= i_end; -- i)
     {
         std::cout << "tracking [frame " << i << "]" << std::endl;
 
-        backward_cloud = points_file_system->getPointCloud(i-1);
-        backward_cloud->setClosureCloud(points_file_system->getClosureCloudFilename(i-1));
+        backward_cloud = points_file_system->getPointCloud(i);
+        backward_cloud->setClosureCloud(points_file_system->getClosureCloudFilename(i));
 
         tracking_system_->mt_registration(*backward_cloud, *backward_flower, i);
-        backward_flower->save(flowers_folder, i-1);
+        backward_flower->save(flowers_folder, i);
         backward_flower->update();
     }
     backward_flower->hide();

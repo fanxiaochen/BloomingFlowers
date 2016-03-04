@@ -408,7 +408,7 @@ Flower* Transfer::updateBackward()
 
         // get T
         Eigen::MatrixXd T;
-        T = getTransform(i, current_frame_, false);
+        T = getTransform(i, current_frame_+1, false);
 
 
         // get biharmonic weights
@@ -477,7 +477,7 @@ Flower* Transfer::updateForward()
 
         // get T
         Eigen::MatrixXd T;
-        T = getTransform(i, current_frame_, true);
+        T = getTransform(i, current_frame_-1, true);
 
 
         // get biharmonic weights
