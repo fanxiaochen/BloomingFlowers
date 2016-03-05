@@ -358,7 +358,7 @@ void PointCloud::searchNearestIdx(MeshModel* mesh_model, std::vector<std::vector
 
     for (size_t i = 0, i_end = mesh_model->getVertices()->size(); i < i_end; ++ i)
     {
-        pcl::PointXYZ searchPoint;
+        Point searchPoint;
         std::vector<int> pointIdxNKNSearch(K);
         std::vector<float> pointNKNSquaredDistance(K);
 
@@ -574,7 +574,7 @@ void PointCloud::prediction_search(std::vector<int>& petal_order, const Point& o
     std::vector<int> pointIdxNKNSearch(K);
     std::vector<float> pointNKNSquaredDistance(K);
 
-    pcl::PointXYZ searchPoint;
+    Point searchPoint;
     searchPoint.x = origin_point.x;
     searchPoint.y = origin_point.y;
     searchPoint.z = origin_point.z;
@@ -652,7 +652,7 @@ void PointCloud::buildSelfKdtree()
         cloud->push_back(pcl_point);
     }
 
-    kdtree_.setInputCloud (cloud);
+    kdtree_.setInputCloud (pcl::PointCloud<Point>::Ptr(this));
 }
 
 
@@ -860,7 +860,7 @@ void PointCloud::searchCloudTips(Point k, int id)
 {
     float radius = 5;
 
-    pcl::PointXYZ point;
+    Point point;
     point.x = k.x;
     point.y = k.y;
     point.z = k.z;

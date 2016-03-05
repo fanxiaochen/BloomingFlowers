@@ -30,13 +30,16 @@ void ClosureTerm::projection()
 
     collision_pair_.clear();
 
-    pcl::KdTreeFLANN<pcl::PointXYZ>& kdtree = Solver::closure_cloud_->getSelfKdtree();
+    pcl::KdTreeFLANN<Point>& kdtree = Solver::closure_cloud_->getSelfKdtree();
 
     Solver::PetalMatrix& petal_matrix = Solver::deform_petals_[petal_id_]._petal_matrix;
     
     for (int i = 0, i_end = petal_matrix.cols(); i < i_end; ++ i)
     {
-        pcl::PointXYZ search_point(petal_matrix(0, i), petal_matrix(1, i), petal_matrix(2, i));
+        Point search_point;
+        search_point.x = petal_matrix(0, i);
+        search_point.y = petal_matrix(1, i);
+        search_point.z = petal_matrix(2, i);
         int K = 3;
 
         std::vector<int> pointIdxNKNSearch(K);

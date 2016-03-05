@@ -171,7 +171,8 @@ public:
   void setClosureCloud(const std::string& closure_cloud);
   osg::ref_ptr<PointCloud> getClosureCloud(); 
 
-  pcl::KdTreeFLANN<pcl::PointXYZ>& getSelfKdtree() { return kdtree_; }
+  /*pcl::KdTreeFLANN<pcl::PointXYZ>& getSelfKdtree() { return kdtree_; }*/
+  pcl::KdTreeFLANN<Point>& getSelfKdtree() { return kdtree_; }
 
   void savePovrayFiles(const QString& povray_files);
   void saveLightFile(const QString& light_filename);
@@ -219,7 +220,8 @@ protected:
   bool                          show_tips_;
   bool                          show_probs_;;
 
-  pcl::KdTreeFLANN<pcl::PointXYZ>     kdtree_;
+  /*pcl::KdTreeFLANN<pcl::PointXYZ>     kdtree_;*/
+  pcl::KdTreeFLANN<Point>     kdtree_;
 
   osg::ref_ptr<PointCloud>            closure_cloud_;
 
