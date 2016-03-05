@@ -159,23 +159,23 @@ Eigen::MatrixXi Parameters::getPetalRelation()
     // not convenient to store, have to indicate manually here...
 
 
-    //// eustoma
-    //petal_relation << 
-    //    0, 1, 0, 0, -1,
-    //    -1, 0, 1, 0, 0,
-    //    0, -1, 0, 1, 0,
-    //    0, 0, -1, 0, 1,
-    //    1, 0, 0, -1, 0;
-
-
-    // motion transfer for heart lily
+    // eustoma
     petal_relation << 
-        0, 1, -1, -1, -1, -1,
-        -1, 0, -1, -1, -1, -1,
-        1, 1, 0, -1, -1, -1,
-        1, 1, 1, 0, -1 ,-1,
-        1, 1, 1, 1, 0, -1,
-        1, 1, 1, 1, 1, 0;
+        0, 1, 0, 0, -1,
+        -1, 0, 1, 0, 0,
+        0, -1, 0, 1, 0,
+        0, 0, -1, 0, 1,
+        1, 0, 0, -1, 0;
+
+
+    //// motion transfer for heart lily
+    //petal_relation << 
+    //    0, 1, -1, -1, -1, -1,
+    //    -1, 0, -1, -1, -1, -1,
+    //    1, 1, 0, -1, -1, -1,
+    //    1, 1, 1, 0, -1 ,-1,
+    //    1, 1, 1, 1, 0, -1,
+    //    1, 1, 1, 1, 1, 0;
 
     //// lily
     //petal_relation << 
