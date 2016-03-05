@@ -904,9 +904,9 @@ bool MeshModel::onDetectedBoundary(int index)
 
 void MeshModel::initializeVisibility()
 {
-    visibility_.resize(this->getVertices()->size());
-    for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
-        visibility_[i] = 0;
+    visibility_.resize(this->getVertices()->size(), 0);
+    /*for (size_t i = 0, i_end = vertices_->size(); i < i_end; ++ i)
+        visibility_[i] = 0;*/
 
     return;
 }

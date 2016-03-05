@@ -259,11 +259,11 @@ void Flower::determineIntersection()
     osg::Vec3d z_start = bounding_sphere.center() - osg::Vec3d(0.0, 0.0, bounding_sphere.radius());
     osg::Vec3d z_end = bounding_sphere.center() + osg::Vec3d(0.0, 0.0, bounding_sphere.radius());
 
-    osg::Vec3d deltaRow(bounding_sphere.radius()*0.02, 0.0, 0.0);
-    osg::Vec3d deltaColumn(0.0, bounding_sphere.radius()*0.02, 0.0);
+    osg::Vec3d deltaRow(bounding_sphere.radius()*0.05, 0.0, 0.0);
+    osg::Vec3d deltaColumn(0.0, bounding_sphere.radius()*0.05, 0.0);
 
-    const int numRows = 50;
-    const int numColumns = 50;
+    const int numRows = 20;
+    const int numColumns = 20;
 
     osg::ref_ptr<osgUtil::IntersectorGroup> intersectorGroup = new osgUtil::IntersectorGroup();
 
@@ -285,8 +285,8 @@ void Flower::determineIntersection()
 
     if (intersectorGroup->containsIntersections())
     {
-        std::cout<<"Found intersections "<<std::endl;
         osgUtil::IntersectorGroup::Intersectors& intersectors = intersectorGroup->getIntersectors();
+        std::cout<<"Found intersections #"<< intersectors.size() << std::endl;
         for(osgUtil::IntersectorGroup::Intersectors::iterator intersector_itr = intersectors.begin();
             intersector_itr != intersectors.end(); ++intersector_itr)
         {
