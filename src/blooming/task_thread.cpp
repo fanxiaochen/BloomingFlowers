@@ -311,9 +311,9 @@ void LATrackThread::run()
     int tip_bin_num = MainWindow::getInstance()->getParameters()->getBinNum();
     float tip_knn_radius = MainWindow::getInstance()->getParameters()->getKnnRadius();
 
-    osg::ref_ptr<TrajectoryModel> traj_model = new TrajectoryModel;
+    /*osg::ref_ptr<TrajectoryModel> traj_model = new TrajectoryModel;
     traj_model->init(flower);
-    traj_model->show();
+    traj_model->show();*/
 
 
     flower->show();
@@ -331,7 +331,7 @@ void LATrackThread::run()
     tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
 
     std::cout << "flower segmentation" << std::endl;
-    key_cloud->fitting_region(flower, traj_model);
+    key_cloud->fitting_region(flower, nullptr);
 
     tracking_system_->la_registration(*key_cloud, *flower, key_frame);
     flower->save(flowers_folder, key_frame);
@@ -366,7 +366,7 @@ void LATrackThread::run()
         tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
 
         std::cout << "flower segmentation" << std::endl;
-        forward_cloud->fitting_region(forward_flower, traj_model);
+        forward_cloud->fitting_region(forward_flower, nullptr);
 
         forward_flower->setTransFolder(flowers_folder, i-1);
         Solver::is_forward_ = true;
@@ -402,7 +402,7 @@ void LATrackThread::run()
         tip_detector.detectBoundary(tip_bin_num, tip_knn_radius);
 
         std::cout << "flower segmentation" << std::endl;
-        backward_cloud->fitting_region(backward_flower, traj_model);
+        backward_cloud->fitting_region(backward_flower, nullptr);
 
         backward_flower->setTransFolder(flowers_folder, i+1);
         Solver::is_forward_ = false;
