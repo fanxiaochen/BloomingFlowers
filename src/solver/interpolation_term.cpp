@@ -29,6 +29,7 @@ void InterpolationTerm::buildA()
 {
     Solver::DeformPetal& deform_petal = Solver::deform_petals_[petal_id_];
     Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
+    Solver::HardCtrsIdx& hc_idx = deform_petal._hc_idx;
     int ver_num = deform_petal._petal_matrix.cols();
 
     L_.resize(3);
@@ -60,6 +61,8 @@ void InterpolationTerm::buildb()
 {
     Solver::DeformPetal& deform_petal = Solver::deform_petals_[petal_id_];
     Solver::PetalMatrix& ref_petal = deform_petal._ref_matrix;
+    Solver::PetalMatrix& origin_petal = deform_petal._origin_petal;
+    Solver::HardCtrsIdx& hc_idx = deform_petal._hc_idx;
     Solver::ConvertAffineMatrix& convert_affine = deform_petal._convert_affine;
     int ver_num = ref_petal.cols();
 
@@ -68,6 +71,12 @@ void InterpolationTerm::buildb()
     for (int i = 0; i != ver_num; ++i )
     {
         b_.col(i) << Solver::lambda_interpolation_ * ref_petal.col(i);
+    }
+
+    // hard constraint
+    for (int idx : hc_idx)
+    {
+        b_.col(idx) << Solver::lambda_interpolation_ * origin_petal.col(idx);
     }
 
     // b_L_ for Vertex Variables

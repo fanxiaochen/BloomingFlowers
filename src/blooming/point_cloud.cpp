@@ -679,6 +679,9 @@ bool PointCloud::flower_segmentation(Flower* flower)
     // segment tips
     bool flag = boundary_segmentation(flower) && tip_segmentation(flower);
     
+    // for eustoma
+    flag = false;
+
     return flag;
 }
 

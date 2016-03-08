@@ -16,6 +16,7 @@ ApplicationSolver::ApplicationSolver(PointCloud* point_cloud, Flower* flower, in
 void ApplicationSolver::init_setting()
 {
     loadRefFrame();
+    std::cout << "finish reference loading" << std::endl;
 
     initMeshParas();
     std::cout << "finish mesh initialization" << std::endl;
@@ -386,6 +387,8 @@ void ApplicationSolver::deforming(int petal_id)
     Petals& petals = flower_->getPetals();
     Petal& petal = petals.at(petal_id);
     PetalMatrix& pm = deform_petals_[petal_id]._petal_matrix;
+    PetalMatrix& om = deform_petals_[petal_id]._origin_petal;
+    HardCtrsIdx& hc_idx = deform_petals_[petal_id]._hc_idx;
 
     for (size_t j = 0, j_end = petal.getVertices()->size(); j < j_end; ++ j)
     {
@@ -393,6 +396,14 @@ void ApplicationSolver::deforming(int petal_id)
         petal.getVertices()->at(j).y() = pm(1, j);
         petal.getVertices()->at(j).z() = pm(2, j);
     }
+
+    //// for root constraint
+    //for (auto& idx : hc_idx)
+    //{
+    //    petal.getVertices()->at(idx).x() = om(0, idx);
+    //    petal.getVertices()->at(idx).y() = om(1, idx);
+    //    petal.getVertices()->at(idx).z() = om(2, idx);
+    //}
 
     petal.updateNormals();
 }

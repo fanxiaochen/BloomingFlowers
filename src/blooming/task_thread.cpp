@@ -436,7 +436,6 @@ void MotionTransferThread::run()
     std::cout << "Motion Transfer Starts..." << std::endl;
 
     int key_frame = MainWindow::getInstance()->getParameters()->getKeyFrame();
-
     PointsFileSystem* points_file_system = tracking_system_->getPointsFileSystem();
     MeshFileSystem* mesh_file_system = tracking_system_->getMeshFileSystem();
 
@@ -471,22 +470,22 @@ void MotionTransferThread::run()
     Flower* forward_flower = new Flower(*flower);
     Flower* backward_flower = new Flower(*flower);
 
-    std::cout << "Forward Tracking..." << std::endl;
+    /*std::cout << "Forward Tracking..." << std::endl;
     osg::ref_ptr<PointCloud> forward_cloud;
     forward_flower->show();
     for (size_t i = key_frame+1, i_end = end_frame;
-        i <= i_end; ++ i)
+    i <= i_end; ++ i)
     {
-        std::cout << "tracking [frame " << i << "]" << std::endl;
+    std::cout << "tracking [frame " << i << "]" << std::endl;
 
-        forward_cloud = points_file_system->getPointCloud(i);
-        forward_cloud->setClosureCloud(points_file_system->getClosureCloudFilename(i));
+    forward_cloud = points_file_system->getPointCloud(i);
+    forward_cloud->setClosureCloud(points_file_system->getClosureCloudFilename(i));
 
-        tracking_system_->mt_registration(*forward_cloud,*forward_flower, i);
-        forward_flower->save(flowers_folder, i);
-        forward_flower->update();
+    tracking_system_->mt_registration(*forward_cloud,*forward_flower, i);
+    forward_flower->save(flowers_folder, i);
+    forward_flower->update();
     }
-    forward_flower->hide();
+    forward_flower->hide();*/
 
     std::cout << "Backward Tracking..." << std::endl;
     osg::ref_ptr<PointCloud> backward_cloud;

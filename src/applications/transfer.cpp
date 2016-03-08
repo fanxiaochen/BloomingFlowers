@@ -382,6 +382,8 @@ Transfer::Transfer(const std::string& transform_folder, Flower* current_flower, 
     transform_folder_ = transform_folder;
     current_flower_ = current_flower;
     current_frame_ = current_frame;
+
+    ref_flower_ = new Flower(*current_flower_);
 }
 
 Flower* Transfer::update()
@@ -397,7 +399,7 @@ Flower* Transfer::update()
 
 Flower* Transfer::updateBackward()
 {
-    Petals& petals = current_flower_->getPetals();
+    Petals& petals = ref_flower_->getPetals();
 
     //assert(petals.size() == order_.size());
 
@@ -461,13 +463,12 @@ Flower* Transfer::updateBackward()
             joint.z = np(2);
         }
     }
-    return current_flower_;
+    return ref_flower_;
 }
 
 Flower* Transfer::updateForward()
 {
-    Petals& petals = current_flower_->getPetals();
-
+    Petals& petals = ref_flower_->getPetals();
     //assert(petals.size() == order_.size());
 
     for (size_t i = 0, i_end = petals.size(); i < i_end; ++ i)
@@ -508,7 +509,7 @@ Flower* Transfer::updateForward()
             new_V.col(i) = M_i * V.col(i);
         }
 
-        // write back to petal
+        // write to reference petals
         for (size_t j = 0, j_end = petal.getVertices()->size(); j < j_end; ++ j)
         {
             petal.getVertices()->at(j).x() = new_V(0, j);
@@ -532,7 +533,7 @@ Flower* Transfer::updateForward()
 
     }
 
-    return current_flower_;
+    return ref_flower_;
 }
 
 

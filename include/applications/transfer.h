@@ -48,6 +48,8 @@ private:
 
     std::string transform_folder_;
     std::vector<int> order_;
+
+    Flower* ref_flower_;
 };
 
 #endif
